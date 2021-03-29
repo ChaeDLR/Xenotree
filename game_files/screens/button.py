@@ -6,7 +6,7 @@ from .screen_colors import ScreenColors
 class Button(Surface):
     """ create a button """
 
-    def __init__(self, surface, button_text: str):
+    def __init__(self, surface: object, button_text: str):
         """ initialize button settings """
         self.width, self.height = 150, 50
         super(Button, self).__init__((self.width, self.height))

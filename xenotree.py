@@ -43,6 +43,7 @@ class Xenotree:
         while True:
             self.clock.tick(60)
 
+            # TODO: I think i want to try and move the check events to methods inside the active screen
             if self.stats.game_paused:
                 self._check_paused_events()
             elif self.stats.game_active == False:
