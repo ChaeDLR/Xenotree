@@ -15,9 +15,8 @@ class Button(Surface):
         self.button_color = colors.button_color
         self.text_color = colors.text_color
         # coords to set button to middle of screen
-        self.button_mid_pos_x = (
-            surface.width/2)-(self.width/2)
-        self.button_mid_pos_y = (surface.height/3)*2
+        self.button_mid_pos_x = (surface.width / 2) - (self.width / 2)
+        self.button_mid_pos_y = (surface.height / 3) * 2
 
         # build the button rect and set it's position
         self.rect = pygame.Rect(0, 0, self.width, self.height)
@@ -45,8 +44,7 @@ class Button(Surface):
     def _prep_text(self, text: str):
         """ prep the text to be rendered in the button """
         font = pygame.font.SysFont(None, 40, bold=True)
-        self.msg_image = font.render(
-            text, True, self.text_color, self.button_color)
+        self.msg_image = font.render(text, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
 

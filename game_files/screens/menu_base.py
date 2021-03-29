@@ -2,6 +2,7 @@ import pygame.font
 from pygame import Surface, Rect
 from .screen_colors import ScreenColors
 
+
 class MenuBase(Surface):
     """ Parent class for the game menus """
 

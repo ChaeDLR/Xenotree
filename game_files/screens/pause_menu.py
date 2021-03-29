@@ -3,7 +3,6 @@ from .button import Button
 
 
 class PauseMenu(MenuBase):
-
     def __init__(self, width: int, height: int):
         super().__init__(width, height)
 
@@ -13,11 +12,12 @@ class PauseMenu(MenuBase):
     def _load_buttons(self):
         self.resume_button = Button(self, "Resume")
         self.quit_button = Button(self, "Quit")
-        self.resume_button.set_position(y_pos=(self.height/2))
+        self.resume_button.set_position(y_pos=(self.height / 2))
 
     def _load_text(self):
         self.text_image = self.font.render(
-            "PAUSED", False, self.text_color, self.background_color)
+            "PAUSED", False, self.text_color, self.background_color
+        )
         self.text_image_rect = self.text_image.get_rect()
         self.text_image_rect.midtop = self.rect.midtop
         self.text_image_rect.y += 60

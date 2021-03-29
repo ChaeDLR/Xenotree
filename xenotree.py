@@ -3,6 +3,7 @@ import pygame
 import sys
 import game_files
 
+
 class Xenotree:
     """ Wizard puzzle game """
 
@@ -32,10 +33,9 @@ class Xenotree:
             self.settings.screen_width, self.settings.screen_height
         )
         self.settings_menu = game_files.SettingsMenu(
-            self.settings.screen_width, self.settings.screen_height,
-            self.game_sound
+            self.settings.screen_width, self.settings.screen_height, self.game_sound
         )
-        
+
         self.active_screen = self.main_menu
 
     def run_game(self):
@@ -52,7 +52,7 @@ class Xenotree:
 
     def _check_paused_events(self):
         """
-            Events to check when the game is paused
+        Events to check when the game is paused
         """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -102,7 +102,7 @@ class Xenotree:
 
     def _check_pause_menu_buttons(self, mouse_pos):
         """
-            if self.stats.game_paused
+        if self.stats.game_paused
         """
         if self.pause_menu.check_buttons(mouse_pos) == 1:
             self._unpause_game()
@@ -111,7 +111,7 @@ class Xenotree:
 
     def _check_game_over_buttons(self, mouse_pos):
         """
-            self.stats.game_over
+        self.stats.game_over
         """
         if self.game_over.check_buttons(mouse_pos) == 1:
             self._start_game()
@@ -120,7 +120,7 @@ class Xenotree:
 
     def _check_settings_menu_buttons(self, mouse_pos):
         """
-            self.stats.settings_menu_active
+        self.stats.settings_menu_active
         """
         pressed_button = self.settings_menu.check_buttons(mouse_pos)
         if pressed_button == 1:
@@ -146,7 +146,7 @@ class Xenotree:
 
     def _check_main_menu_buttons(self, mouse_pos):
         """
-            self.stats.main_menu_active
+        self.stats.main_menu_active
         """
         if self.main_menu.check_buttons(mouse_pos) == 1:
             self._start_game()
@@ -187,8 +187,7 @@ class Xenotree:
         elif not self.stats.game_active and self.stats.game_over:
 
             if self.stats.new_high_score:
-                self.new_high_score_screen.set_high_score_img(
-                    self.stats.high_score)
+                self.new_high_score_screen.set_high_score_img(self.stats.high_score)
                 self.active_screen = self.new_high_score_screen
             else:
                 self.active_screen = self.game_over
@@ -198,7 +197,7 @@ class Xenotree:
 
         elif not self.stats.game_active and self.stats.main_menu_active:
             self.active_screen = self.main_menu
-        
+
         self.stats.change_screen = False
 
     def _update_screen(self):
@@ -216,6 +215,6 @@ class Xenotree:
         pygame.display.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     xenotree = Xenotree()
     xenotree.run_game()

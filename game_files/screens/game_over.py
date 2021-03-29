@@ -5,7 +5,6 @@ from .screen_colors import ScreenColors
 
 
 class Game_Over(Surface):
-
     def __init__(self, width: int, height: int):
         super(Game_Over, self).__init__((width, height))
         colors = ScreenColors()
@@ -22,12 +21,13 @@ class Game_Over(Surface):
         self.play_button = Button(self, "Play")
         self.quit_button = Button(self, "Quit")
 
-        self.play_button.set_position(y_pos=self.rect.height/2)
+        self.play_button.set_position(y_pos=self.rect.height / 2)
 
     def _load_text(self):
         font = pygame.font.SysFont(None, 50, bold=True)
         self.game_over_img = font.render(
-            "Game Over", True, self.text_color, self.background_color)
+            "Game Over", True, self.text_color, self.background_color
+        )
         self.game_over_img_rect = self.game_over_img.get_rect()
         self.game_over_img_rect.midtop = self.rect.midtop
         self.game_over_img_rect.y += 40

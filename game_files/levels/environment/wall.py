@@ -5,14 +5,14 @@ from pygame.sprite import Sprite
 
 class Wall(Sprite):
     """
-        Wall object size of width, height args
-        Stops player from moving 
+    Wall object size of width, height args
+    Stops player from moving
     """
 
     def __init__(self, w_h: tuple, x_y: tuple):
         """
-            w_h: tuple (width, height)
-            x_y: tuple (x_position, y_position)
+        w_h: tuple (width, height)
+        x_y: tuple (x_position, y_position)
         """
         self.width, self.height = w_h[0], w_h[1]
         super().__init__()

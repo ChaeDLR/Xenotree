@@ -5,13 +5,18 @@ from ..sprites import Player
 
 class LevelBase(pygame.Surface):
     """
-        Base level class that will hold
-        all of the basic code needed for a level
+    Base level class that will hold
+    all of the basic code needed for a level
     """
 
     def __init__(
-        self, width: int, height: int, settings: object, stats: object, game_sound: object
-        ):
+        self,
+        width: int,
+        height: int,
+        settings: object,
+        stats: object,
+        game_sound: object,
+    ):
         super().__init__((width, height))
 
         self.rect = pygame.Rect(0, 0, width, height)
@@ -30,12 +35,12 @@ class LevelBase(pygame.Surface):
     def load_player(self):
         """ load the sprites needed for the level """
         self.player = Player(self)
-    
+
     def load_base_custom_events(self):
         """ custom events that are the same in every level """
-        self.player_hit = pygame.USEREVENT+5
-        self.unpause_game = pygame.USEREVENT+6
-    
+        self.player_hit = pygame.USEREVENT + 5
+        self.unpause_game = pygame.USEREVENT + 6
+
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
         if event.key == pygame.K_ESCAPE:
@@ -71,14 +76,13 @@ class LevelBase(pygame.Surface):
 
     def player_collide_hit(self):
         """
-            If the player collides with something that hurts it
+        If the player collides with something that hurts it
         """
         if self.player.player_hit == False:
             self.game_sound.player_impact_sound.play()
         self.player.player_hit = True
         pygame.time.set_timer(self.player_hit, 500, True)
-    
-    
+
     def base_game_over(self):
         """ Reset the current level """
         self.game_stats.set_high_score()
