@@ -6,22 +6,30 @@ class GameStats:
     """ track and control game stats """
 
     def __init__(self):
-        """ initialize game stats """
+        """ Initialize game stats """
         self.player_life_limit = 3
         self.game_active = False
         self.high_score = 0
 
         self.active_level = 0
 
+        # initial setup
+        self._load_game_bools()
+        self.reset_stats()
+        self._read_high_score()
+
+    def _load_game_bools(self):
+        """
+        Load active screen bools
+        """
+        # These are all of the bools that
+        # together determine which menu screen should be showing
         self.change_screen = False
         self.game_over = False
         self.game_paused = False
         self.settings_menu_active = False
         self.new_high_score = False
         self.main_menu_active = True
-
-        self.reset_stats()
-        self._read_high_score()
 
     def _read_high_score(self):
         """
@@ -53,7 +61,6 @@ class GameStats:
                 json.dump(high_score_json_data, hs_json_file, indent=4)
             hs_json_file.close()
 
-    # TODO: I can probably group all of the screen bools into a list and just iter it
     def set_active_screen(
         self,
         game_over=False,
@@ -62,6 +69,10 @@ class GameStats:
         main_menu=False,
         game_active=False,
     ):
+        """
+        This is meant to take only one optional argument of True at a time
+        Every other bool value in here will be set to False
+        """
         self.change_screen = True
         self.game_active = game_active
         self.game_over = game_over
