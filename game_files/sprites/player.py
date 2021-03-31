@@ -1,7 +1,8 @@
 import pygame
 import os
+from pygame import image
 from pygame.sprite import Sprite
-from ..tools.spritesheet import SpriteSheet
+from ..utils.spritesheet import SpriteSheet
 
 
 class Player(Sprite):
@@ -11,9 +12,11 @@ class Player(Sprite):
         super().__init__()
         self.screen_rect = level_surface.rect
         self.screen_rows = self.screen_rect.bottom / 14
+
         self._load_player_image()
         self.player_hit = False
         self.death_frame = 1
+        self.animation_index = 0
 
         self.rect = self.image.get_rect()
 
@@ -27,15 +30,33 @@ class Player(Sprite):
         self.moving_left = False
         self.moving_right = False
 
+    def _ss_idle_coords(self) -> list:
+        idle: list = [
+            (8, 1, 21, 30),
+            (40, 0, 21, 30),
+            (72, 0, 24, 30),
+            (100, 1, 25, 30),
+            (133, 2, 24, 30),
+        ]
+        return idle
+
     def _load_player_image(self):
         """ Load player image from assets folder """
+        p_colorkey = (0, 0, 0)
         # set player image
         current_path = os.path.dirname(__file__)
         player_ss_path = os.path.join(
             current_path, "sprite_assets/player_assets/MageSpriteSheet.png"
         )
         ss_tool = SpriteSheet(player_ss_path)
-        self.image = ss_tool.image_at((7, 1, 19, 28)).convert()
+
+        self.idle_images = []
+        idle_coords = self._ss_idle_coords()
+        for coord in idle_coords:
+            image = ss_tool.image_at(coord, p_colorkey)
+            image = pygame.transform.scale(image, (38, 56))
+            self.idle_images.append(image)
+        self.image = self.idle_images[0]
 
     def reset_player(self):
         """ reset player position """
@@ -50,19 +71,6 @@ class Player(Sprite):
             return True
         else:
             return False
-
-    def move_forward(self):
-        """ move player forward """
-        if not self.player_hit:
-            self.y -= self.screen_rows
-            self.rect.y = self.y
-
-    def move_backward(self):
-        """ move player backward """
-        if not self.player_hit:
-            if self.rect.bottom < self.screen_rect.bottom:
-                self.y += self.screen_rows
-            self.rect.y = self.y
 
     def move_left(self):
         if not self.player_hit and (self.x - self.movement_speed) >= 0:
@@ -81,3 +89,11 @@ class Player(Sprite):
             self.rect.x = self.x
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
+
+    # TODO: Need to fix the player animation speed
+    def update_animation(self):
+        """
+        Update the player animation frame
+        """
+        self.animation_index += 1
+        self.image = self.idle_images[self.animation_index]

@@ -21,7 +21,7 @@ class SpriteSheet:
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         if colorkey is not None:
-            if colorkey is -1:
+            if colorkey == -1:
                 colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
@@ -75,5 +75,4 @@ class SpriteSheet:
                 sprite_rect = (x, y, x_sprite_size, y_sprite_size)
                 sprite_rects.append(sprite_rect)
 
-        grid_images = self.images_at(sprite_rects)
-        return grid_images
+        return self.images_at(sprite_rects)

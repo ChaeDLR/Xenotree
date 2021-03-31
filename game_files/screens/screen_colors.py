@@ -12,6 +12,10 @@ class ScreenColors:
         self.__blu = (60, 94, 130)
 
     @property
+    def level_one_bg(self) -> tuple:
+        return self.__dark_blue
+
+    @property
     def button_color(self) -> tuple:
         return self.__blu
 
