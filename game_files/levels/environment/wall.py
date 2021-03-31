@@ -1,6 +1,7 @@
 from pygame import Surface
 from pygame import Rect
 from pygame.sprite import Sprite
+from ...screens.screen_colors import ScreenColors
 
 
 class Wall(Sprite):
@@ -16,6 +17,7 @@ class Wall(Sprite):
         """
         self.width, self.height = w_h[0], w_h[1]
         super().__init__()
+        self.colors = ScreenColors()
 
         self._build_wall(x_y[0], x_y[1])
 
@@ -24,7 +26,7 @@ class Wall(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.image.fill((10, 10, 10))
+        self.image.fill(self.colors.button_color)
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
@@ -36,4 +38,4 @@ class Wall(Sprite):
     def resize_wall(self, width: int, height: int):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
-        self.fill((10, 10, 10))
+        self.fill(self.colors.button_color)

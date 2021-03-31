@@ -1,9 +1,10 @@
+from abc import ABC, abstractmethod
 import pygame
 from ..game_ui import Game_Ui
-from ..sprites import Player
+from ..sprites.player import Player
 
 
-class LevelBase(pygame.Surface):
+class LevelBase(pygame.Surface, ABC):
     """
     Base level class that will hold
     all of the basic code needed for a level
@@ -94,6 +95,12 @@ class LevelBase(pygame.Surface):
 
     def update_ui(self):
         """ Update everything in the player ui """
-        self.game_ui.update_level()
-        self.game_ui.update_lives()
-        self.game_ui.display_ui()
+        self.game_ui.update_ui()
+
+    @abstractmethod
+    def update(self):
+        """
+        Each level needs an update method that with contain all of blits for it
+        This method is called from the main game loop
+        """
+        pass

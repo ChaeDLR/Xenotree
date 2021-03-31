@@ -1,6 +1,7 @@
 import pygame
 import os
 from pygame.sprite import Sprite
+from ..tools.spritesheet import SpriteSheet
 
 
 class Player(Sprite):
@@ -9,7 +10,7 @@ class Player(Sprite):
     def __init__(self, level_surface):
         super().__init__()
         self.screen_rect = level_surface.rect
-        self.screen_rows = self.screen_rect.bottom/14
+        self.screen_rows = self.screen_rect.bottom / 14
         self._load_player_image()
         self.player_hit = False
         self.death_frame = 1
@@ -29,13 +30,12 @@ class Player(Sprite):
     def _load_player_image(self):
         """ Load player image from assets folder """
         # set player image
-        path = os.path.dirname(__file__)
-        self.image = pygame.image.load(
-            os.path.join(path, 'sprite_images/player_ship.png'))
-        self.player_hit_images = [
-            self.image, pygame.image.load(os.path.join(
-                path, 'sprite_images/player_lighten.png'))
-        ]
+        current_path = os.path.dirname(__file__)
+        player_ss_path = os.path.join(
+            current_path, "sprite_assets/player_assets/MageSpriteSheet.png"
+        )
+        ss_tool = SpriteSheet(player_ss_path)
+        self.image = ss_tool.image_at((7, 1, 19, 28)).convert()
 
     def reset_player(self):
         """ reset player position """
@@ -65,7 +65,7 @@ class Player(Sprite):
             self.rect.y = self.y
 
     def move_left(self):
-        if not self.player_hit and (self.x-self.movement_speed) >= 0:
+        if not self.player_hit and (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:
@@ -73,7 +73,10 @@ class Player(Sprite):
             self.rect.x = self.x
 
     def move_right(self):
-        if not self.player_hit and (self.x+self.movement_speed) <= self.screen_rect.right:
+        if (
+            not self.player_hit
+            and (self.x + self.movement_speed) <= self.screen_rect.right
+        ):
             self.x += self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:

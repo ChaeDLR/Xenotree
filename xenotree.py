@@ -35,6 +35,14 @@ class Xenotree:
         self.settings_menu = game_files.SettingsMenu(
             self.settings.screen_width, self.settings.screen_height, self.game_sound
         )
+        # Create the test level
+        self.test_level = game_files.TestLevel(
+            self.settings.screen_width,
+            self.settings.screen_height,
+            self.settings,
+            self.stats,
+            self.game_sound,
+        )
 
         self.active_screen = self.main_menu
 
@@ -46,7 +54,7 @@ class Xenotree:
             # TODO: I think i want to try and move the check events to methods inside the active screen
             if self.stats.game_paused:
                 self._check_paused_events()
-            elif self.stats.game_active == False:
+            else:
                 self._check_events()
 
             self._update_screen()
@@ -89,11 +97,12 @@ class Xenotree:
 
     def _start_game(self):
         """ Reset the game """
-        self._load_level_one()
         self.stats.set_active_screen(game_active=True)
         self.stats.active_level = 1
         pygame.mouse.set_visible(False)
-        pygame.mixer.music.play()
+        # No game music added yet
+        # TODO: Add game music
+        # pygame.mixer.music.play()
 
     def _unpause_game(self):
         self.stats.game_active = True
@@ -172,33 +181,35 @@ class Xenotree:
     def _get_active_level(self):
         """ return the active level """
         if self.stats.active_level == 1:
-            return self.level_one
-        elif self.stats.active_level == 2:
-            self._load_level_two()
-            return self.level_two
+            return self.test_level
 
     def _set_active_screen(self):
         """ Check game bools to choose the active screen """
+
+        # If the player is out of lives then stop the game before we check anything else
         if self.stats.lives_left == 0:
             self._stop_game()
-
+        # Else if the game is active we need to get the active level
         elif self.stats.game_active:
             self.active_screen = self._get_active_level()
-
-        elif not self.stats.game_active and self.stats.game_over:
-
-            if self.stats.new_high_score:
-                self.new_high_score_screen.set_high_score_img(self.stats.high_score)
-                self.active_screen = self.new_high_score_screen
-            else:
-                self.active_screen = self.game_over
-
-        elif not self.stats.game_active and self.stats.settings_menu_active:
-            self.active_screen = self.settings_menu
-
-        elif not self.stats.game_active and self.stats.main_menu_active:
-            self.active_screen = self.main_menu
-
+        # Else if the game is not active we need to know which menu screen we should show
+        elif not self.stats.game_active:
+            # if its the game over screen
+            if self.stats.game_over:
+                # check if the player has reached a new high score we should display
+                if self.stats.new_high_score:
+                    self.new_high_score_screen.set_high_score_img(self.stats.high_score)
+                    self.active_screen = self.new_high_score_screen
+                else:  # else just show game over
+                    self.active_screen = self.game_over
+            # Else if the user clicked on the settings menu button we should show that
+            elif self.stats.settings_menu_active:
+                self.active_screen = self.settings_menu
+            # Else if the user is trying to return to the main menu
+            elif self.stats.main_menu_active:
+                self.active_screen = self.main_menu
+        # We no longer want to change the screen after this code is run
+        # So switch the bool to False so the loop doesn't trying grabbing a new screen again
         self.stats.change_screen = False
 
     def _update_screen(self):
