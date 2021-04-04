@@ -13,10 +13,10 @@ class Player(Sprite):
         self.screen_rect = level_surface.rect
         self.screen_rows = self.screen_rect.bottom / 14
 
+        self.__create_animation_variables()
         self._load_player_image()
         self.player_hit = False
         self.death_frame = 1
-        self.animation_index = 0
 
         self.rect = self.image.get_rect()
 
@@ -30,7 +30,14 @@ class Player(Sprite):
         self.moving_left = False
         self.moving_right = False
 
+    def __create_animation_variables(self):
+        """ These are the animation variables needed to animate the player smoothly """
+        self.animation_index = 0
+        self.animation_index_limit = 0
+        self.animation_counter = 0
+
     def _ss_idle_coords(self) -> list:
+        """ Rect positions and sizes needed to cut the sprite sheet for the idle images """
         idle: list = [
             (8, 1, 21, 30),
             (40, 0, 21, 30),
@@ -57,6 +64,7 @@ class Player(Sprite):
             image = pygame.transform.scale(image, (38, 56))
             self.idle_images.append(image)
         self.image = self.idle_images[0]
+        self.animation_index_limit = len(self.idle_images)-1
 
     def reset_player(self):
         """ reset player position """
@@ -95,5 +103,14 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        self.animation_index += 1
         self.image = self.idle_images[self.animation_index]
+        self.animation_counter += 1
+
+        # if we get told to change the animation 
+        if self.animation_counter % 16 == 0:
+            # check if the animation is the last in the list
+            if self.animation_index == self.animation_index_limit:
+                self.animation_counter = 0
+                self.animation_index = 1 # if i cut off the first image in the list the animation looks a lot smoother
+            else:
+                self.animation_index += 1

@@ -91,7 +91,7 @@ class Xenotree:
                     self._check_main_menu_buttons(mouse_pos)
 
     def _check_keydown_events(self, event):
-        """ check for and respond to player input """
+        """ Check for and respond to player input """
         if event.key == pygame.K_ESCAPE:
             sys.exit()
 
@@ -112,7 +112,7 @@ class Xenotree:
 
     def _check_pause_menu_buttons(self, mouse_pos):
         """
-        if self.stats.game_paused
+        If self.stats.game_paused
         """
         if self.pause_menu.check_buttons(mouse_pos) == 1:
             self._unpause_game()

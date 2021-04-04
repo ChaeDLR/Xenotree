@@ -32,4 +32,4 @@ class TestLevel(LevelBase):
         self.fill(self.colors.level_one_bg, self.rect)
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
-        # self.player.update_animation()
+        self.player.update_animation()
