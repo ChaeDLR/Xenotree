@@ -46,6 +46,12 @@ class Player(Sprite):
             (133, 2, 24, 30),
         ]
         return idle
+    
+    def _ss_walk_coords(self) -> list:
+        walk: list = [
+            (2, 32, 28, 30)
+        ]
+        return walk
 
     def _load_player_image(self):
         """ Load player image from assets folder """
@@ -57,14 +63,29 @@ class Player(Sprite):
         )
         ss_tool = SpriteSheet(player_ss_path)
 
-        self.idle_images = []
-        idle_coords = self._ss_idle_coords()
-        for coord in idle_coords:
-            image = ss_tool.image_at(coord, p_colorkey)
-            image = pygame.transform.scale(image, (38, 56))
-            self.idle_images.append(image)
-        self.image = self.idle_images[0]
-        self.animation_index_limit = len(self.idle_images)-1
+        # nested funcs to break the code up a bit
+        def idle_animations():
+            self.idle_images = []
+            idle_coords = self._ss_idle_coords()
+            for coord in idle_coords:
+                image = ss_tool.image_at(coord, p_colorkey)
+                image = pygame.transform.scale(image, (38, 56))
+                self.idle_images.append(image)
+            self.image = self.idle_images[0]
+            self.animation_index_limit = len(self.idle_images)-1
+        
+        def walk_animations():
+            self.walk_images = []
+            walk_coords = self._ss_walk_coords()
+            for coord in walk_coords:
+                image = ss_tool.image_at(coord)
+                image = pygame.transform.scale(image, (38, 54))
+                self.walk_images.append(image)
+            self.image = self.walk_images[0]
+            self.animation_index_limit = len(self.walk_images)-1
+            
+        #idle_animations()
+        walk_animations()
 
     def reset_player(self):
         """ reset player position """
@@ -103,7 +124,8 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        self.image = self.idle_images[self.animation_index]
+        #self.image = self.idle_images[self.animation_index]
+        self.image = self.walk_images[0]
         self.animation_counter += 1
 
         # if we get told to change the animation 
