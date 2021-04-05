@@ -1,6 +1,5 @@
 import pygame
 import os
-from pygame import image
 from pygame.sprite import Sprite
 from ..utils.spritesheet import SpriteSheet
 
@@ -14,7 +13,7 @@ class Player(Sprite):
         self.screen_rows = self.screen_rect.bottom / 14
 
         self.__create_animation_variables()
-        self._load_player_image()
+        self._load_player_images()
         self.player_hit = False
         self.death_frame = 1
 
@@ -30,7 +29,7 @@ class Player(Sprite):
         self.moving_left = False
         self.moving_right = False
 
-    def __create_animation_variables(self):
+    def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
         self.animation_index = 0
         self.animation_index_limit = 0
@@ -39,21 +38,25 @@ class Player(Sprite):
     def _ss_idle_coords(self) -> list:
         """ Rect positions and sizes needed to cut the sprite sheet for the idle images """
         idle: list = [
-            (8, 1, 21, 30),
+            # (8, 1, 21, 30), Animation looks a lot smoother without this image
             (40, 0, 21, 30),
             (72, 0, 24, 30),
             (100, 1, 25, 30),
             (133, 2, 24, 30),
         ]
         return idle
-    
+
     def _ss_walk_coords(self) -> list:
+        """ Rect positions and sizes needed to cut the sprite sheet for walking images """
         walk: list = [
-            (2, 32, 28, 30)
+            (2, 32, 28, 30),
+            (35, 33, 28, 30),
+            (67, 34, 28, 30),
+            (98, 34, 28, 30),
         ]
         return walk
 
-    def _load_player_image(self):
+    def _load_player_images(self) -> None:
         """ Load player image from assets folder """
         p_colorkey = (0, 0, 0)
         # set player image
@@ -69,23 +72,30 @@ class Player(Sprite):
             idle_coords = self._ss_idle_coords()
             for coord in idle_coords:
                 image = ss_tool.image_at(coord, p_colorkey)
-                image = pygame.transform.scale(image, (38, 56))
+                image = pygame.transform.scale(image, (41, 54))
                 self.idle_images.append(image)
-            self.image = self.idle_images[0]
-            self.animation_index_limit = len(self.idle_images)-1
-        
+            self.animation_index_limit = len(self.idle_images) - 1
+
         def walk_animations():
-            self.walk_images = []
+            # walking right images
+            self.walk_right_images = []
             walk_coords = self._ss_walk_coords()
             for coord in walk_coords:
-                image = ss_tool.image_at(coord)
-                image = pygame.transform.scale(image, (38, 54))
-                self.walk_images.append(image)
-            self.image = self.walk_images[0]
-            self.animation_index_limit = len(self.walk_images)-1
-            
-        #idle_animations()
+                image = ss_tool.image_at(coord, p_colorkey)
+                image = pygame.transform.scale(image, (41, 54))
+                self.walk_right_images.append(image)
+            self.animation_index_limit = len(self.walk_right_images) - 1
+
+            # walking left images
+            self.walk_left_images = self.walk_right_images[:]
+            for i in range(0, len(self.walk_right_images)):
+                self.walk_left_images[i] = pygame.transform.flip(
+                    self.walk_left_images[i], True, False
+                )
+
+        idle_animations()
         walk_animations()
+        self.image = self.idle_images[0]
 
     def reset_player(self):
         """ reset player position """
@@ -124,15 +134,21 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        #self.image = self.idle_images[self.animation_index]
-        self.image = self.walk_images[0]
+        # check if the animation is the last in the list
+        if self.animation_index > self.animation_index_limit:
+            self.animation_counter = 0
+            self.animation_index = 0
+
+        # if we're walking make the image the walking animation
+        # if self.move_right:
+        #   self.image = self.walk_images[self.animation_index]
+        # elif self.move_left:
+        #   self.image = self.walk_images[self.animation_index]
+        # else:
+        #   self.image = self.idle_images[self.animation_index]
+
+        self.image = self.idle_images[self.animation_index]
         self.animation_counter += 1
 
-        # if we get told to change the animation 
         if self.animation_counter % 16 == 0:
-            # check if the animation is the last in the list
-            if self.animation_index == self.animation_index_limit:
-                self.animation_counter = 0
-                self.animation_index = 1 # if i cut off the first image in the list the animation looks a lot smoother
-            else:
-                self.animation_index += 1
+            self.animation_index += 1
