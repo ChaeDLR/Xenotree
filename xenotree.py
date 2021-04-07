@@ -23,17 +23,27 @@ class Xenotree:
 
     def _load_game_screens(self):
         """ Load starting game screens and set the current screen to the main menu """
+
+        # has check events in update
         self.main_menu = game_files.MainMenu(
-            self.settings.screen_width, self.settings.screen_height
+            (self.settings.screen_width, self.settings.screen_height),
+            self.stats, self.settings
         )
+
         self.game_over = game_files.Game_Over(
-            self.settings.screen_width, self.settings.screen_height
+            (self.settings.screen_width, self.settings.screen_height),
+            self.stats, self.settings
         )
+
+        # has check events in update
         self.pause_menu = game_files.PauseMenu(
-            self.settings.screen_width, self.settings.screen_height
+            (self.settings.screen_width, self.settings.screen_height),
+            self.stats, self.settings
         )
+        # has check events in update
         self.settings_menu = game_files.SettingsMenu(
-            self.settings.screen_width, self.settings.screen_height, self.game_sound
+            (self.settings.screen_width, self.settings.screen_height), 
+            self.stats, self.settings, self.game_sound
         )
         # Create the test level
         self.test_level = game_files.TestLevel(
@@ -50,127 +60,7 @@ class Xenotree:
         """ main loop """
         while True:
             self.clock.tick(60)
-
-            # TODO: I think i want to try and move the check events to methods inside the active screen
-            if self.stats.game_paused:
-                self._check_paused_events()
-            else:
-                self._check_events()
-
             self._update_screen()
-
-    def _check_paused_events(self):
-        """
-        Events to check when the game is paused
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                self._check_pause_menu_buttons(mouse_pos)
-
-    def _check_events(self):
-        """ check for events """
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and not self.stats.game_active:
-                mouse_pos = pygame.mouse.get_pos()
-
-                if self.stats.game_over:
-                    if self.stats.new_high_score:
-                        self._check_new_hs_screen_buttons(mouse_pos)
-                    else:
-                        self._check_game_over_buttons(mouse_pos)
-
-                elif self.stats.settings_menu_active:
-                    self._check_settings_menu_buttons(mouse_pos)
-
-                elif self.stats.main_menu_active:
-                    self._check_main_menu_buttons(mouse_pos)
-
-    def _check_keydown_events(self, event):
-        """ Check for and respond to player input """
-        if event.key == pygame.K_ESCAPE:
-            sys.exit()
-
-    def _start_game(self):
-        """ Reset the game """
-        self.stats.set_active_screen(game_active=True)
-        self.stats.active_level = 1
-        pygame.mouse.set_visible(False)
-        # No game music added yet
-        # TODO: Add game music
-        # pygame.mixer.music.play()
-
-    def _unpause_game(self):
-        self.stats.game_active = True
-        self.stats.game_paused = False
-        self.level_one.resume_game()
-        pygame.mouse.set_visible(False)
-
-    def _check_pause_menu_buttons(self, mouse_pos):
-        """
-        If self.stats.game_paused
-        """
-        if self.pause_menu.check_buttons(mouse_pos) == 1:
-            self._unpause_game()
-        elif self.pause_menu.check_buttons(mouse_pos) == 2:
-            sys.exit()
-
-    def _check_game_over_buttons(self, mouse_pos):
-        """
-        self.stats.game_over
-        """
-        if self.game_over.check_buttons(mouse_pos) == 1:
-            self._start_game()
-        elif self.game_over.check_buttons(mouse_pos) == 2:
-            sys.exit()
-
-    def _check_settings_menu_buttons(self, mouse_pos):
-        """
-        self.stats.settings_menu_active
-        """
-        pressed_button = self.settings_menu.check_buttons(mouse_pos)
-        if pressed_button == 1:
-            self.settings_menu.music_plus_pressed = True
-            self.game_sound.increase_music_volume()
-            self.settings_menu.update_music_volume_string()
-        elif pressed_button == 2:
-            self.settings_menu.music_minus_pressed = True
-            self.game_sound.decrease_music_volume()
-            self.settings_menu.update_music_volume_string()
-        elif pressed_button == 3:
-            self.settings_menu.effects_plus_pressed = True
-            self.game_sound.increase_effects_volume()
-            self.settings_menu.update_effects_volume_string()
-        elif pressed_button == 4:
-            self.settings_menu.effects_minus_pressed = True
-            self.game_sound.decrease_effects_volume()
-            self.settings_menu.update_effects_volume_string()
-        elif pressed_button == 5:
-            self.stats.set_active_screen(main_menu=True)
-        elif pressed_button == 6:
-            self.game_sound.save_volumes()
-
-    def _check_main_menu_buttons(self, mouse_pos):
-        """
-        self.stats.main_menu_active
-        """
-        if self.main_menu.check_buttons(mouse_pos) == 1:
-            self._start_game()
-        elif self.main_menu.check_buttons(mouse_pos) == 2:
-            sys.exit()
-        elif self.main_menu.check_buttons(mouse_pos) == 3:
-            self.stats.set_active_screen(settings_menu=True)
-
-    def _check_new_hs_screen_buttons(self, mouse_pos):
-        if self.new_high_score_screen.check_buttons(mouse_pos) == 1:
-            self.stats.new_high_score = False
-            self._start_game()
-        elif self.new_high_score_screen.check_buttons(mouse_pos) == 2:
-            sys.exit()
 
     def _stop_game(self):
         """ Game Over """

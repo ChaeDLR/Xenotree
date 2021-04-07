@@ -1,3 +1,4 @@
+import sys
 from .menu_base import MenuBase
 from .button import Button
 
@@ -8,8 +9,8 @@ class MainMenu(MenuBase):
     Play the game, Enter settings menu, or Quit the game
     """
 
-    def __init__(self, width: int, height: int):
-        super().__init__(width, height)
+    def __init__(self, w_h: tuple, stats: object, settings: object):
+        super().__init__((w_h[0], w_h[1]), stats, settings)
 
         self._load_title()
         self._load_buttons()
@@ -39,14 +40,14 @@ class MainMenu(MenuBase):
         Return 2 if quit button clicked
         """
         if self.play_button.check_button(mouse_pos):
-            return 1
+            self.start_game()
         elif self.quit_button.check_button(mouse_pos):
-            return 2
+            sys.exit()
         elif self.settings_button.check_button(mouse_pos):
-            return 3
-        return -1
+            self.stats.set_active_screen(settings_menu=True)
 
     def update(self):
+        self.check_base_events(self.check_buttons)
         self.fill(self.background_color, self.rect)
         self.blit(self.main_menu_img, self.main_menu_img_rect)
         self.play_button.blitme()

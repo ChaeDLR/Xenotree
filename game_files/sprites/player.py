@@ -7,13 +7,17 @@ from ..utils.spritesheet import SpriteSheet
 class Player(Sprite):
     """ player sprite class """
 
-    def __init__(self, level_surface):
+    def __init__(self, level_rect):
         super().__init__()
-        self.screen_rect = level_surface.rect
+        self.screen_rect = level_rect
         self.screen_rows = self.screen_rect.bottom / 14
 
         self.__create_animation_variables()
         self._load_player_images()
+        
+        # players bool values
+        self.moving_left = False
+        self.moving_right = False
         self.player_hit = False
         self.death_frame = 1
 
@@ -25,9 +29,6 @@ class Player(Sprite):
         self.rect.midbottom = self.screen_rect.midbottom
         self.y = float(self.rect.y)
         self.x = float(self.rect.x)
-
-        self.moving_left = False
-        self.moving_right = False
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
@@ -84,7 +85,6 @@ class Player(Sprite):
                 image = ss_tool.image_at(coord, p_colorkey)
                 image = pygame.transform.scale(image, (41, 54))
                 self.walk_right_images.append(image)
-            self.animation_index_limit = len(self.walk_right_images) - 1
 
             # walking left images
             self.walk_left_images = self.walk_right_images[:]
@@ -112,6 +112,8 @@ class Player(Sprite):
             return False
 
     def move_left(self):
+        self.moving_left = True
+        self.reset_animation()
         if not self.player_hit and (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
@@ -120,34 +122,43 @@ class Player(Sprite):
             self.rect.x = self.x
 
     def move_right(self):
-        if (
-            not self.player_hit
-            and (self.x + self.movement_speed) <= self.screen_rect.right
-        ):
+        self.moving_right = True
+        self.reset_animation()
+        if not self.player_hit and (self.rect.right + self.movement_speed) <= self.screen_rect.right:
             self.x += self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
+    
+    def reset_animation(self, idle=False, walk=False):
+        """ 
+        Reset the animation counter and index 
+        This will typically be used when the player changes animation lists
+        """
+        if idle:
+            self.animation_index_limit = len(self.idle_images)-1
+        elif walk:
+            self.animation_index_limit = len(self.walk_right_images)-1
 
-    # TODO: Need to fix the player animation speed
+        self.animation_counter = 0
+        self.animation_index = 0
+
     def update_animation(self):
         """
         Update the player animation frame
         """
         # check if the animation is the last in the list
         if self.animation_index > self.animation_index_limit:
-            self.animation_counter = 0
-            self.animation_index = 0
+            self.reset_animation()
 
         # if we're walking make the image the walking animation
-        # if self.move_right:
-        #   self.image = self.walk_images[self.animation_index]
-        # elif self.move_left:
-        #   self.image = self.walk_images[self.animation_index]
-        # else:
-        #   self.image = self.idle_images[self.animation_index]
+        if self.move_right:
+            self.image = self.walk_right_images[self.animation_index]
+        elif self.move_left:
+            self.image = self.walk_left_images[self.animation_index]
+        else:
+            self.image = self.idle_images[self.animation_index]
 
-        self.image = self.idle_images[self.animation_index]
         self.animation_counter += 1
 
         if self.animation_counter % 16 == 0:

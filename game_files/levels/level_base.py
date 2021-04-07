@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import pygame
+import sys
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
 
@@ -35,41 +36,26 @@ class LevelBase(pygame.Surface, ABC):
 
     def load_player(self):
         """ load the sprites needed for the level """
-        self.player = Player(self)
+        self.player = Player(self.rect)
 
     def load_base_custom_events(self):
         """ custom events that are the same in every level """
         self.player_hit = pygame.USEREVENT + 5
         self.unpause_game = pygame.USEREVENT + 6
-
-    def check_keydown_events(self, event):
-        """ check for and respond to player keydown input """
-        if event.key == pygame.K_ESCAPE:
-            self.pause_events()
-        elif event.key == pygame.K_UP:
-            self.game_sound.player_movement_sound.play()
-            self.player.move_forward()
-        elif event.key == pygame.K_DOWN:
-            self.game_sound.player_movement_sound.play()
-            self.player.move_backward()
-        elif event.key == pygame.K_LEFT:
-            self.player.move_left()
-        elif event.key == pygame.K_RIGHT:
-            self.player.move_right()
-
-    def check_keyup_events(self, event):
-        """ Check for and respond to player keyup events """
-        if event.key == pygame.K_LEFT:
-            self.player.moving_left = False
-        elif event.key == pygame.K_RIGHT:
-            self.player.moving_right = False
+    
+    def check_levelbase_events(self, level_event_check):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            else:
+                level_event_check(event)
 
     def pause_events(self):
         self.game_stats.game_paused = True
         self.game_stats.game_active = False
         pygame.mixer.music.pause()
         pygame.mouse.set_visible(True)
-        pygame.event.wait(self.unpause_game)
+        #pygame.event.wait(self.unpause_game)
 
     def resume_game(self):
         """ Method call to set a timer that sets off the unpause_game custom event """

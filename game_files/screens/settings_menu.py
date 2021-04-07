@@ -11,11 +11,11 @@ class SettingsMenu(MenuBase):
     Allow user to adjust sound volume
     """
 
-    def __init__(self, width: int, height: int, game_sound: object):
-        super().__init__(width, height)
+    def __init__(self, w_h: tuple, stats: object, settings: object, game_sound: object):
+        super().__init__(w_h, stats, settings)
 
-        self.screen_rows = height / 6
-        self.screen_columns = width / 6
+        self.screen_rows = w_h[1] / 6
+        self.screen_columns = w_h[0] / 6
 
         self.game_sound = game_sound
 
@@ -165,29 +165,6 @@ class SettingsMenu(MenuBase):
         self.settings_menu_img_rect.midtop = self.rect.midtop
         self.settings_menu_img_rect.y += 60
 
-    def check_buttons(self, mouse_pos):
-        """
-        return 1 if music plus sign is pressed
-        return 2 if music minus is pressed
-        return 3 if effects plus is pressed
-        return 4 if effects minus is pressed
-        return 5 if back button is pressed
-        return 6 if save button is pressed
-        """
-        if self.music_plus_image_rect.collidepoint(mouse_pos):
-            return 1
-        elif self.music_minus_image_rect.collidepoint(mouse_pos):
-            return 2
-        elif self.effects_plus_image_rect.collidepoint(mouse_pos):
-            return 3
-        elif self.effects_minus_image_rect.collidepoint(mouse_pos):
-            return 4
-        elif self.back_button.check_button(mouse_pos):
-            return 5
-        elif self.save_button.check_button(mouse_pos):
-            return 6
-        return -1
-
     def _update_signs(self):
         """
         Update plus and minus signs
@@ -221,7 +198,39 @@ class SettingsMenu(MenuBase):
         else:
             self.blit(self.music_minus_filled_image, self.music_minus_image_rect)
 
+    def check_buttons(self, mouse_pos):
+        """
+        Respond to mouse down events
+        """
+        # If the music plus rect is pressed
+        if self.music_plus_image_rect.collidepoint(mouse_pos):
+            self.music_plus_pressed = True
+            self.game_sound.increase_music_volume()
+            self.update_music_volume_string()
+        # If the music minus rect is pressed
+        elif self.music_minus_image_rect.collidepoint(mouse_pos):
+            self.music_minus_pressed = True
+            self.game_sound.decrease_music_volume()
+            self.update_music_volume_string()
+        # If effects plus rect
+        elif self.effects_plus_image_rect.collidepoint(mouse_pos):
+            self.effects_plus_pressed = True
+            self.game_sound.increase_effects_volume()
+            self.update_effects_volume_string()
+        # If effects minus rect
+        elif self.effects_minus_image_rect.collidepoint(mouse_pos):
+            self.effects_minus_pressed = True
+            self.game_sound.decrease_effects_volume()
+            self.update_effects_volume_string()
+        # If back button is pressed go to the main menu
+        elif self.back_button.check_button(mouse_pos):
+            self.stats.set_active_screen(main_menu=True)
+        # If save button is pressed call save_volumes() to save the volume settings
+        elif self.save_button.check_button(mouse_pos):
+            self.game_sound.save_volumes()
+
     def update(self):
+        self.check_base_events(self.check_buttons)
         self.fill(self.background_color, self.rect)
         self.blit(self.settings_menu_img, self.settings_menu_img_rect)
         self._update_signs()

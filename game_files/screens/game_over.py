@@ -1,18 +1,18 @@
 import pygame.font
-from pygame import Surface
+from .menu_base import MenuBase
 from .button import Button
 from .screen_colors import ScreenColors
 
 
-class Game_Over(Surface):
-    def __init__(self, width: int, height: int):
-        super(Game_Over, self).__init__((width, height))
+class Game_Over(MenuBase):
+    def __init__(self, w_h: tuple, stats, settings):
+        super().__init__(w_h, stats, settings)
         colors = ScreenColors()
         self.background_color = colors.bg_color
         self.text_color = colors.text_color
-        self.rect = pygame.Rect(0, 0, width, height)
+        self.rect = pygame.Rect(0, 0, w_h[0], w_h[1])
 
-        self.width, self.height = width, height
+        self.width, self.height = w_h[0], w_h[1]
 
         self._load_buttons()
         self._load_text()
@@ -34,13 +34,13 @@ class Game_Over(Surface):
 
     def check_buttons(self, mouse_pos):
         if self.play_button.check_button(mouse_pos):
-            return 1
+            self.stats.reset_stats()
+            self.stats.game_active = True
         elif self.quit_button.check_button(mouse_pos):
-            return 2
-        return -1
+            self.stats.set_active_screen(main_menu=True)
 
     def update(self):
-
+        self.check_base_events(self.check_buttons)
         self.fill(self.background_color, self.rect)
         self.blit(self.game_over_img, self.game_over_img_rect)
         self.play_button.blitme()
