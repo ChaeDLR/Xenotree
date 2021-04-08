@@ -18,12 +18,14 @@ class Player(Sprite):
         # players bool values
         self.moving_left = False
         self.moving_right = False
+        # This bool will be used to choose which idle animation to play
+        self.facing_right = True
         self.player_hit = False
         self.death_frame = 1
 
         self.rect = self.image.get_rect()
 
-        self.movement_speed = 64.0
+        self.movement_speed = 6.0
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
@@ -69,13 +71,20 @@ class Player(Sprite):
 
         # nested funcs to break the code up a bit
         def idle_animations():
-            self.idle_images = []
+            self.idle_right_images = []
             idle_coords = self._ss_idle_coords()
             for coord in idle_coords:
                 image = ss_tool.image_at(coord, p_colorkey)
                 image = pygame.transform.scale(image, (41, 54))
-                self.idle_images.append(image)
-            self.animation_index_limit = len(self.idle_images) - 1
+                self.idle_right_images.append(image)
+            self.animation_index_limit = len(self.idle_right_images) - 1
+
+            self.idle_left_images = self.idle_right_images[:]
+            for i in range(0, len(self.idle_right_images)):
+                self.idle_left_images[i] = pygame.transform.flip(
+                    self.idle_left_images[i], True, False
+                )
+
 
         def walk_animations():
             # walking right images
@@ -93,9 +102,11 @@ class Player(Sprite):
                     self.walk_left_images[i], True, False
                 )
 
+        # create image lists and set the limit to idle list
         idle_animations()
         walk_animations()
-        self.image = self.idle_images[0]
+        self.animation_index_limit = len(self.idle_right_images)-1
+        self.image = self.idle_right_images[0]
 
     def reset_player(self):
         """ reset player position """
@@ -111,9 +122,10 @@ class Player(Sprite):
         else:
             return False
 
-    def move_left(self):
-        self.moving_left = True
-        self.reset_animation()
+    def __move_left(self):
+        """
+        Check if the player is alive and in bounds
+        """
         if not self.player_hit and (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
@@ -121,27 +133,52 @@ class Player(Sprite):
             self.x = 0
             self.rect.x = self.x
 
-    def move_right(self):
-        self.moving_right = True
-        self.reset_animation()
+    def __move_right(self):
+        """
+        Check if the player is alive and in bounds
+        """
         if not self.player_hit and (self.rect.right + self.movement_speed) <= self.screen_rect.right:
             self.x += self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
     
-    def reset_animation(self, idle=False, walk=False):
+    def switch_move_left(self, move: bool):
+        """
+        Set the movement left flag to true
+        Reset the animation variables
+        """
+        if move:
+            self.facing_right = False
+        self.moving_left = move
+        self.reset_animation()
+    
+    def switch_move_right(self, move: bool):
+        """
+        Set the movement right flag to true
+        Reset the animation variables
+        """
+        if move:
+            self.facing_right = True
+        self.moving_right = move
+        self.reset_animation()
+    
+    def reset_animation(self):
         """ 
         Reset the animation counter and index 
         This will typically be used when the player changes animation lists
         """
-        if idle:
-            self.animation_index_limit = len(self.idle_images)-1
-        elif walk:
-            self.animation_index_limit = len(self.walk_right_images)-1
-
         self.animation_counter = 0
         self.animation_index = 0
+    
+    def update_movement(self):
+        """
+        Update player position
+        """
+        if self.moving_right:
+            self.__move_right()
+        elif self.moving_left:
+            self.__move_left()
 
     def update_animation(self):
         """
@@ -152,14 +189,24 @@ class Player(Sprite):
             self.reset_animation()
 
         # if we're walking make the image the walking animation
-        if self.move_right:
+        if self.moving_right and self.animation_index <= len(self.walk_right_images)-1:
             self.image = self.walk_right_images[self.animation_index]
-        elif self.move_left:
+        elif self.moving_left and self.animation_index <= len(self.walk_right_images)-1:
             self.image = self.walk_left_images[self.animation_index]
+        elif not self.facing_right:
+            self.image = self.idle_left_images[self.animation_index]
         else:
-            self.image = self.idle_images[self.animation_index]
+            self.image = self.idle_right_images[self.animation_index]
+
 
         self.animation_counter += 1
 
         if self.animation_counter % 16 == 0:
             self.animation_index += 1
+    
+    def update(self):
+        """
+        Update the player image and movement
+        """
+        self.update_animation()
+        self.update_movement()

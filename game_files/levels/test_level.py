@@ -35,19 +35,20 @@ class TestLevel(LevelBase):
         """ check for and respond to player keydown input """
         if event.key == pygame.K_ESCAPE:
             self.pause_events()
+        # Player movement keys
+        # call movement switch and pass true to make the player
+        # movement flags True
         elif event.key == pygame.K_a:
-            self.player.move_left()
+            self.player.switch_move_left(True)
         elif event.key == pygame.K_d:
-            self.player.move_right()
+            self.player.switch_move_right(True)
 
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """
         if event.key == pygame.K_a:
-            self.player.moving_left = False
-            self.player.reset_animation(idle=True)
+            self.player.switch_move_left(False)
         elif event.key == pygame.K_d:
-            self.player.moving_right = False
-            self.player.reset_animation(idle=True)
+            self.player.switch_move_right(False)
 
     def update(self):
         """
@@ -57,4 +58,4 @@ class TestLevel(LevelBase):
         self.fill(self.colors.level_one_bg, self.rect)
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
-        self.player.update_animation()
+        self.player.update()
