@@ -21,11 +21,13 @@ class Player(Sprite):
         # This bool will be used to choose which idle animation to play
         self.facing_right = True
         self.player_hit = False
+        self.jumping = False
         self.death_frame = 1
 
         self.rect = self.image.get_rect()
 
         self.movement_speed = 6.0
+        self.jump_power = 25.0
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
@@ -117,7 +119,7 @@ class Player(Sprite):
             jump_coords = self._ss_jump_coords()
             for coord in jump_coords:
                 image = ss_tool.image_at(coord, p_colorkey)
-                image = pygame.transform.scale(image, (61, 74))
+                image = pygame.transform.scale(image, (41, 54))
                 self.jump_right_images.append(image)
             
             self.jump_left_images = self.jump_right_images[:]
@@ -168,6 +170,27 @@ class Player(Sprite):
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
     
+    def jump(self, jumping: bool):
+        """
+        Start player jump
+        """
+        if jumping:
+            # grab the starting point and send it to the jump increment private method
+            # so that it can set how high the player is allowed to go
+            y: float = float(self.rect.y)
+            self.__jump_inc(y)
+        self.jumping = jumping
+        self.reset_animation()
+
+    def __jump_inc(self, y_start: float):
+        """
+        Jump the player in jump power increments
+        subtract from the y value
+        """
+        # if the player has yet to reach the max jump height
+        if self.rect.y < y_start+50:
+            self.rect.y -= self.jump_power
+    
     def switch_move_left(self, move: bool):
         """
         Set the movement left flag to true
@@ -213,13 +236,30 @@ class Player(Sprite):
         if self.animation_index > self.animation_index_limit:
             self.reset_animation()
 
-        # if we're walking make the image the walking animation
-        if self.moving_right and self.animation_index <= len(self.walk_right_images)-1:
+        # TODO: set jump animation conditions
+        if self.jumping and self.facing_right:
+            if self.animation_index >= len(self.jump_right_images)-1:
+                self.reset_animation()
+            self.image = self.jump_right_images[self.animation_index]
+
+        elif self.jumping and not self.facing_right:
+            if self.animation_index >= len(self.jump_left_images)-1:
+                self.reset_animation()
+            self.image = self.jump_left_images[self.animation_index]
+
+        elif self.moving_right:
+            if self.animation_index >= len(self.walk_right_images)-1:
+                self.reset_animation()
             self.image = self.walk_right_images[self.animation_index]
-        elif self.moving_left and self.animation_index <= len(self.walk_right_images)-1:
+
+        elif self.moving_left:
+            if self.animation_index >= len(self.walk_left_images)-1:
+                self.reset_animation()
             self.image = self.walk_left_images[self.animation_index]
+
         elif not self.facing_right:
             self.image = self.idle_left_images[self.animation_index]
+
         else:
             self.image = self.idle_right_images[self.animation_index]
 

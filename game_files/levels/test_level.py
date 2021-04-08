@@ -42,6 +42,9 @@ class TestLevel(LevelBase):
             self.player.switch_move_left(True)
         elif event.key == pygame.K_d:
             self.player.switch_move_right(True)
+        # check for player jump input
+        if event.key == pygame.K_SPACE:
+            self.player.jump(True)
 
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """
@@ -49,6 +52,9 @@ class TestLevel(LevelBase):
             self.player.switch_move_left(False)
         elif event.key == pygame.K_d:
             self.player.switch_move_right(False)
+        # player jumping
+        if event.key == pygame.K_SPACE:
+            self.player.jump(False)
 
     def update(self):
         """
@@ -59,3 +65,7 @@ class TestLevel(LevelBase):
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
         self.player.update()
+
+        # Quick inital gravity code
+        if self.player.rect.bottom < self.floor.rect.top:
+            self.player.rect.y += 1
