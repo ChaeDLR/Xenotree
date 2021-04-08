@@ -59,6 +59,16 @@ class Player(Sprite):
         ]
         return walk
 
+    def _ss_jump_coords(self) -> list:
+        """ Rect positions and sizes for jump animations """
+        jump: list = [
+            (2, 65, 28, 27),
+            (33, 66, 30, 27),
+            (65, 66, 30, 26),
+            (98, 66, 28, 27)
+        ]
+        return jump
+
     def _load_player_images(self) -> None:
         """ Load player image from assets folder """
         p_colorkey = (0, 0, 0)
@@ -101,10 +111,25 @@ class Player(Sprite):
                 self.walk_left_images[i] = pygame.transform.flip(
                     self.walk_left_images[i], True, False
                 )
+        
+        def jump_animations():
+            self.jump_right_images = []
+            jump_coords = self._ss_jump_coords()
+            for coord in jump_coords:
+                image = ss_tool.image_at(coord, p_colorkey)
+                image = pygame.transform.scale(image, (61, 74))
+                self.jump_right_images.append(image)
+            
+            self.jump_left_images = self.jump_right_images[:]
+            for i in range(0, len(self.jump_right_images)):
+                self.jump_left_images[i] = pygame.transform.flip(
+                    self.jump_left_images[i], True, False
+                )
 
         # create image lists and set the limit to idle list
         idle_animations()
         walk_animations()
+        jump_animations()
         self.animation_index_limit = len(self.idle_right_images)-1
         self.image = self.idle_right_images[0]
 
