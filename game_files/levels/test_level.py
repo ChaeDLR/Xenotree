@@ -35,23 +35,12 @@ class TestLevel(LevelBase):
         """ check for and respond to player keydown input """
         if event.key == pygame.K_ESCAPE:
             self.pause_events()
-        # Player movement keys
-        # call movement switch and pass true to make the player
-        # movement flags True
-        elif event.key == pygame.K_a:
-            self.player.switch_move_left(True)
-        elif event.key == pygame.K_d:
-            self.player.switch_move_right(True)
-        # check for player jump input
-        if event.key == pygame.K_SPACE:
-            self.player.jump()
+        # Player movement
+        self.player_keydown_controller(event)
 
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """
-        if event.key == pygame.K_a:
-            self.player.switch_move_left(False)
-        elif event.key == pygame.K_d:
-            self.player.switch_move_right(False)
+        self.player_keyup_controller(event)
     
     def __level_gravity(self):
         """

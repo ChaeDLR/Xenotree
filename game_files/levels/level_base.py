@@ -49,6 +49,23 @@ class LevelBase(pygame.Surface, ABC):
                 sys.exit()
             else:
                 level_event_check(event)
+    
+    def player_keydown_controller(self, event):
+        """ Take event to control the player """
+        if event.key == pygame.K_a:
+            self.player.switch_move_left(True)
+        elif event.key == pygame.K_d:
+            self.player.switch_move_right(True)
+        # check for player jump input
+        if event.key == pygame.K_SPACE:
+            self.player.jump()
+    
+    def player_keyup_controller(self, event):
+        """ Take event to control the player """
+        if event.key == pygame.K_a:
+            self.player.switch_move_left(False)
+        elif event.key == pygame.K_d:
+            self.player.switch_move_right(False)
 
     def pause_events(self):
         self.game_stats.game_paused = True
