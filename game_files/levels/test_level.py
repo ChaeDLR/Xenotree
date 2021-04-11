@@ -47,7 +47,7 @@ class TestLevel(LevelBase):
         Apply gravity to sprites that need it
         """
         if self.player.rect.bottom < self.floor.rect.top:
-            self.player.rect.y += 1.5
+            self.player.rect.y += 2.0
         else:
             self.player.jumping = False
 

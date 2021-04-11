@@ -27,7 +27,7 @@ class Player(Sprite):
         self.rect = self.image.get_rect()
 
         self.movement_speed = 6.0
-        self.jump_power = 50.0
+        self.jump_power = 75.0
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
