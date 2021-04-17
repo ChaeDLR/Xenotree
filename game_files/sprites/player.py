@@ -224,7 +224,6 @@ class Player(Sprite):
         if self.animation_index > self.animation_index_limit:
             self.reset_animation()
 
-        # TODO: set jump animation conditions
         if self.jumping and self.facing_right:
             if self.animation_index >= len(self.jump_right_images)-1:
                 self.reset_animation()

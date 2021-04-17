@@ -2,6 +2,7 @@ import pygame
 from .level_base import LevelBase
 from .environment.wall import Wall
 from ..screens.screen_colors import ScreenColors
+from ..sprites.turret import Turret
 
 
 class TestLevel(LevelBase):
@@ -18,6 +19,15 @@ class TestLevel(LevelBase):
         self.colors = ScreenColors()
         self._load_floor(width, height)
         self.player.rect.midbottom = self.floor.rect.midtop
+        self._load_turret()
+    
+    def _load_turret(self):
+        """
+        Load turret and set its position
+        """
+        self.turret = Turret(self.rect)
+        self.turret.rect.top = self.rect.top
+        self.turret.rect.right = self.rect.right
 
     def _load_floor(self, level_w: int, level_h: int):
         self.floor = Wall((level_w, 25), (0, level_h - 25))
@@ -61,3 +71,5 @@ class TestLevel(LevelBase):
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
         self.player.update()
+        self.blit(self.turret.image, self.turret.rect)
+        self.turret.update()
