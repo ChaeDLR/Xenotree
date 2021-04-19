@@ -22,6 +22,7 @@ class Turret(Sprite):
         self.firing = False
         self.image = self.images[0]
         self.rect = self.image.get_rect()
+        self.center: tuple = self.rect.width/2, self.rect.height/2
 
     def set_position(self, x_y: tuple):
         """ Set the turret position """

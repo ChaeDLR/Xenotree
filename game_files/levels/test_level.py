@@ -3,6 +3,7 @@ from .level_base import LevelBase
 from .environment.wall import Wall
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
+from ..sprites.laser import Laser
 
 
 class TestLevel(LevelBase):
@@ -26,6 +27,12 @@ class TestLevel(LevelBase):
 
         # To test the turret animations
         pygame.time.set_timer(self.start_turret_attack, 5000)
+
+    def __create_laser(self):
+        """
+        Create a laser for the turret to fire
+        """
+        laser = Laser()
 
     def _load_turret(self):
         """
