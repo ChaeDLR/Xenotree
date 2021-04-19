@@ -20,7 +20,13 @@ class TestLevel(LevelBase):
         self._load_floor(width, height)
         self.player.rect.midbottom = self.floor.rect.midtop
         self._load_turret()
-    
+        self._load_custom_events()
+
+        self.turret.firing = True
+
+        # To test the turret animations
+        pygame.time.set_timer(self.start_turret_attack, 5000)
+
     def _load_turret(self):
         """
         Load turret and set its position
@@ -34,13 +40,16 @@ class TestLevel(LevelBase):
 
     def _load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
-    
+        self.start_turret_attack = pygame.USEREVENT + 8
+
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
             self.check_keydown_events(event)
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
-    
+        elif event.type == self.start_turret_attack:
+            self.turret.firing = True
+
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
         if event.key == pygame.K_ESCAPE:
@@ -51,7 +60,7 @@ class TestLevel(LevelBase):
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """
         self.player_keyup_controller(event)
-    
+
     def __level_gravity(self):
         """
         Apply gravity to sprites that need it
