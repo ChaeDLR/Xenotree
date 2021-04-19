@@ -5,7 +5,7 @@ import pygame
 
 
 class Laser(Sprite):
-    def __init__(self, start_x_y: tuple, dest_x_y: tuple):
+    def __init__(self, start_x_y: tuple, dir_x_y: tuple):
         """
         Give the x_y position it should spawn at.
         """
@@ -17,10 +17,20 @@ class Laser(Sprite):
         # Set position
         self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
         self.start_coords = start_x_y
-        self.dest = dest_x_y
-        self.firing_speed = 25
+        self.firing_speed = 15
+        self.directions = self.__set_directions(dir_x_y)
         self.x = self.rect.x
         self.y = self.rect.y
+
+    def __set_directions(self, dir_x_y: tuple) -> tuple:
+        """
+        return tuple of directions with the speed modifer
+        """
+
+        return (
+            dir_x_y[0] * self.firing_speed,
+            dir_x_y[1] * self.firing_speed,
+        )
 
     def update_rect(self):
         """
@@ -29,7 +39,7 @@ class Laser(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.start_coords[0], self.start_coords[1]
 
-    def _rotate_image(self, rotation: float):
+    def rotate_image(self, rotation: float):
         """
         Pass the angle that the laser image needs to be rotated
         """
@@ -44,7 +54,7 @@ class Laser(Sprite):
         """
         Update laser position
         """
-        self.x = float(self.x + self.dest[0])
-        self.y = float(self.y + self.dest[1])
+        self.x = float(self.x + self.directions[0])
+        self.y = float(self.y + self.directions[1])
 
         self.rect.x, self.rect.y = self.x, self.y

@@ -49,10 +49,11 @@ class TestLevel(LevelBase):
         # get directions for x and y
         direction_x = math.cos(rads)
         direction_y = math.sin(rads)
+        # Create the laser and give it the starting point and it's directions
         laser = Laser(self.turret.rect.center, (direction_x, direction_y))
 
-        angle = ((180 / math.pi) * 2) * rads
-        laser.image = pygame.transform.rotate(laser.image, angle)
+        angle = (180 / math.pi) * rads
+        laser.rotate_image(angle)
         laser.update_rect()
         self.lasers.add(laser)
 
@@ -121,3 +122,5 @@ class TestLevel(LevelBase):
         self.lasers.update()
         for laser in self.lasers:
             self.blit(laser.image, laser.rect)
+            if laser.rect.x < -250 or laser.rect.y > self.rect.height:
+                self.lasers.remove(laser)
