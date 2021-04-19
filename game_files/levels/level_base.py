@@ -32,13 +32,14 @@ class LevelBase(pygame.Surface, ABC):
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0
 
-        self.load_player()
+        self.__load_base_custom_events()
+        self.__load_player()
 
-    def load_player(self):
+    def __load_player(self):
         """ load the sprites needed for the level """
         self.player = Player(self.rect)
 
-    def load_base_custom_events(self):
+    def __load_base_custom_events(self):
         """ custom events that are the same in every level """
         self.player_hit = pygame.USEREVENT + 5
         self.unpause_game = pygame.USEREVENT + 6
@@ -47,6 +48,8 @@ class LevelBase(pygame.Surface, ABC):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == self.player_hit:
+                self.base_game_over()
             else:
                 level_event_check(event)
 
@@ -82,10 +85,11 @@ class LevelBase(pygame.Surface, ABC):
         """
         If the player collides with something that hurts it
         """
-        if self.player.player_hit == False:
-            self.game_sound.player_impact_sound.play()
+        # TODO: Need player sound
+        # if self.player.player_hit == False:
+        #   self.game_sound.player_impact_sound.play()
         self.player.player_hit = True
-        pygame.time.set_timer(self.player_hit, 500, True)
+        pygame.time.set_timer(self.player_hit, 1, True)
 
     def base_game_over(self):
         """ Reset the current level """

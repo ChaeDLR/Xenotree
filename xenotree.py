@@ -27,23 +27,28 @@ class Xenotree:
         # has check events in update
         self.main_menu = game_files.MainMenu(
             (self.settings.screen_width, self.settings.screen_height),
-            self.stats, self.settings
+            self.stats,
+            self.settings,
         )
 
         self.game_over = game_files.Game_Over(
             (self.settings.screen_width, self.settings.screen_height),
-            self.stats, self.settings
+            self.stats,
+            self.settings,
         )
 
         # has check events in update
         self.pause_menu = game_files.PauseMenu(
             (self.settings.screen_width, self.settings.screen_height),
-            self.stats, self.settings
+            self.stats,
+            self.settings,
         )
         # has check events in update
         self.settings_menu = game_files.SettingsMenu(
-            (self.settings.screen_width, self.settings.screen_height), 
-            self.stats, self.settings, self.game_sound
+            (self.settings.screen_width, self.settings.screen_height),
+            self.stats,
+            self.settings,
+            self.game_sound,
         )
         # Create the test level
         self.test_level = game_files.TestLevel(
@@ -86,12 +91,7 @@ class Xenotree:
         elif not self.stats.game_active:
             # if its the game over screen
             if self.stats.game_over:
-                # check if the player has reached a new high score we should display
-                if self.stats.new_high_score:
-                    self.new_high_score_screen.set_high_score_img(self.stats.high_score)
-                    self.active_screen = self.new_high_score_screen
-                else:  # else just show game over
-                    self.active_screen = self.game_over
+                self.active_screen = self.game_over
             # Else if the user clicked on the settings menu button we should show that
             elif self.stats.settings_menu_active:
                 self.active_screen = self.settings_menu

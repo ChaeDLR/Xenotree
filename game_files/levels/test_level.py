@@ -99,12 +99,17 @@ class TestLevel(LevelBase):
             self.player.jumping = False
             self.player.rect.bottom = self.floor.rect.top
 
+    def __check_collisions(self):
+        self.__check_grounded()
+        if pygame.sprite.spritecollide(self.player, self.lasers, True):
+            self.player_collide_hit()
+
     def update(self):
         """
         Update level elements
         """
         self.check_levelbase_events(self.check_level_events)
-        self.__check_grounded()
+        self.__check_collisions()
         self.fill(self.colors.level_one_bg, self.rect)
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
