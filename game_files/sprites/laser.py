@@ -1,10 +1,11 @@
 from pygame.sprite import Sprite
 from pygame import Surface
+import time
 import pygame
 
 
 class Laser(Sprite):
-    def __init__(self, x_y: tuple):
+    def __init__(self, start_x_y: tuple, dest_x_y: tuple):
         """
         Give the x_y position it should spawn at.
         """
@@ -13,10 +14,20 @@ class Laser(Sprite):
         self.image = Surface((12, 28))
         self.image.fill((250, 10, 10))
         self.rect = self.image.get_rect()
-        self.rect.x = x_y[0] + 16
-        self.rect.y = x_y[1] + 16
+        # Set position
+        self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
+        self.start_coords = start_x_y
+        self.dest = dest_x_y
         self.firing_speed = 25
-        self._rotate_image(90)
+        self.x = self.rect.x
+        self.y = self.rect.y
+
+    def update_rect(self):
+        """
+        Update the laser rect after rotation
+        """
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = self.start_coords[0], self.start_coords[1]
 
     def _rotate_image(self, rotation: float):
         """
@@ -29,10 +40,11 @@ class Laser(Sprite):
         self.image = rotated_image
         self.rect = rotated_rect
 
-    # TODO: Get the laser to spawn and update across a line to it's target
     def update(self):
         """
         Update laser position
         """
-        pass
-        # self.rect.x, self.rect.y =
+        self.x = float(self.x + self.dest[0])
+        self.y = float(self.y + self.dest[1])
+
+        self.rect.x, self.rect.y = self.x, self.y

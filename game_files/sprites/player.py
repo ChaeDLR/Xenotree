@@ -14,7 +14,7 @@ class Player(Sprite):
 
         self.__create_animation_variables()
         self._load_player_images()
-        
+
         # players bool values
         self.moving_left = False
         self.moving_right = False
@@ -67,7 +67,7 @@ class Player(Sprite):
             (2, 65, 28, 27),
             (33, 66, 30, 27),
             (65, 66, 30, 26),
-            (98, 66, 28, 27)
+            (98, 66, 28, 27),
         ]
         return jump
 
@@ -97,7 +97,6 @@ class Player(Sprite):
                     self.idle_left_images[i], True, False
                 )
 
-
         def walk_animations():
             # walking right images
             self.walk_right_images = []
@@ -113,7 +112,7 @@ class Player(Sprite):
                 self.walk_left_images[i] = pygame.transform.flip(
                     self.walk_left_images[i], True, False
                 )
-        
+
         def jump_animations():
             self.jump_right_images = []
             jump_coords = self._ss_jump_coords()
@@ -121,7 +120,7 @@ class Player(Sprite):
                 image = ss_tool.image_at(coord, p_colorkey)
                 image = pygame.transform.scale(image, (41, 54))
                 self.jump_right_images.append(image)
-            
+
             self.jump_left_images = self.jump_right_images[:]
             for i in range(0, len(self.jump_right_images)):
                 self.jump_left_images[i] = pygame.transform.flip(
@@ -132,7 +131,7 @@ class Player(Sprite):
         idle_animations()
         walk_animations()
         jump_animations()
-        self.animation_index_limit = len(self.idle_right_images)-1
+        self.animation_index_limit = len(self.idle_right_images) - 1
         self.image = self.idle_right_images[0]
 
     def reset_player(self):
@@ -164,12 +163,15 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if not self.player_hit and (self.rect.right + self.movement_speed) <= self.screen_rect.right:
+        if (
+            not self.player_hit
+            and (self.rect.right + self.movement_speed) <= self.screen_rect.right
+        ):
             self.x += self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
-    
+
     def jump(self):
         """
         Start player jump
@@ -178,7 +180,7 @@ class Player(Sprite):
             self.rect.y -= self.jump_power
             self.jumping = True
             self.reset_animation()
-    
+
     def switch_move_left(self, move: bool):
         """
         Set the movement left flag to true
@@ -188,7 +190,7 @@ class Player(Sprite):
             self.facing_right = False
         self.moving_left = move
         self.reset_animation()
-    
+
     def switch_move_right(self, move: bool):
         """
         Set the movement right flag to true
@@ -198,15 +200,15 @@ class Player(Sprite):
             self.facing_right = True
         self.moving_right = move
         self.reset_animation()
-    
+
     def reset_animation(self):
-        """ 
-        Reset the animation counter and index 
+        """
+        Reset the animation counter and index
         This will typically be used when the player changes animation lists
         """
         self.animation_counter = 0
         self.animation_index = 0
-    
+
     def update_movement(self):
         """
         Update player position
@@ -225,22 +227,22 @@ class Player(Sprite):
             self.reset_animation()
 
         if self.jumping and self.facing_right:
-            if self.animation_index >= len(self.jump_right_images)-1:
+            if self.animation_index >= len(self.jump_right_images) - 1:
                 self.reset_animation()
             self.image = self.jump_right_images[self.animation_index]
 
         elif self.jumping and not self.facing_right:
-            if self.animation_index >= len(self.jump_left_images)-1:
+            if self.animation_index >= len(self.jump_left_images) - 1:
                 self.reset_animation()
             self.image = self.jump_left_images[self.animation_index]
 
         elif self.moving_right:
-            if self.animation_index >= len(self.walk_right_images)-1:
+            if self.animation_index >= len(self.walk_right_images) - 1:
                 self.reset_animation()
             self.image = self.walk_right_images[self.animation_index]
 
         elif self.moving_left:
-            if self.animation_index >= len(self.walk_left_images)-1:
+            if self.animation_index >= len(self.walk_left_images) - 1:
                 self.reset_animation()
             self.image = self.walk_left_images[self.animation_index]
 
@@ -250,12 +252,11 @@ class Player(Sprite):
         else:
             self.image = self.idle_right_images[self.animation_index]
 
-
         self.animation_counter += 1
 
         if self.animation_counter % 16 == 0:
             self.animation_index += 1
-    
+
     def update(self):
         """
         Update the player image and movement

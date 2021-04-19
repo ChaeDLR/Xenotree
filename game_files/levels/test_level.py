@@ -1,4 +1,5 @@
 import pygame
+import math
 from .level_base import LevelBase
 from .environment.wall import Wall
 from ..screens.screen_colors import ScreenColors
@@ -18,10 +19,11 @@ class TestLevel(LevelBase):
         super().__init__(width, height, settings, stats, game_sound)
 
         self.colors = ScreenColors()
-        self._load_floor(width, height)
+        self.__load_floor(width, height)
         self.player.rect.midbottom = self.floor.rect.midtop
-        self._load_turret()
-        self._load_custom_events()
+        self.__load_turret()
+        self.__load_custom_events()
+        self.__load_sprite_groups()
 
         self.turret.firing = True
 
@@ -32,9 +34,35 @@ class TestLevel(LevelBase):
         """
         Create a laser for the turret to fire
         """
-        laser = Laser()
+        # takes ypos of destination - ypos of start point then x
+        rads = math.atan2(
+            self.player.rect.y - self.turret.rect.y,
+            self.player.rect.x - self.turret.rect.x,
+        )
+        # Get the distance to the point
+        distance = math.hypot(
+            self.player.rect.x - self.turret.rect.x,
+            self.player.rect.y - self.turret.rect.y,
+        )
+        # make the distance a whole number
+        distance = int(distance)
+        # get directions for x and y
+        direction_x = math.cos(rads)
+        direction_y = math.sin(rads)
+        laser = Laser(self.turret.rect.center, (direction_x, direction_y))
 
-    def _load_turret(self):
+        angle = ((180 / math.pi) * 2) * rads
+        laser.image = pygame.transform.rotate(laser.image, angle)
+        laser.update_rect()
+        self.lasers.add(laser)
+
+    def __load_sprite_groups(self):
+        """
+        Create the sprite groups needed for the level
+        """
+        self.lasers = pygame.sprite.Group()
+
+    def __load_turret(self):
         """
         Load turret and set its position
         """
@@ -42,10 +70,10 @@ class TestLevel(LevelBase):
         self.turret.rect.top = self.rect.top
         self.turret.rect.right = self.rect.right
 
-    def _load_floor(self, level_w: int, level_h: int):
+    def __load_floor(self, level_w: int, level_h: int):
         self.floor = Wall((level_w, 25), (0, level_h - 25))
 
-    def _load_custom_events(self):
+    def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
 
@@ -56,6 +84,7 @@ class TestLevel(LevelBase):
             self.check_keyup_events(event)
         elif event.type == self.start_turret_attack:
             self.turret.firing = True
+            self.__create_laser()
 
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
@@ -89,3 +118,6 @@ class TestLevel(LevelBase):
         self.player.update()
         self.blit(self.turret.image, self.turret.rect)
         self.turret.update()
+        self.lasers.update()
+        for laser in self.lasers:
+            self.blit(laser.image, laser.rect)
