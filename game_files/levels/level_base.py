@@ -42,14 +42,14 @@ class LevelBase(pygame.Surface, ABC):
         """ custom events that are the same in every level """
         self.player_hit = pygame.USEREVENT + 5
         self.unpause_game = pygame.USEREVENT + 6
-    
+
     def check_levelbase_events(self, level_event_check):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
             else:
                 level_event_check(event)
-    
+
     def player_keydown_controller(self, event):
         """ Take event to control the player """
         if event.key == pygame.K_a:
@@ -57,9 +57,9 @@ class LevelBase(pygame.Surface, ABC):
         elif event.key == pygame.K_d:
             self.player.switch_move_right(True)
         # check for player jump input
-        if event.key == pygame.K_SPACE:
-            self.player.jump()
-    
+        if event.key == pygame.K_SPACE:  # and not self.player.jumping:
+            self.player.start_jump()
+
     def player_keyup_controller(self, event):
         """ Take event to control the player """
         if event.key == pygame.K_a:
@@ -72,7 +72,7 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.game_active = False
         pygame.mixer.music.pause()
         pygame.mouse.set_visible(True)
-        #pygame.event.wait(self.unpause_game)
+        # pygame.event.wait(self.unpause_game)
 
     def resume_game(self):
         """ Method call to set a timer that sets off the unpause_game custom event """

@@ -39,18 +39,11 @@ class TestLevel(LevelBase):
             self.player.rect.y - self.turret.rect.y,
             self.player.rect.x - self.turret.rect.x,
         )
-        # Get the distance to the point
-        distance = math.hypot(
-            self.player.rect.x - self.turret.rect.x,
-            self.player.rect.y - self.turret.rect.y,
-        )
-        # make the distance a whole number
-        distance = int(distance)
+
         # get directions for x and y
-        direction_x = math.cos(rads)
-        direction_y = math.sin(rads)
+        directions = (math.cos(rads), math.sin(rads))
         # Create the laser and give it the starting point and it's directions
-        laser = Laser(self.turret.rect.center, (direction_x, direction_y))
+        laser = Laser(self.turret.rect.center, directions)
 
         angle = (180 / math.pi) * rads
         laser.rotate_image(angle)
@@ -98,21 +91,20 @@ class TestLevel(LevelBase):
         """ Check for and respond to player keyup events """
         self.player_keyup_controller(event)
 
-    def __level_gravity(self):
+    def __check_grounded(self):
         """
-        Apply gravity to sprites that need it
+        check if the player is on the ground
         """
-        if self.player.rect.bottom < self.floor.rect.top:
-            self.player.rect.y += 2.0
-        else:
+        if self.player.rect.bottom >= self.floor.rect.top:
             self.player.jumping = False
+            self.player.rect.bottom = self.floor.rect.top
 
     def update(self):
         """
         Update level elements
         """
         self.check_levelbase_events(self.check_level_events)
-        self.__level_gravity()
+        self.__check_grounded()
         self.fill(self.colors.level_one_bg, self.rect)
         self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)

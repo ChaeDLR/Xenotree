@@ -27,7 +27,7 @@ class Player(Sprite):
         self.rect = self.image.get_rect()
 
         self.movement_speed = 6.0
-        self.jump_power = 75.0
+        self.jumping_velocity = -7.5
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
@@ -172,14 +172,24 @@ class Player(Sprite):
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
 
-    def jump(self):
+    def start_jump(self):
+        """
+        Start the player jump
+        Set jumping to True
+        Reset animation
+        Reset jump velocity
+        """
+        self.jumping = True
+        self.reset_animation
+        self.jumping_velocity = -7.5
+        self.rect.y += self.jumping_velocity
+
+    def __jump(self):
         """
         Start player jump
         """
-        if not self.jumping:
-            self.rect.y -= self.jump_power
-            self.jumping = True
-            self.reset_animation()
+        self.rect.y += self.jumping_velocity
+        self.jumping_velocity += 0.5
 
     def switch_move_left(self, move: bool):
         """
@@ -217,6 +227,8 @@ class Player(Sprite):
             self.__move_right()
         elif self.moving_left:
             self.__move_left()
+        if self.jumping:
+            self.__jump()
 
     def update_animation(self):
         """

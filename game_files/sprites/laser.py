@@ -37,7 +37,7 @@ class Laser(Sprite):
         Update the laser rect after rotation
         """
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = self.start_coords[0], self.start_coords[1]
+        self.rect.center = self.start_coords
 
     def rotate_image(self, rotation: float):
         """
