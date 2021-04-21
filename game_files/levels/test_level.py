@@ -1,8 +1,8 @@
 import pygame
-import math
+
 from ..utils.game_math import GameMath
 from .level_base import LevelBase
-from .environment.wall import Wall
+from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..sprites.laser import Laser
@@ -29,7 +29,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To test the turret animations
-        pygame.time.set_timer(self.start_turret_attack, 5000)
+        pygame.time.set_timer(self.start_turret_attack, 1700)
 
     def __create_laser(self):
         """
@@ -67,7 +67,7 @@ class TestLevel(LevelBase):
         self.turret.rect.right = self.rect.right
 
     def __load_floor(self, level_w: int, level_h: int):
-        self.floor = Wall((level_w, 25), (0, level_h - 25))
+        self.floor = Platform((level_w, 50), (0, level_h - 25))
 
     def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7

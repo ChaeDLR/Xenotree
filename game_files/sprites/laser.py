@@ -14,7 +14,8 @@ class Laser(Sprite):
         self.image = self.__load_laser_img()
         self.rect = self.image.get_rect()
         # Set position
-        self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
+        # self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
+        self.rect.center = start_x_y
         self.start_coords = start_x_y
         self.firing_speed = 25
         self.directions = self.__set_directions(dir_x_y)

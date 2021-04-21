@@ -4,7 +4,7 @@ from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
 
 
-class Wall(Sprite):
+class Platform(Sprite):
     """
     Wall object size of width, height args
     Stops player from moving
