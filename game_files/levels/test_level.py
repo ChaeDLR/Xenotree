@@ -84,8 +84,9 @@ class TestLevel(LevelBase):
         """ check for and respond to player keydown input """
         if event.key == pygame.K_ESCAPE:
             self.pause_events()
-        # Player movement
-        self.player_keydown_controller(event)
+        else:
+            # Player movement
+            self.player_keydown_controller(event)
 
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """

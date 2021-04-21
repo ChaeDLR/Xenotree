@@ -80,12 +80,8 @@ class Xenotree:
 
     def _set_active_screen(self):
         """ Check game bools to choose the active screen """
-
-        # If the player is out of lives then stop the game before we check anything else
-        if self.stats.lives_left == 0:
-            self._stop_game()
         # Else if the game is active we need to get the active level
-        elif self.stats.game_active:
+        if self.stats.game_active:
             self.active_screen = self._get_active_level()
         # Else if the game is not active we need to know which menu screen we should show
         elif not self.stats.game_active:

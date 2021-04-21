@@ -18,13 +18,14 @@ class Game_Over(MenuBase):
         self._load_text()
 
     def _load_buttons(self):
-        self.play_button = Button(self, "Play")
+        self.main_menu_button = Button(self, "Main Menu")
+        self.main_menu_button.resize((150, 50), 32)
         self.quit_button = Button(self, "Quit")
 
-        self.play_button.set_position(y_pos=self.rect.height / 2)
+        self.main_menu_button.set_position(y_pos=self.rect.height / 2)
 
     def _load_text(self):
-        font = pygame.font.SysFont(None, 50, bold=True)
+        font = pygame.font.SysFont(None, 100, bold=True)
         self.game_over_img = font.render(
             "Game Over", True, self.text_color, self.background_color
         )
@@ -33,9 +34,8 @@ class Game_Over(MenuBase):
         self.game_over_img_rect.y += 40
 
     def check_buttons(self, mouse_pos):
-        if self.play_button.check_button(mouse_pos):
-            self.stats.reset_stats()
-            self.stats.game_active = True
+        if self.main_menu_button.check_button(mouse_pos):
+            self.stats.set_active_screen(game_active=True)
         elif self.quit_button.check_button(mouse_pos):
             self.stats.set_active_screen(main_menu=True)
 
@@ -43,5 +43,5 @@ class Game_Over(MenuBase):
         self.check_base_events(self.check_buttons)
         self.fill(self.background_color, self.rect)
         self.blit(self.game_over_img, self.game_over_img_rect)
-        self.play_button.blitme()
+        self.main_menu_button.blitme()
         self.quit_button.blitme()
