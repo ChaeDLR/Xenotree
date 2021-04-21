@@ -1,5 +1,6 @@
 import pygame
 import math
+from ..utils.game_math import GameMath
 from .level_base import LevelBase
 from .environment.wall import Wall
 from ..screens.screen_colors import ScreenColors
@@ -35,17 +36,26 @@ class TestLevel(LevelBase):
         Create a laser for the turret to fire
         """
         # takes ypos of destination - ypos of start point then x
-        rads = math.atan2(
-            self.player.rect.y - self.turret.rect.y,
-            self.player.rect.x - self.turret.rect.x,
-        )
+        # rads = math.atan2(
+        #   self.player.rect.y - self.turret.rect.y,
+        #  self.player.rect.x - self.turret.rect.x,
+        # )
 
         # get directions for x and y
-        directions = (math.cos(rads), math.sin(rads))
+        # directions = (math.cos(rads), math.sin(rads))
+
+        directions = GameMath.get_directions(
+            (self.turret.rect.x, self.turret.rect.y),
+            (self.player.rect.x, self.player.rect.y),
+        )
+
         # Create the laser and give it the starting point and it's directions
         laser = Laser(self.turret.rect.center, directions)
 
-        angle = (180 / math.pi) * rads
+        angle = GameMath.get_angle_to(
+            (self.turret.rect.x, self.turret.rect.y),
+            (self.player.rect.x, self.player.rect.y),
+        )
         laser.rotate_image(angle)
         laser.update_rect()
         self.lasers.add(laser)

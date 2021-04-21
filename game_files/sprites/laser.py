@@ -1,6 +1,6 @@
 from pygame.sprite import Sprite
-from pygame import Surface
-import time
+
+import os
 import pygame
 
 
@@ -11,8 +11,7 @@ class Laser(Sprite):
         """
         super().__init__()
 
-        self.image = Surface((12, 28))
-        self.image.fill((250, 10, 10))
+        self.image = self.__load_laser_img()
         self.rect = self.image.get_rect()
         # Set position
         self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
@@ -21,6 +20,14 @@ class Laser(Sprite):
         self.directions = self.__set_directions(dir_x_y)
         self.x = self.rect.x
         self.y = self.rect.y
+
+    def __load_laser_img(self):
+        """
+        Load the laser image
+        """
+        current_path = os.path.dirname(__file__)
+        laser_img_path = os.path.join(current_path, "sprite_assets/laser.png")
+        return pygame.image.load(laser_img_path)
 
     def __set_directions(self, dir_x_y: tuple) -> tuple:
         """

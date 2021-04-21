@@ -9,3 +9,4 @@ from .screens.pause_menu import PauseMenu
 from .screens.settings_menu import SettingsMenu
 
 from .levels.test_level import TestLevel
+from .levels.level_manager import LevelManager

@@ -18,6 +18,12 @@ class Xenotree:
         self.clock = pygame.time.Clock()
         self.stats = game_files.GameStats()
         self.game_sound = game_files.GameSound()
+        self.level_manager = game_files.LevelManager(
+            (self.settings.screen_width, self.settings.screen_height),
+            self.settings,
+            self.stats,
+            self.game_sound,
+        )
 
         self._load_game_screens()
 
@@ -29,6 +35,7 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             self.stats,
             self.settings,
+            self.level_manager,
         )
 
         self.game_over = game_files.Game_Over(
@@ -50,14 +57,6 @@ class Xenotree:
             self.settings,
             self.game_sound,
         )
-        # Create the test level
-        self.test_level = game_files.TestLevel(
-            self.settings.screen_width,
-            self.settings.screen_height,
-            self.settings,
-            self.stats,
-            self.game_sound,
-        )
 
         self.active_screen = self.main_menu
 
@@ -76,7 +75,7 @@ class Xenotree:
     def _get_active_level(self):
         """ return the active level """
         if self.stats.active_level == 1:
-            return self.test_level
+            return self.level_manager.active_level
 
     def _set_active_screen(self):
         """ Check game bools to choose the active screen """

@@ -9,8 +9,11 @@ class MainMenu(MenuBase):
     Play the game, Enter settings menu, or Quit the game
     """
 
-    def __init__(self, w_h: tuple, stats: object, settings: object):
+    def __init__(
+        self, w_h: tuple, stats: object, settings: object, level_manager: object
+    ):
         super().__init__((w_h[0], w_h[1]), stats, settings)
+        self.level_manager = level_manager
 
         self._load_title()
         self._load_buttons()
@@ -41,6 +44,7 @@ class MainMenu(MenuBase):
         """
         if self.play_button.check_button(mouse_pos):
             self.start_game()
+            self.level_manager.load_test_level()
         elif self.quit_button.check_button(mouse_pos):
             sys.exit()
         elif self.settings_button.check_button(mouse_pos):

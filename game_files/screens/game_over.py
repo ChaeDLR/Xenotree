@@ -1,4 +1,5 @@
 import pygame.font
+import sys
 from .menu_base import MenuBase
 from .button import Button
 from .screen_colors import ScreenColors
@@ -35,9 +36,9 @@ class Game_Over(MenuBase):
 
     def check_buttons(self, mouse_pos):
         if self.main_menu_button.check_button(mouse_pos):
-            self.stats.set_active_screen(game_active=True)
-        elif self.quit_button.check_button(mouse_pos):
             self.stats.set_active_screen(main_menu=True)
+        elif self.quit_button.check_button(mouse_pos):
+            sys.exit()
 
     def update(self):
         self.check_base_events(self.check_buttons)
