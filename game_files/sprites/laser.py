@@ -16,7 +16,7 @@ class Laser(Sprite):
         # Set position
         self.rect.x, self.rect.y = start_x_y[0], start_x_y[1]
         self.start_coords = start_x_y
-        self.firing_speed = 15
+        self.firing_speed = 25
         self.directions = self.__set_directions(dir_x_y)
         self.x = self.rect.x
         self.y = self.rect.y

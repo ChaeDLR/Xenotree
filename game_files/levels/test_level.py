@@ -35,14 +35,6 @@ class TestLevel(LevelBase):
         """
         Create a laser for the turret to fire
         """
-        # takes ypos of destination - ypos of start point then x
-        # rads = math.atan2(
-        #   self.player.rect.y - self.turret.rect.y,
-        #  self.player.rect.x - self.turret.rect.x,
-        # )
-
-        # get directions for x and y
-        # directions = (math.cos(rads), math.sin(rads))
 
         directions = GameMath.get_directions(
             (self.turret.rect.x, self.turret.rect.y),
