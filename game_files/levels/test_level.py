@@ -28,8 +28,8 @@ class TestLevel(LevelBase):
 
         self.turret.firing = True
 
-        # To test the turret animations
-        pygame.time.set_timer(self.start_turret_attack, 1700)
+        # To activate turret
+        # pygame.time.set_timer(self.start_turret_attack, 1700)
 
     def __create_laser(self):
         """
@@ -68,6 +68,7 @@ class TestLevel(LevelBase):
 
     def __load_floor(self, level_w: int, level_h: int):
         self.floor = Platform((level_w, 50), (0, level_h - 25))
+        self.platform_one = Platform((level_w / 2, 50), (0, level_h / 4))
 
     def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
@@ -98,23 +99,36 @@ class TestLevel(LevelBase):
         """
         check if the player is on the ground
         """
+        # If the player is on the floor ( The base platform )
         if self.player.rect.bottom >= self.floor.rect.top:
-            self.player.jumping = False
+            self.player.on_ground()
             self.player.rect.bottom = self.floor.rect.top
+        # this checks if the player is in the top half or so zone of the platform
+        # and if the player is colliding
+        # if true then have the player stand on top of the platform
+        # This is for platforms the player can jump on top of from underneath
+        elif (
+            self.player.rect.bottom >= self.platform_one.rect.top
+            and self.player.rect.bottom <= self.platform_one.rect.top + 10
+            and pygame.sprite.collide_rect(self.player, self.platform_one)
+        ):
+            self.player.on_ground()
+            self.player.rect.bottom = self.platform_one.rect.top
+        elif (
+            self.player.rect.bottom == self.platform_one.rect.top
+            and self.player.rect.left >= self.platform_one.rect.right
+        ):
+            self.player.falling = True
 
     def __check_collisions(self):
         self.__check_grounded()
         if pygame.sprite.spritecollide(self.player, self.lasers, True):
             self.player_collide_hit()
 
-    def update(self):
+    def __blit__sprites(self):
         """
-        Update level elements
+        Blit and update sprites
         """
-        self.check_levelbase_events(self.check_level_events)
-        self.__check_collisions()
-        self.fill(self.colors.level_one_bg, self.rect)
-        self.blit(self.floor.image, self.floor.rect)
         self.blit(self.player.image, self.player.rect)
         self.player.update()
         self.blit(self.turret.image, self.turret.rect)
@@ -124,3 +138,20 @@ class TestLevel(LevelBase):
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
                 self.lasers.remove(laser)
+
+    def __blit_environment(self):
+        """
+        blit test level env
+        """
+        self.blit(self.floor.image, self.floor.rect)
+        self.blit(self.platform_one.image, self.platform_one.rect)
+
+    def update(self):
+        """
+        Update level elements
+        """
+        self.check_levelbase_events(self.check_level_events)
+        self.__check_collisions()
+        self.fill(self.colors.level_one_bg, self.rect)
+        self.__blit_environment()
+        self.__blit__sprites()

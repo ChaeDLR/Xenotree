@@ -15,13 +15,10 @@ class Player(Sprite):
         self.__create_animation_variables()
         self._load_player_images()
 
-        # players bool values
-        self.moving_left = False
-        self.moving_right = False
-        # This bool will be used to choose which idle animation to play
-        self.facing_right = True
-        self.player_hit = False
-        self.jumping = False
+        # create players bool values
+        self.__player_bools()
+        self.velocity_list = self.__velocity_list()
+        self.falling_index = 0
         self.death_frame = 1
 
         self.rect = self.image.get_rect()
@@ -33,6 +30,29 @@ class Player(Sprite):
         self.rect.midbottom = self.screen_rect.midbottom
         self.y = float(self.rect.y)
         self.x = float(self.rect.x)
+
+    def __velocity_list(self):
+        """
+        Create velocity lists
+        """
+        velocity_list = []
+        velocity = 0.5
+        for _ in range(30):
+            velocity_list.append(velocity)
+            velocity += 0.5
+        return velocity_list
+
+    def __player_bools(self):
+        """
+        bool values the player needs
+        """
+        self.moving_left = False
+        self.moving_right = False
+        # This bool will be used to choose which idle animation to play
+        self.facing_right = True
+        self.player_hit = False
+        self.jumping = False
+        self.falling = False
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
@@ -172,7 +192,7 @@ class Player(Sprite):
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
 
-    def start_jump(self):
+    def start_jump(self, velocity: float = -7.5):
         """
         Start the player jump
         Set jumping to True
@@ -181,7 +201,7 @@ class Player(Sprite):
         """
         self.jumping = True
         self.reset_animation
-        self.jumping_velocity = -7.5
+        self.jumping_velocity = velocity
         self.rect.y += self.jumping_velocity
 
     def __jump(self):
@@ -190,6 +210,24 @@ class Player(Sprite):
         """
         self.rect.y += self.jumping_velocity
         self.jumping_velocity += 0.5
+
+    def __fall(self):
+        """
+        Make the player fall
+        """
+        # if we have room to speed the player up
+        if self.falling_index < len(self.velocity_list) - 1:
+            self.falling_index += 1
+
+        self.rect.y += self.velocity_list[self.falling_index]
+
+    def on_ground(self):
+        """
+        Call if the player is on the ground to reset the variables
+        """
+        self.falling = False
+        self.jumping = False
+        self.falling_index = 0
 
     def switch_move_left(self, move: bool):
         """
@@ -229,6 +267,8 @@ class Player(Sprite):
             self.__move_left()
         if self.jumping:
             self.__jump()
+        elif self.falling:
+            self.__fall()
 
     def update_animation(self):
         """
