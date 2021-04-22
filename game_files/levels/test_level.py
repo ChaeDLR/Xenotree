@@ -20,7 +20,7 @@ class TestLevel(LevelBase):
         super().__init__(width, height, settings, stats, game_sound)
 
         self.colors = ScreenColors()
-        self.__load_floor(width, height)
+        self.__load_env()
         self.player.rect.midbottom = self.floor.rect.midtop
         self.__load_turret()
         self.__load_custom_events()
@@ -65,10 +65,28 @@ class TestLevel(LevelBase):
         self.turret = Turret(self.rect)
         self.turret.rect.top = self.rect.top
         self.turret.rect.right = self.rect.right
+    
+    def __load_climbable_platforms(self):
+        """
+        Load platforms that are climbable
+        """
+        platform = Platform((self.width / 2, 50), (0, self.height / 4))
+        self.climbable_platforms.append(platform)
 
-    def __load_floor(self, level_w: int, level_h: int):
-        self.floor = Platform((level_w, 50), (0, level_h - 25))
-        self.platform_one = Platform((level_w / 2, 50), (0, level_h / 4))
+    def __load_floor(self):
+        """
+        Load base floor
+        """
+        self.floor = Platform((self.width, 50), (0, self.height - 25))
+    
+    def __load_env(self):
+        """
+        Load initial environment
+        and platform lists
+        """
+        self.climbable_platforms = []
+        self.__load_climbable_platforms()
+        self.__load_floor()
 
     def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
@@ -95,6 +113,37 @@ class TestLevel(LevelBase):
         """ Check for and respond to player keyup events """
         self.player_keyup_controller(event)
 
+    def __check_climb_platforms(self):
+        """
+        this method will use logic needed to make the
+        climbable platforms work
+        """
+        # this checks if the player is in the top half or so zone of the platform
+        # and if the player is colliding
+        # if true then have the player stand on top of the platform
+        # This is for platforms the player can jump on top of from underneath
+        for platform in self.climbable_platforms:
+            # If the player should be standing on the platform
+            if (
+                self.player.rect.bottom >= platform.rect.top
+                and self.player.rect.bottom <= platform.rect.top + 10
+                and pygame.sprite.collide_rect(self.player, platform)
+            ):
+                self.player.on_ground()
+                self.player.rect.bottom = platform.rect.top
+            # If the player is on the platform and moves off of the right side
+            elif (
+                self.player.rect.bottom == platform.rect.top
+                and self.player.rect.left >= platform.rect.right
+            ):
+                self.player.falling = True
+            # If the player is on the platform and moves off of the left side
+            elif (
+                self.player.rect.bottom == platform.rect.top
+                and self.player.rect.right <= platform.rect.left
+            ):
+                self.player.falling = True
+
     def __check_grounded(self):
         """
         check if the player is on the ground
@@ -103,22 +152,9 @@ class TestLevel(LevelBase):
         if self.player.rect.bottom >= self.floor.rect.top:
             self.player.on_ground()
             self.player.rect.bottom = self.floor.rect.top
-        # this checks if the player is in the top half or so zone of the platform
-        # and if the player is colliding
-        # if true then have the player stand on top of the platform
-        # This is for platforms the player can jump on top of from underneath
-        elif (
-            self.player.rect.bottom >= self.platform_one.rect.top
-            and self.player.rect.bottom <= self.platform_one.rect.top + 10
-            and pygame.sprite.collide_rect(self.player, self.platform_one)
-        ):
-            self.player.on_ground()
-            self.player.rect.bottom = self.platform_one.rect.top
-        elif (
-            self.player.rect.bottom == self.platform_one.rect.top
-            and self.player.rect.left >= self.platform_one.rect.right
-        ):
-            self.player.falling = True
+        # Check player interaction with climbable platforms
+        self.__check_climb_platforms()
+        
 
     def __check_collisions(self):
         self.__check_grounded()
@@ -144,7 +180,8 @@ class TestLevel(LevelBase):
         blit test level env
         """
         self.blit(self.floor.image, self.floor.rect)
-        self.blit(self.platform_one.image, self.platform_one.rect)
+        for platform in self.climbable_platforms:
+            self.blit(platform.image, platform.rect)
 
     def update(self):
         """
