@@ -70,8 +70,10 @@ class TestLevel(LevelBase):
         """
         Load platforms that are climbable
         """
-        platform = Platform((self.width / 2, 50), (0, self.height / 4))
+        platform = Platform((self.width / 2, 40), (0, self.height / 4))
+        platform_2 = Platform((self.width/2, 40), (self.width/2, (self.height / 3)*2))
         self.climbable_platforms.append(platform)
+        self.climbable_platforms.append(platform_2)
 
     def __load_floor(self):
         """
@@ -126,7 +128,7 @@ class TestLevel(LevelBase):
             # If the player should be standing on the platform
             if (
                 self.player.rect.bottom >= platform.rect.top
-                and self.player.rect.bottom <= platform.rect.top + 10
+                and self.player.rect.bottom <= platform.rect.top + 20
                 and pygame.sprite.collide_rect(self.player, platform)
             ):
                 self.player.on_ground()

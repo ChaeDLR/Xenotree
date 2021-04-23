@@ -60,7 +60,7 @@ class LevelBase(pygame.Surface, ABC):
         elif event.key == pygame.K_d:
             self.player.switch_move_right(True)
         # check for player jump input
-        if event.key == pygame.K_SPACE:  # and not self.player.jumping:
+        if event.key == pygame.K_SPACE and self.player.rect.top >= 0:  # and not self.player.jumping:
             self.player.start_jump()
 
     def player_keyup_controller(self, event):

@@ -37,7 +37,7 @@ class Player(Sprite):
         """
         velocity_list = []
         velocity = 0.5
-        for _ in range(30):
+        for _ in range(10):
             velocity_list.append(velocity)
             velocity += 0.5
         return velocity_list
