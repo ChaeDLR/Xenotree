@@ -48,6 +48,7 @@ class Player(Sprite):
         """
         self.moving_left = False
         self.moving_right = False
+        self.moving = False
         # This bool will be used to choose which idle animation to play
         self.facing_right = True
         self.player_hit = False
@@ -234,9 +235,8 @@ class Player(Sprite):
         Set the movement left flag to true
         Reset the animation variables
         """
-        if move:
-            self.facing_right = False
         self.moving_left = move
+        self.moving = move
         self.reset_animation()
 
     def switch_move_right(self, move: bool):
@@ -244,9 +244,8 @@ class Player(Sprite):
         Set the movement right flag to true
         Reset the animation variables
         """
-        if move:
-            self.facing_right = True
         self.moving_right = move
+        self.moving = move
         self.reset_animation()
 
     def reset_animation(self):
@@ -288,12 +287,12 @@ class Player(Sprite):
                 self.reset_animation()
             self.image = self.jump_left_images[self.animation_index]
 
-        elif self.moving_right:
+        elif self.facing_right and self.moving:
             if self.animation_index >= len(self.walk_right_images) - 1:
                 self.reset_animation()
             self.image = self.walk_right_images[self.animation_index]
 
-        elif self.moving_left:
+        elif self.facing_left:
             if self.animation_index >= len(self.walk_left_images) - 1:
                 self.reset_animation()
             self.image = self.walk_left_images[self.animation_index]
@@ -308,10 +307,24 @@ class Player(Sprite):
 
         if self.animation_counter % 16 == 0:
             self.animation_index += 1
+    
+    def update_facing(self):
+        """
+        Check which way the player should be facing
+        update bools if needed
+        """
+        mouse_pos = pygame.mouse.get_pos()
+        if mouse_pos[0] < self.rect.center[0]:
+            self.facing_left = True
+            self.facing_right = False
+        else:
+            self.facing_left = False
+            self.facing_right = True
 
     def update(self):
         """
         Update the player image and movement
         """
+        self.update_facing()
         self.update_animation()
         self.update_movement()

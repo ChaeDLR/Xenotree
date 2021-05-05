@@ -12,6 +12,10 @@ class ScreenColors:
         self.__blu = (60, 94, 130)
 
     @property
+    def platform_color(self) -> tuple:
+        return self.__black
+
+    @property
     def level_one_bg(self) -> tuple:
         return self.__dark_blue
 

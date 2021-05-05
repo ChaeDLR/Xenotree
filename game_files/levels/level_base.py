@@ -1,8 +1,11 @@
-from abc import ABC, abstractmethod
 import pygame
 import sys
+import os
+
+from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
+from ..sprites.fireball import Fireball
 
 
 class LevelBase(pygame.Surface, ABC):
@@ -34,10 +37,26 @@ class LevelBase(pygame.Surface, ABC):
 
         self.__load_base_custom_events()
         self.__load_player()
+        self.__load_background()
+
+    def __load_background(self):
+        """
+        Load levels background image
+        """
+        path = os.path.dirname(__file__)
+        # 256px by 300px
+        bg_path = os.path.join(
+            path, "environment/env_assets/exterior-parallaxBG1.png"
+        )
+        self.bg_image = pygame.image.load(bg_path)
+        self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
+        self.bg_image_rect = self.bg_image.get_rect()
+        self.bg_image_rect.center = self.rect.center
 
     def __load_player(self):
         """ load the sprites needed for the level """
         self.player = Player(self.rect)
+        self.idle_fireball = Fireball((0, 0), (0, 0))
 
     def __load_base_custom_events(self):
         """ custom events that are the same in every level """
@@ -74,12 +93,14 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.game_paused = True
         self.game_stats.game_active = False
         pygame.mixer.music.pause()
-        pygame.mouse.set_visible(True)
+        pygame.mouse.set_cursor(pygame.cursors.arrow)
+        #pygame.mouse.set_visible(True)
         # pygame.event.wait(self.unpause_game)
 
     def resume_game(self):
         """ Method call to set a timer that sets off the unpause_game custom event """
         pygame.time.set_timer(self.unpause_game, 1, True)
+        pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
     def player_collide_hit(self):
         """
@@ -98,11 +119,17 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.active_level = 0
         self.game_stats.set_active_screen(game_over=True)
         pygame.mixer.music.stop()
-        pygame.mouse.set_visible(True)
+        pygame.mouse.set_cursor(pygame.cursors.arrow)
 
     def update_ui(self):
         """ Update everything in the player ui """
         self.game_ui.update_ui()
+
+    def update_background(self):
+        """
+        Update the levela background image
+        """
+        pass
 
     @abstractmethod
     def update(self):

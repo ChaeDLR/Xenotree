@@ -26,8 +26,6 @@ class PauseMenu(MenuBase):
     def _unpause_game(self):
         self.stats.game_active = True
         self.stats.game_paused = False
-        #self.level_one.resume_game()
-        pygame.mouse.set_visible(False)
 
     def check_buttons(self, mouse_pos):
         if self.resume_button.check_button(mouse_pos):

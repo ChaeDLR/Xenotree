@@ -70,7 +70,7 @@ class Xenotree:
         """ Game Over """
         self.stats.game_active = False
         self.stats.game_over = True
-        pygame.mouse.set_visible(True)
+        #pygame.mouse.set_visible(True)
 
     def _get_active_level(self):
         """ return the active level """

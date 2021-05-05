@@ -26,7 +26,8 @@ class MenuBase(Surface, ABC):
         """ Reset the game """
         self.stats.set_active_screen(game_active=True)
         self.stats.active_level = 1
-        pygame.mouse.set_visible(False)
+        pygame.mouse.set_cursor(pygame.cursors.broken_x)
+        #pygame.mouse.set_visible(False)
         # No game music added yet
         # TODO: Add game music
         # pygame.mixer.music.play()

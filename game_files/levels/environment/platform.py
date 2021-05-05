@@ -26,7 +26,7 @@ class Platform(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.image.fill(self.colors.button_color)
+        self.image.fill(self.colors.platform_color)
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
