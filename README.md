@@ -5,7 +5,6 @@
 Sometimes the player will pass through the platforms instead of landing on them.
 
 ## To do list
-* Make the turret lasers collide with platforms
 * Make second platform type that is not climbable
 * Cut up sprite sheet of fire balls and make fireball class
 * Make mouse visible and set pointer image

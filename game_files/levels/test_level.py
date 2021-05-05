@@ -29,7 +29,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To activate turret
-        # pygame.time.set_timer(self.start_turret_attack, 1700)
+        pygame.time.set_timer(self.start_turret_attack, 1700)
 
     def __create_laser(self):
         """
@@ -162,6 +162,11 @@ class TestLevel(LevelBase):
         self.__check_grounded()
         if pygame.sprite.spritecollide(self.player, self.lasers, True):
             self.player_collide_hit()
+        for platform in self.climbable_platforms:
+            if pygame.sprite.spritecollide(platform, self.lasers, True):
+                # Add impact sound
+                pass
+
 
     def __blit__sprites(self):
         """
