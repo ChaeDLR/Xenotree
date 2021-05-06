@@ -26,7 +26,7 @@ class SpriteSheet:
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
 
-    def images_at(self, rects, colorkey=None):
+    def images_at(self, rects: list, colorkey=None) -> list:
         """ Load a whole numch of images and return them as a list """
         return [self.image_at(rect, colorkey) for rect in rects]
 

@@ -29,7 +29,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To activate turret
-        # pygame.time.set_timer(self.start_turret_attack, 1700)
+        pygame.time.set_timer(self.start_turret_attack, 1600)
 
     def __create_laser(self):
         """
@@ -177,7 +177,7 @@ class TestLevel(LevelBase):
         self.blit(self.turret.image, self.turret.rect)
         self.turret.update()
         self.lasers.update()
-        self.blit(self.idle_fireball.image, self.idle_fireball.rect)
+        #self.blit(self.idle_fireball.image, self.idle_fireball.rect)
         for laser in self.lasers:
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
