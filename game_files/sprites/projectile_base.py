@@ -23,6 +23,8 @@ class Projectile(Sprite, ABC):
         """
         self.start_coords = start_x_y
         self.rect.center = start_x_y
+        self.x = self.rect.x
+        self.y = self.rect.y
         self.directions = (
             dir_x_y[0] * self.firing_speed,
             dir_x_y[1] * self.firing_speed

@@ -42,7 +42,8 @@ class TestLevel(LevelBase):
         )
 
         # Create the laser and give it the starting point and it's directions
-        laser = Laser(self.turret.rect.center, directions)
+        laser = Laser()
+        laser.set_start(self.turret.rect.center, directions)
 
         angle = GameMath.get_angle_to(
             (self.turret.rect.x, self.turret.rect.y),

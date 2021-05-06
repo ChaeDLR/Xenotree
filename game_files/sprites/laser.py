@@ -4,7 +4,7 @@ import pygame
 from .projectile_base import Projectile
 
 class Laser(Projectile):
-    def __init__(self, start_x_y: tuple, dir_x_y: tuple):
+    def __init__(self):
         """
         Give the x_y position it should spawn at.
         """
@@ -12,9 +12,6 @@ class Laser(Projectile):
 
         self.image = self.load_img()
         self.rect = self.image.get_rect()
-        self.set_start(start_x_y, dir_x_y)
-        self.x = self.rect.x
-        self.y = self.rect.y
 
     def load_img(self):
         """
