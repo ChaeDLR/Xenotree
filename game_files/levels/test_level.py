@@ -7,6 +7,7 @@ from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..sprites.laser import Laser
+from ..sprites.fireball import Fireball
 
 
 class TestLevel(LevelBase):
@@ -52,12 +53,41 @@ class TestLevel(LevelBase):
         laser.rotate_image(angle)
         laser.update_rect()
         self.lasers.add(laser)
+    
+    def __create_fireball(self, mouse_pos):
+        """
+        Create the players fireball attack
+        """
+        fireball_start_pos: list = [self.player.rect.center[0], self.player.rect.center[1]+5]
+        # set the x-axis offset of the fireball spawn position based on which way the player is facing
+        if self.player.facing_left:
+            fireball_start_pos[0] -= 10
+        elif self.player.facing_right:
+            fireball_start_pos[0] += 10
+
+        directions = GameMath.get_directions(
+            fireball_start_pos,
+            mouse_pos
+        )
+
+        fireball = Fireball(self.assets["red_fb_fire_imgs"][0])
+        fireball.set_start(fireball_start_pos, directions)
+
+        angle = GameMath.get_angle_to(
+            fireball_start_pos,
+            mouse_pos
+        )
+        fireball.rotate_image(angle)
+        fireball.update_rect()
+        self.fireballs.add(fireball)
+
 
     def __load_sprite_groups(self):
         """
         Create the sprite groups needed for the level
         """
         self.lasers = pygame.sprite.Group()
+        self.fireballs = pygame.sprite.Group()
 
     def __load_turret(self):
         """
@@ -100,6 +130,8 @@ class TestLevel(LevelBase):
             self.check_keydown_events(event)
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.__create_fireball(event.pos)
         elif event.type == self.start_turret_attack:
             self.turret.firing = True
             self.__create_laser()
@@ -167,6 +199,8 @@ class TestLevel(LevelBase):
             if pygame.sprite.spritecollide(platform, self.lasers, True):
                 # Add impact sound
                 pass
+            if pygame.sprite.spritecollide(platform, self.fireballs, True):
+                pass
 
 
     def __blit__sprites(self):
@@ -178,11 +212,16 @@ class TestLevel(LevelBase):
         self.blit(self.turret.image, self.turret.rect)
         self.turret.update()
         self.lasers.update()
-        #self.blit(self.idle_fireball.image, self.idle_fireball.rect)
+        self.fireballs.update()
+
         for laser in self.lasers:
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
                 self.lasers.remove(laser)
+        for fireball in self.fireballs:
+            self.blit(fireball.image, fireball.rect)
+            if fireball.rect.x < -250 or fireball.rect.y > self.rect.height:
+                self.fireballs.remove(fireball)
 
     def __blit_environment(self):
         """

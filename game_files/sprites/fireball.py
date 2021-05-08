@@ -9,6 +9,7 @@ class Fireball(Projectile):
         Create fireball transformed based on direction
         """
         super().__init__()
+        self.firing_speed = 20
         self.image = image
         self.rect = self.image.get_rect()
 
