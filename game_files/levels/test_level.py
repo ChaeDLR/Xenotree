@@ -124,17 +124,22 @@ class TestLevel(LevelBase):
     def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
+        self.player_fire_cooldown = pygame.USEREVENT + 9
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
             self.check_keydown_events(event)
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
             self.__create_fireball(event.pos)
-        elif event.type == self.start_turret_attack:
+            self.player.can_fire = False
+            pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
+        elif event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.__create_laser()
+        elif event.type == self.player_fire_cooldown:
+            self.player.can_fire = True
 
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
@@ -195,6 +200,11 @@ class TestLevel(LevelBase):
         self.__check_grounded()
         if pygame.sprite.spritecollide(self.player, self.lasers, True):
             self.player_collide_hit()
+        if pygame.sprite.spritecollide(self.turret, self.fireballs, False):
+            if self.turret.health_points == 0:
+                self.turret.is_alive = False
+            else:
+                self.turret.health_points -= 1
         for platform in self.climbable_platforms:
             if pygame.sprite.spritecollide(platform, self.lasers, True):
                 # Add impact sound
@@ -209,8 +219,9 @@ class TestLevel(LevelBase):
         """
         self.blit(self.player.image, self.player.rect)
         self.player.update()
-        self.blit(self.turret.image, self.turret.rect)
-        self.turret.update()
+        if self.turret.is_alive:
+            self.blit(self.turret.image, self.turret.rect)
+            self.turret.update()
         self.lasers.update()
         self.fireballs.update()
 

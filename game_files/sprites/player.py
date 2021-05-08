@@ -18,18 +18,20 @@ class Player(Sprite):
         # create players bool values
         self.__player_bools()
         self.velocity_list = self.__velocity_list()
-        self.falling_index = 0
-        self.death_frame = 1
+        self.falling_index: int = 0
+        self.death_frame: int = 1
 
         self.rect = self.image.get_rect()
 
-        self.movement_speed = 6.0
-        self.jumping_velocity = -7.5
+        self.movement_speed: float = 6.0
+        self.jumping_velocity: float = -7.5
+
+        self.cooldown_time: int = 1500
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
-        self.y = float(self.rect.y)
-        self.x = float(self.rect.x)
+        self.y: float = float(self.rect.y)
+        self.x: float = float(self.rect.x)
 
     def __velocity_list(self):
         """
@@ -54,6 +56,8 @@ class Player(Sprite):
         self.player_hit = False
         self.jumping = False
         self.falling = False
+        # track player attack cooldown
+        self.can_fire = True
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """

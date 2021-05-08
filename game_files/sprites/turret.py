@@ -19,9 +19,11 @@ class Turret(Sprite):
         self.animation_counter = 0
         self.animation_index = 0
         # If firing is turned True the update method will change the image
-        self.firing = False
+        self.firing: bool = False
         self.image = self.images[0]
         self.rect = self.image.get_rect()
+        self.health_points: int = 7
+        self.is_alive: bool = True
 
     def set_position(self, x_y: tuple):
         """ Set the turret position """
@@ -70,6 +72,6 @@ class Turret(Sprite):
         Update the turret
         """
         # If the turret is attacking we want to play the attack animation
-        if self.firing:
+        if self.firing and self.is_alive:
             self.__attack_animation()
         self.image = self.images[self.animation_index]
