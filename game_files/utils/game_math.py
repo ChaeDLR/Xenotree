@@ -7,7 +7,7 @@ class GameMath:
     """
 
     @classmethod
-    def get_directions(self, start: tuple, stop: tuple) -> tuple:
+    def get_directions(cls, start: tuple, stop: tuple) -> tuple:
         """
         Returns the rise and run directions
         from the start to the stop in a tuple
@@ -16,7 +16,7 @@ class GameMath:
         return (math.cos(radians), math.sin(radians))
 
     @classmethod
-    def get_distance(self, start: tuple, stop: tuple) -> int:
+    def get_distance(cls, start: tuple, stop: tuple) -> int:
         """
         Returns the distance between two points
         """
@@ -24,7 +24,7 @@ class GameMath:
         return int(dist)
 
     @classmethod
-    def get_angle_to(self, start: tuple, stop: tuple):
+    def get_angle_to(cls, start: tuple, stop: tuple):
         """
         Returns the angle from start to stop in degrees
         """

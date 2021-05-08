@@ -5,8 +5,6 @@ import os
 from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
-from ..sprites.fireball import Fireball
-
 
 class LevelBase(pygame.Surface, ABC):
     """

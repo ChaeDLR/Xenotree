@@ -1,21 +1,11 @@
 from pygame.sprite import Sprite
 from pygame.rect import Rect
 from pygame.transform import rotate
-from abc import ABC, abstractmethod, ABCMeta
 
-class Projectile(Sprite, ABC):
+class Projectile(Sprite):
     def __init__(self):
         super().__init__()
-        self.rect = Rect((0, 0), (10, 10))
-        self.firing_speed = 25
-    
-    @abstractmethod
-    def load_img(self):
-        """
-        Load the projectiles image or images
-        and set the rect
-        """
-        pass
+        self.firing_speed = 20
 
     def set_start(self, start_x_y: tuple, dir_x_y: tuple) -> None:
         """
@@ -45,8 +35,10 @@ class Projectile(Sprite, ABC):
         rotated_rect = rotated_image.get_rect(
             center=self.image.get_rect(center=(self.rect.x, self.rect.y)).center
         )
+        
         self.image = rotated_image
         self.rect = rotated_rect
+        self.rect.center = self.start_coords
 
     def update(self):
         """
