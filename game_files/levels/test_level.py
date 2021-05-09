@@ -200,7 +200,7 @@ class TestLevel(LevelBase):
         self.__check_grounded()
         if pygame.sprite.spritecollide(self.player, self.lasers, True):
             self.player_collide_hit()
-        if pygame.sprite.spritecollide(self.turret, self.fireballs, False):
+        if pygame.sprite.spritecollide(self.turret, self.fireballs, True):
             if self.turret.health_points == 0:
                 self.turret.is_alive = False
             else:

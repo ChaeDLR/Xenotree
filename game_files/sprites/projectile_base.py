@@ -46,7 +46,5 @@ class Projectile(Sprite):
         """
         self.x = float(self.x + self.directions[0])
         self.y = float(self.y + self.directions[1])
-
         self.rect.x, self.rect.y = self.x, self.y
-
     

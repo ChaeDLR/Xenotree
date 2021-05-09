@@ -17,7 +17,6 @@ class Player(Sprite):
 
         # create players bool values
         self.__player_bools()
-        self.velocity_list = self.__velocity_list()
         self.falling_index: int = 0
         self.death_frame: int = 1
 
@@ -25,6 +24,7 @@ class Player(Sprite):
 
         self.movement_speed: float = 6.0
         self.jumping_velocity: float = -7.5
+        self.falling_velocity: float = 7.5
 
         self.cooldown_time: int = 1500
 
@@ -32,17 +32,6 @@ class Player(Sprite):
         self.rect.midbottom = self.screen_rect.midbottom
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
-
-    def __velocity_list(self):
-        """
-        Create velocity lists
-        """
-        velocity_list = []
-        velocity = 0.5
-        for _ in range(10):
-            velocity_list.append(velocity)
-            velocity += 0.5
-        return velocity_list
 
     def __player_bools(self):
         """
@@ -58,6 +47,7 @@ class Player(Sprite):
         self.falling = False
         # track player attack cooldown
         self.can_fire = True
+        self.is_alive = True
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
@@ -220,11 +210,8 @@ class Player(Sprite):
         """
         Make the player fall
         """
-        # if we have room to speed the player up
-        if self.falling_index < len(self.velocity_list) - 1:
-            self.falling_index += 1
-
-        self.rect.y += self.velocity_list[self.falling_index]
+        self.rect.y += self.falling_velocity
+        self.falling_velocity += 0.5
 
     def on_ground(self):
         """
@@ -232,7 +219,7 @@ class Player(Sprite):
         """
         self.falling = False
         self.jumping = False
-        self.falling_index = 0
+        self.falling_velocity = 0
 
     def switch_move_left(self, move: bool):
         """

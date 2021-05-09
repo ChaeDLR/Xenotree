@@ -76,7 +76,7 @@ class AssetManager:
             fireball_ss_coords["fire_red"], p_colorkey
         )
 
-        return {
+        fireball_imgs_dict: dict = {
             "laser_img": laser_img,
             "purple_fb_idle_imgs": purp_fb_idle_imgs,
             "blue_fb_idle_imgs": blue_fb_idle_imgs,
@@ -85,4 +85,13 @@ class AssetManager:
             "blue_fb_fire_imgs": blue_fb_fire_imgs,
             "red_fb_fire_imgs": red_fb_fire_imgs
         }
+
+        # scale up the fireball images
+        for key in fireball_imgs_dict:
+            if key == "laser_img":
+                continue
+            else:
+                fireball_imgs_dict[key] = [pygame.transform.scale(x, (16, 13)) for x in fireball_imgs_dict[key]]
+        
+        return fireball_imgs_dict
         
