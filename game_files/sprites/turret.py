@@ -2,9 +2,6 @@ import pygame
 import os
 from pygame.sprite import Sprite
 
-# TODO: Collect all of the turret images into a spritesheet
-# from ..utils.spritesheet import SpriteSheet
-
 
 class Turret(Sprite):
     """ Turret enemy class """
@@ -22,7 +19,8 @@ class Turret(Sprite):
         self.firing: bool = False
         self.image = self.images[0]
         self.rect = self.image.get_rect()
-        self.health_points: int = 7
+        self.health_points: int = 3
+        self.firing_speed = 1700
         self.is_alive: bool = True
 
     def set_position(self, x_y: tuple):
@@ -37,11 +35,14 @@ class Turret(Sprite):
         current_path = os.path.dirname(__file__)
         turret_imgs_path = os.path.join(current_path, "sprite_assets/turret")
         images_list: list = os.listdir(turret_imgs_path)
+        # Sort the images by the number value in the file name string
+        images_list.sort(key=lambda img_string: img_string[7])
 
         loaded_images: list = []
         for img in images_list:
             img_path = os.path.join(turret_imgs_path, img)
             loaded_images.append(pygame.image.load(img_path))
+            
         return loaded_images
 
     def __reset_animation(self):
@@ -62,7 +63,7 @@ class Turret(Sprite):
             self.animation_index += 1
             self.animation_counter = 0
 
-        if self.animation_index > 4:
+        if self.animation_index == 5:
             # Reset animation variables
             self.__reset_animation()
             self.firing = False

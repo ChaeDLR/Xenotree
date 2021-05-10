@@ -26,7 +26,7 @@ class Player(Sprite):
         self.jumping_velocity: float = -7.5
         self.falling_velocity: float = 7.5
 
-        self.cooldown_time: int = 1500
+        self.cooldown_time: int = 1250
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom

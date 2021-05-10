@@ -31,7 +31,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To activate turret
-        pygame.time.set_timer(self.start_turret_attack, 1600)
+        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
 
     def __create_laser(self):
         """
@@ -131,11 +131,12 @@ class TestLevel(LevelBase):
             self.check_keydown_events(event)
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
-            self.__create_fireball(event.pos)
+        if event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
             self.player.can_fire = False
+            self.__create_fireball(event.pos)
             pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
-        elif event.type == self.start_turret_attack and self.turret.is_alive:
+        # custom events
+        if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.__create_laser()
         elif event.type == self.player_fire_cooldown:
