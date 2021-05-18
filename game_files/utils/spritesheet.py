@@ -1,5 +1,6 @@
 # Code taken from
 # https://ehmatthes.github.io/pcc_2e/beyond_pcc/pygame_sprite_sheets/
+# made minor changes
 
 import pygame
 from pygame import sprite

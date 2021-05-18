@@ -31,7 +31,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To activate turret
-        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
+        # pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
 
     def __create_laser(self):
         """
@@ -41,7 +41,7 @@ class TestLevel(LevelBase):
             (self.turret.rect.x, self.turret.rect.y),
             (self.player.rect.x, self.player.rect.y),
         )
-        
+
         # Create the laser and give it the starting point and it's directions
         laser = Laser(self.assets["laser_img"])
         laser.set_start(self.turret.rect.center, directions)
@@ -53,34 +53,30 @@ class TestLevel(LevelBase):
         laser.rotate_image(angle)
         laser.update_rect()
         self.lasers.add(laser)
-    
+
     def __create_fireball(self, mouse_pos):
         """
         Create the players fireball attack
         """
-        fireball_start_pos: list = [self.player.rect.center[0], self.player.rect.center[1]+5]
+        fireball_start_pos: list = [
+            self.player.rect.center[0],
+            self.player.rect.center[1] + 5,
+        ]
         # set the x-axis offset of the fireball spawn position based on which way the player is facing
         if self.player.facing_left:
             fireball_start_pos[0] -= 10
         elif self.player.facing_right:
             fireball_start_pos[0] += 10
 
-        directions = GameMath.get_directions(
-            fireball_start_pos,
-            mouse_pos
-        )
+        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
 
         fireball = Fireball(self.assets["red_fb_fire_imgs"][0])
         fireball.set_start(fireball_start_pos, directions)
 
-        angle = GameMath.get_angle_to(
-            fireball_start_pos,
-            mouse_pos
-        )
+        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
         fireball.rotate_image(angle)
         fireball.update_rect()
         self.fireballs.add(fireball)
-
 
     def __load_sprite_groups(self):
         """
@@ -96,28 +92,30 @@ class TestLevel(LevelBase):
         self.turret = Turret(self.rect)
         self.turret.rect.top = self.rect.top
         self.turret.rect.right = self.rect.right
-    
+
     def __load_climbable_platforms(self):
         """
         Load platforms that are climbable
         """
         platform = Platform((self.width / 2, 40), (0, self.height / 4))
-        platform_2 = Platform((self.width/2, 40), (self.width/2, (self.height / 3)*2))
-        self.climbable_platforms.append(platform)
-        self.climbable_platforms.append(platform_2)
+        platform_2 = Platform(
+            (self.width / 2, 40), (self.width / 2, (self.height / 3) * 2)
+        )
+        self.platforms.append(platform)
+        self.platforms.append(platform_2)
 
     def __load_floor(self):
         """
         Load base floor
         """
-        self.floor = Platform((self.width, 50), (0, self.height - 25))
-    
+        self.floor = Platform((self.width, 100), (0, self.height - 25))
+
     def __load_env(self):
         """
         Load initial environment
         and platform lists
         """
-        self.climbable_platforms = []
+        self.platforms = []
         self.__load_climbable_platforms()
         self.__load_floor()
 
@@ -129,16 +127,40 @@ class TestLevel(LevelBase):
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
             self.check_keydown_events(event)
+
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
+
         if event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
+            mouse_button = pygame.mouse.get_pressed()
+            # if mouse left clicked
+            if mouse_button[0]:
+                self.__create_fireball(event.pos)
+
+            elif mouse_button[2] and not self.player.defending:
+                # if mouse right clicked
+                self.player.defending = True
+                self.player.shield.set_position(
+                    self.player.rect.center,
+                    self.player.facing_right,
+                    GameMath.get_angle_to(
+                        self.player.shield.rect.center, pygame.mouse.get_pos()
+                    ),
+                )
+            # Set cooldown
             self.player.can_fire = False
-            self.__create_fireball(event.pos)
             pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.player.defending = False
+            self.player.reset_animation()
+            self.player.shield.reset()
+
         # custom events
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.__create_laser()
+
         elif event.type == self.player_fire_cooldown:
             self.player.can_fire = True
 
@@ -154,7 +176,7 @@ class TestLevel(LevelBase):
         """ Check for and respond to player keyup events """
         self.player_keyup_controller(event)
 
-    def __check_climb_platforms(self):
+    def __check_platforms(self):
         """
         this method will use logic needed to make the
         climbable platforms work
@@ -163,23 +185,29 @@ class TestLevel(LevelBase):
         # and if the player is colliding
         # if true then have the player stand on top of the platform
         # This is for platforms the player can jump on top of from underneath
-        for platform in self.climbable_platforms:
-            # If the player should be standing on the platform
-            if (
+        for platform in self.platforms:
+
+            if (  # If the player should be standing on the platform
                 self.player.rect.bottom >= platform.rect.top
                 and self.player.rect.bottom <= platform.rect.top + 20
                 and pygame.sprite.collide_rect(self.player, platform)
             ):
                 self.player.on_ground()
                 self.player.rect.bottom = platform.rect.top
-            # If the player is on the platform and moves off of the right side
-            elif (
+            elif pygame.sprite.collide_rect(  # if the player hits the bottom or sides of a platform with their body
+                self.player, platform
+            ) and (
+                self.player.rect.top <= platform.rect.bottom
+                or self.player.rect.right >= platform.rect.left
+                or self.player.rect.left <= platform.rect.right
+            ):
+                self.player.stop_movement()
+            elif (  # If the player is on the platform and moves off of the right side
                 self.player.rect.bottom == platform.rect.top
                 and self.player.rect.left >= platform.rect.right
             ):
                 self.player.falling = True
-            # If the player is on the platform and moves off of the left side
-            elif (
+            elif (  # If the player is on the platform and moves off of the left side
                 self.player.rect.bottom == platform.rect.top
                 and self.player.rect.right <= platform.rect.left
             ):
@@ -194,8 +222,7 @@ class TestLevel(LevelBase):
             self.player.on_ground()
             self.player.rect.bottom = self.floor.rect.top
         # Check player interaction with climbable platforms
-        self.__check_climb_platforms()
-        
+        self.__check_platforms()
 
     def __check_collisions(self):
         self.__check_grounded()
@@ -206,13 +233,12 @@ class TestLevel(LevelBase):
                 self.turret.is_alive = False
             else:
                 self.turret.health_points -= 1
-        for platform in self.climbable_platforms:
+        for platform in self.platforms:
             if pygame.sprite.spritecollide(platform, self.lasers, True):
                 # Add impact sound
                 pass
             if pygame.sprite.spritecollide(platform, self.fireballs, True):
                 pass
-
 
     def __blit__sprites(self):
         """
@@ -220,6 +246,11 @@ class TestLevel(LevelBase):
         """
         self.blit(self.player.image, self.player.rect)
         self.player.update()
+        if self.player.defending:
+            self.player.shield.set_position(
+                self.player.rect.center, self.player.facing_right
+            )
+            self.blit(self.player.shield.image, self.player.shield.rect)
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
@@ -240,7 +271,7 @@ class TestLevel(LevelBase):
         blit test level env
         """
         self.blit(self.floor.image, self.floor.rect)
-        for platform in self.climbable_platforms:
+        for platform in self.platforms:
             self.blit(platform.image, platform.rect)
 
     def update(self):

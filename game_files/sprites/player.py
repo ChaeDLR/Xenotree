@@ -2,6 +2,7 @@ import pygame
 import os
 from pygame.sprite import Sprite
 from ..utils.spritesheet import SpriteSheet
+from .wiz_shield import Shield
 
 
 class Player(Sprite):
@@ -14,6 +15,7 @@ class Player(Sprite):
 
         self.__create_animation_variables()
         self._load_player_images()
+        self.__load_shield()
 
         # create players bool values
         self.__player_bools()
@@ -26,28 +28,52 @@ class Player(Sprite):
         self.jumping_velocity: float = -7.5
         self.falling_velocity: float = 7.5
 
+        # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1250
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
+        self.shield.rect.center = self.rect.center
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
 
-    def __player_bools(self):
+    def __load_shield(self):
+        """
+        Load the players shield sprite
+        """
+        self.shield = Shield()
+
+    def stop_movement(self) -> None:
+        """
+        Stop the player movement and make them fall if possible
+        """
+        self.moving = False
+        self.jumping = False
+        self.moving_right = False
+        self.moving_left = False
+        self.falling = True
+
+    def __player_bools(self) -> None:
         """
         bool values the player needs
         """
-        self.moving_left = False
-        self.moving_right = False
+        # movement flags
         self.moving = False
-        # This bool will be used to choose which idle animation to play
-        self.facing_right = True
-        self.player_hit = False
         self.jumping = False
         self.falling = False
-        # track player attack cooldown
+        # Check which way the player is facing
+        self.moving_left = False
+        self.moving_right = False
+        self.facing_right = True
+
+        self.player_hit = False
+        # track player cooldowns
         self.can_fire = True
+        self.can_jump = True
+        # check that the play still has health points
         self.is_alive = True
+        # If the player has their shield up
+        self.defending = False
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
@@ -255,7 +281,7 @@ class Player(Sprite):
             self.__move_right()
         elif self.moving_left:
             self.__move_left()
-        if self.jumping:
+        if self.jumping and self.can_jump:
             self.__jump()
         elif self.falling:
             self.__fall()
@@ -268,7 +294,13 @@ class Player(Sprite):
         if self.animation_index > self.animation_index_limit:
             self.reset_animation()
 
-        if self.jumping and self.facing_right:
+        if self.defending and self.facing_right:
+            self.image = self.idle_right_images[1]
+
+        elif self.defending and self.facing_left:
+            self.image = self.idle_left_images[1]
+
+        elif self.jumping and self.facing_right:
             if self.animation_index >= len(self.jump_right_images) - 1:
                 self.reset_animation()
             self.image = self.jump_right_images[self.animation_index]
@@ -298,7 +330,7 @@ class Player(Sprite):
 
         if self.animation_counter % 16 == 0:
             self.animation_index += 1
-    
+
     def update_facing(self):
         """
         Check which way the player should be facing

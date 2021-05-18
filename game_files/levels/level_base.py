@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
 
+
 class LevelBase(pygame.Surface, ABC):
     """
     Base level class that will hold
@@ -43,9 +44,7 @@ class LevelBase(pygame.Surface, ABC):
         """
         path = os.path.dirname(__file__)
         # 256px by 300px
-        bg_path = os.path.join(
-            path, "environment/env_assets/exterior-parallaxBG1.png"
-        )
+        bg_path = os.path.join(path, "environment/env_assets/exterior-parallaxBG1.png")
         self.bg_image = pygame.image.load(bg_path)
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         self.bg_image_rect = self.bg_image.get_rect()
@@ -76,7 +75,11 @@ class LevelBase(pygame.Surface, ABC):
         elif event.key == pygame.K_d:
             self.player.switch_move_right(True)
         # check for player jump input
-        if event.key == pygame.K_SPACE and self.player.rect.top >= 0:  # and not self.player.jumping:
+        if (
+            event.key == pygame.K_SPACE
+            and self.player.rect.top >= 0
+            and not self.player.defending
+        ):  # and not self.player.jumping:
             self.player.start_jump()
 
     def player_keyup_controller(self, event):
@@ -91,7 +94,7 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.game_active = False
         pygame.mixer.music.pause()
         pygame.mouse.set_cursor(pygame.cursors.arrow)
-        #pygame.mouse.set_visible(True)
+        # pygame.mouse.set_visible(True)
         # pygame.event.wait(self.unpause_game)
 
     def resume_game(self):
