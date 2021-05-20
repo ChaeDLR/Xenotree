@@ -7,7 +7,7 @@ class ActiveWeapon:
         self.x = float(coords[0])
         self.y = float(coords[1])
         self.starting_y = coords[1]
-        print(f"Starting y = {self.starting_y}")
+        
         self.assets = assets
         self.moving_up = True
 
