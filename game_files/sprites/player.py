@@ -30,6 +30,7 @@ class Player(Sprite):
 
         # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1250
+        self.health_points: int = 100
 
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
@@ -42,16 +43,6 @@ class Player(Sprite):
         Load the players shield sprite
         """
         self.shield = Shield()
-
-    def stop_movement(self) -> None:
-        """
-        Stop the player movement and make them fall if possible
-        """
-        self.moving = False
-        self.jumping = False
-        self.moving_right = False
-        self.moving_left = False
-        self.falling = True
 
     def __player_bools(self) -> None:
         """
@@ -175,20 +166,6 @@ class Player(Sprite):
         self.animation_index_limit = len(self.idle_right_images) - 1
         self.image = self.idle_right_images[0]
 
-    def reset_player(self):
-        """ reset player position """
-        # set player initial position
-        self.rect.midbottom = self.screen_rect.midbottom
-        self.y = float(self.rect.y)
-        self.x = float(self.rect.x)
-
-    def check_position(self):
-        """ check that the player position is in bounds """
-        if self.rect.top < 31:
-            return True
-        else:
-            return False
-
     def __move_left(self):
         """
         Check if the player is alive and in bounds
@@ -213,18 +190,6 @@ class Player(Sprite):
         elif not self.player_hit:
             self.rect.right = self.screen_rect.right
 
-    def start_jump(self, velocity: float = -7.5):
-        """
-        Start the player jump
-        Set jumping to True
-        Reset animation
-        Reset jump velocity
-        """
-        self.jumping = True
-        self.reset_animation
-        self.jumping_velocity = velocity
-        self.rect.y += self.jumping_velocity
-
     def __jump(self):
         """
         Start player jump
@@ -238,6 +203,48 @@ class Player(Sprite):
         """
         self.rect.y += self.falling_velocity
         self.falling_velocity += 0.5
+
+    def stop_movement(self) -> None:
+        """
+        Stop the player movement and make them fall if possible
+        """
+        self.moving = False
+        self.jumping = False
+        self.moving_right = False
+        self.moving_left = False
+        self.falling = True
+
+    def reset_player(self):
+        """ reset player position """
+        # set player initial position
+        self.rect.midbottom = self.screen_rect.midbottom
+        self.y = float(self.rect.y)
+        self.x = float(self.rect.x)
+
+    def check_position(self):
+        """ check that the player position is in bounds """
+        if self.rect.top < 31:
+            return True
+        else:
+            return False
+
+    def start_jump(self, velocity: float = -7.5):
+        """
+        Start the player jump
+        Set jumping to True
+        Reset animation
+        Reset jump velocity
+        """
+        self.jumping = True
+        self.reset_animation
+        self.jumping_velocity = velocity
+        self.rect.y += self.jumping_velocity
+    
+    def hit(self):
+        """
+        Reduce player health and play hit animation
+        """
+        self.health_points -= 10
 
     def on_ground(self):
         """

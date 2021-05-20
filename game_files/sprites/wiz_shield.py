@@ -13,7 +13,7 @@ class Shield(Sprite):
     def __load_shield_img(self):
         path: str = os.getcwd()
         img_path = os.path.join(
-            path, "game_files\sprites\sprite_assets\player_assets\wiz_shield.png"
+            path, "game_files/sprites/sprite_assets/player_assets/wiz_shield.png"
         )
         self.sprite_sheet = SpriteSheet(img_path)
         self.base_image = self.sprite_sheet.image_at((2, 0, 10, 20), (0, 0, 0))

@@ -31,7 +31,7 @@ class TestLevel(LevelBase):
         self.turret.firing = True
 
         # To activate turret
-        # pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
+        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
 
     def __create_laser(self):
         """
@@ -225,6 +225,7 @@ class TestLevel(LevelBase):
         self.__check_platforms()
 
     def __check_collisions(self):
+        # Need impact sounds
         self.__check_grounded()
         if pygame.sprite.spritecollide(self.player, self.lasers, True):
             self.player_collide_hit()
@@ -233,12 +234,12 @@ class TestLevel(LevelBase):
                 self.turret.is_alive = False
             else:
                 self.turret.health_points -= 1
-        for platform in self.platforms:
-            if pygame.sprite.spritecollide(platform, self.lasers, True):
-                # Add impact sound
-                pass
-            if pygame.sprite.spritecollide(platform, self.fireballs, True):
-                pass
+        if pygame.sprite.groupcollide(self.lasers, self.fireballs, True, True):
+            pass
+        if pygame.sprite.groupcollide(self.platforms, self.lasers, False, True):
+            pass
+        if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
+            pass
 
     def __blit__sprites(self):
         """
@@ -273,6 +274,13 @@ class TestLevel(LevelBase):
         self.blit(self.floor.image, self.floor.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
+    
+    def __blit_ui(self):
+        """
+        blit user interface
+        """
+        for img, rect in self.game_ui.get_ui_components():
+            self.blit(img, rect)
 
     def update(self):
         """
@@ -284,3 +292,4 @@ class TestLevel(LevelBase):
         self.blit(self.bg_image, self.bg_image_rect)
         self.__blit_environment()
         self.__blit__sprites()
+        self.__blit_ui()

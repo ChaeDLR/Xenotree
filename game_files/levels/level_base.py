@@ -29,7 +29,7 @@ class LevelBase(pygame.Surface, ABC):
         self.settings = settings
         self.game_sound = game_sound
         self.game_stats = stats
-        self.game_ui = Game_Ui(self, settings, self.game_stats)
+        self.game_ui = Game_Ui(self.settings, self.game_stats)
 
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0
@@ -64,7 +64,11 @@ class LevelBase(pygame.Surface, ABC):
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == self.player_hit:
-                self.base_game_over()
+                self.player.hit()
+                self.game_ui.update(self.player.health_points)
+                # Health bar reaches zero at 20 health points because of the offset
+                if self.player.health_points <= 20:
+                    self.base_game_over()
             else:
                 level_event_check(event)
 
@@ -109,7 +113,6 @@ class LevelBase(pygame.Surface, ABC):
         # TODO: Need player sound
         # if self.player.player_hit == False:
         #   self.game_sound.player_impact_sound.play()
-        self.player.player_hit = True
         pygame.time.set_timer(self.player_hit, 1, True)
 
     def base_game_over(self):
