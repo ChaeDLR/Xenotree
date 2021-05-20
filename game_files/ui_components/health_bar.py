@@ -1,4 +1,4 @@
-from pygame import Surface, Rect
+from pygame import Surface
 
 class HealthBar(Surface):
 
@@ -6,6 +6,7 @@ class HealthBar(Surface):
         """
         Player health bar surface object
         """
+        super().__init__((100, 25))
         self.x, self.y = coords
 
         self.__update_health()
@@ -14,9 +15,8 @@ class HealthBar(Surface):
         """
         Create the bar background
         """
-        self.base_img = Surface((100, 25))
-        self.base_img.fill((10, 10, 10))
-        self.base_img_rect = self.base_img.get_rect()
+        self.fill((10, 10, 10))
+        self.base_img_rect = self.get_rect()
         self.base_img_rect.x, self.base_img_rect.y = self.x, self.y
 
     def __update_health(self, health: int=100) -> None:
@@ -33,9 +33,8 @@ class HealthBar(Surface):
         healthbar_rect.x, healthbar_rect.y = self.base_img_rect.x, self.base_img_rect.y-5
         healthbar_img.fill((192, 16, 16))
 
-        self.base_img.blit(healthbar_img, healthbar_rect)
+        self.blit(healthbar_img, healthbar_rect)
 
-        self.image = self.base_img
         self.rect = self.base_img_rect
     
     def update(self, health_percentage: int):

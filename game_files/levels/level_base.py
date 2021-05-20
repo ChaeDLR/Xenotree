@@ -5,6 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
+from ..game_assets import AssetManager
 
 
 class LevelBase(pygame.Surface, ABC):
@@ -29,7 +30,8 @@ class LevelBase(pygame.Surface, ABC):
         self.settings = settings
         self.game_sound = game_sound
         self.game_stats = stats
-        self.game_ui = Game_Ui(self.settings, self.game_stats)
+        self.assets: dict = AssetManager.level_one_assets()
+        self.game_ui = Game_Ui(self.settings, self.game_stats, self.assets)
 
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0

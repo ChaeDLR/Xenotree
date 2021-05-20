@@ -1,7 +1,6 @@
 import pygame
 
 from ..utils.game_math import GameMath
-from ..game_assets import AssetManager
 from .level_base import LevelBase
 from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
@@ -27,7 +26,6 @@ class TestLevel(LevelBase):
         self.__load_turret()
         self.__load_custom_events()
         self.__load_sprite_groups()
-        self.assets: dict = AssetManager.level_one_assets()
         self.turret.firing = True
 
         # To activate turret
@@ -281,6 +279,7 @@ class TestLevel(LevelBase):
         """
         for img, rect in self.game_ui.get_ui_components():
             self.blit(img, rect)
+        self.game_ui.update(self.player.health_points)
 
     def update(self):
         """

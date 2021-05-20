@@ -29,7 +29,7 @@ class Player(Sprite):
         self.falling_velocity: float = 7.5
 
         # int passed to the pygame timer used to reset attack available flag
-        self.cooldown_time: int = 1250
+        self.cooldown_time: int = 1000
         self.health_points: int = 100
 
         # set player initial position
