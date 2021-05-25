@@ -8,6 +8,7 @@ class Shield(Projectile):
     """
     Shield will move like a projectile until it reaches the end of the player
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.__load_shield_img()
@@ -34,6 +35,7 @@ class Shield(Projectile):
             center=self.image.get_rect(center=(self.rect.x, self.rect.y)).center
         )
 
+        self.movement_counter = 0
         self.image = rotated_image
         self.rect = rotated_rect
         self.rect.center = self.start_coords
@@ -43,7 +45,10 @@ class Shield(Projectile):
         Update position
         Override projectile update
         """
-        if self.moving:
+        if self.movement_counter >= 2:
+            return
+        elif self.moving:
             self.x = float(self.x + self.directions[0])
             self.y = float(self.y + self.directions[1])
             self.rect.x, self.rect.y = self.x, self.y
+            self.movement_counter += 1

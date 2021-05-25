@@ -20,6 +20,8 @@ class TestLevel(LevelBase):
     ):
         super().__init__(width, height, settings, stats, game_sound)
 
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
+
         self.colors = ScreenColors()
         self.__load_env()
         self.player.rect.midbottom = self.floor.rect.midtop
@@ -121,7 +123,6 @@ class TestLevel(LevelBase):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
         self.player_fire_cooldown = pygame.USEREVENT + 9
-        self.player_shield_movement = pygame.USEREVENT + 10
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -139,8 +140,6 @@ class TestLevel(LevelBase):
             elif mouse_button[2] and not self.player.defending:
                 # if mouse right clicked
                 self.player.shield.moving = True
-                # Shield moves out as far as the timer
-                pygame.time.set_timer(self.player_shield_movement, 15, True)
                 self.player.start_defend(event.pos)
 
             pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
@@ -149,10 +148,10 @@ class TestLevel(LevelBase):
             self.player.defending = False
             self.player.falling = True
             self.player.reset_animation()
-        
+
         else:
             self.check_user_events(event)
-        
+
     def check_user_events(self, event):
         # CUSTOM EVENTS
         if event.type == self.start_turret_attack and self.turret.is_alive:
@@ -161,9 +160,6 @@ class TestLevel(LevelBase):
 
         elif event.type == self.player_fire_cooldown:
             self.player.can_fire = True
-        
-        elif event.type == self.player_shield_movement:
-            self.player.shield.moving = False
 
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
@@ -272,7 +268,7 @@ class TestLevel(LevelBase):
         self.blit(self.floor.image, self.floor.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
-    
+
     def __blit_ui(self):
         """
         blit user interface
