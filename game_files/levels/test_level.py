@@ -121,6 +121,7 @@ class TestLevel(LevelBase):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
         self.player_fire_cooldown = pygame.USEREVENT + 9
+        self.player_shield_movement = pygame.USEREVENT + 10
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -129,7 +130,7 @@ class TestLevel(LevelBase):
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
 
-        if event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
             mouse_button = pygame.mouse.get_pressed()
             # if mouse left clicked
             if mouse_button[0]:
@@ -137,30 +138,32 @@ class TestLevel(LevelBase):
 
             elif mouse_button[2] and not self.player.defending:
                 # if mouse right clicked
-                self.player.defending = True
-                self.player.shield.set_position(
-                    self.player.rect.center,
-                    self.player.facing_right,
-                    GameMath.get_angle_to(
-                        self.player.shield.rect.center, pygame.mouse.get_pos()
-                    ),
-                )
-            # Set cooldown
-            self.player.can_fire = False
+                self.player.shield.moving = True
+                # Shield moves out as far as the timer
+                pygame.time.set_timer(self.player_shield_movement, 15, True)
+                self.player.start_defend(event.pos)
+
             pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
 
         elif event.type == pygame.MOUSEBUTTONUP:
             self.player.defending = False
+            self.player.falling = True
             self.player.reset_animation()
-            self.player.shield.reset()
-
-        # custom events
+        
+        else:
+            self.check_user_events(event)
+        
+    def check_user_events(self, event):
+        # CUSTOM EVENTS
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.__create_laser()
 
         elif event.type == self.player_fire_cooldown:
             self.player.can_fire = True
+        
+        elif event.type == self.player_shield_movement:
+            self.player.shield.moving = False
 
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
@@ -246,9 +249,6 @@ class TestLevel(LevelBase):
         self.blit(self.player.image, self.player.rect)
         self.player.update()
         if self.player.defending:
-            self.player.shield.set_position(
-                self.player.rect.center, self.player.facing_right
-            )
             self.blit(self.player.shield.image, self.player.shield.rect)
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
@@ -287,7 +287,6 @@ class TestLevel(LevelBase):
         """
         self.check_levelbase_events(self.check_level_events)
         self.__check_collisions()
-        self.fill(self.colors.level_one_bg, self.rect)
         self.blit(self.bg_image, self.bg_image_rect)
         self.__blit_environment()
         self.__blit__sprites()

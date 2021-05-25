@@ -47,7 +47,7 @@ class LevelBase(pygame.Surface, ABC):
         path = os.path.dirname(__file__)
         # 256px by 300px
         bg_path = os.path.join(path, "environment/env_assets/exterior-parallaxBG1.png")
-        self.bg_image = pygame.image.load(bg_path)
+        self.bg_image = pygame.image.load(bg_path).convert()
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         self.bg_image_rect = self.bg_image.get_rect()
         self.bg_image_rect.center = self.rect.center

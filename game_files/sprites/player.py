@@ -2,6 +2,7 @@ import pygame
 import os
 from pygame.sprite import Sprite
 from ..utils.spritesheet import SpriteSheet
+from ..utils.game_math import GameMath
 from .wiz_shield import Shield
 
 
@@ -204,7 +205,7 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         self.falling_velocity += 0.5
 
-    def stop_movement(self) -> None:
+    def stop_movement(self, fall: bool=True) -> None:
         """
         Stop the player movement and make them fall if possible
         """
@@ -212,7 +213,10 @@ class Player(Sprite):
         self.jumping = False
         self.moving_right = False
         self.moving_left = False
-        self.falling = True
+        if fall:
+            self.falling = fall
+        else:
+            self.falling = True
 
     def reset_player(self):
         """ reset player position """
@@ -239,6 +243,39 @@ class Player(Sprite):
         self.reset_animation
         self.jumping_velocity = velocity
         self.rect.y += self.jumping_velocity
+    
+    def start_defend(self, mouse_pos: tuple):
+        """
+        Activate shield and start defending
+        """
+
+        if self.facing_right:
+            self.image = self.jump_right_images[2]
+        elif self.facing_left:
+            self.image = self.jump_left_images[2]
+
+        directions = GameMath.get_directions(
+            self.rect.center,
+            mouse_pos
+        )
+        
+        self.distance_limit = (
+            directions[0] * 20 + self.rect.centerx, 
+            directions[1] * 20 + self.rect.centery
+            )
+
+        self.shield.set_start(self.rect.center, directions)
+
+        angle = GameMath.get_angle_to(
+            self.rect.center,
+            mouse_pos
+        )
+
+        self.shield.rotate_image(angle)
+        self.shield.update_rect()
+        self.can_fire = False
+        self.defending = True
+
     
     def hit(self):
         """
@@ -355,6 +392,10 @@ class Player(Sprite):
         """
         Update the player image and movement
         """
-        self.update_facing()
-        self.update_animation()
-        self.update_movement()
+        if self.defending:
+            self.shield.update()
+
+        if not self.defending:
+            self.update_facing()
+            self.update_animation()
+            self.update_movement()

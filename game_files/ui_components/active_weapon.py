@@ -1,5 +1,4 @@
-from pygame import Surface, transform
-import pygame
+from pygame import transform
 
 class ActiveWeapon:
 

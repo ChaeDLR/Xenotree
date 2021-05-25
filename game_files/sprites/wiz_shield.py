@@ -1,14 +1,18 @@
 import pygame
 import os
-from pygame.sprite import Sprite
 from ..utils.spritesheet import SpriteSheet
-from ..utils.game_math import GameMath
+from .projectile_base import Projectile
 
 
-class Shield(Sprite):
+class Shield(Projectile):
+    """
+    Shield will move like a projectile until it reaches the end of the player
+    """
     def __init__(self) -> None:
         super().__init__()
         self.__load_shield_img()
+        # bool value that will control movement
+        self.moving = False
 
     def __load_shield_img(self):
         path: str = os.getcwd()
@@ -17,11 +21,11 @@ class Shield(Sprite):
         )
         self.sprite_sheet = SpriteSheet(img_path)
         self.base_image = self.sprite_sheet.image_at((2, 0, 10, 20), (0, 0, 0))
-        self.base_image = pygame.transform.scale(self.base_image, (20, 30))
+        self.base_image = pygame.transform.scale(self.base_image, (15, 45))
         self.image = self.base_image
         self.rect = self.image.get_rect()
 
-    def __rotate_image(self, rotation: float):
+    def rotate_image(self, rotation: float):
         """
         Rotate the image so that the front of the shield is facing the mouse
         """
@@ -32,26 +36,14 @@ class Shield(Sprite):
 
         self.image = rotated_image
         self.rect = rotated_rect
+        self.rect.center = self.start_coords
 
-    def reset(self):
+    def update(self):
         """
-        Reset the shields angle
+        Update position
+        Override projectile update
         """
-        self.__rotate_image(1.0)
-
-    def set_position(self, pos: tuple, facing_right: bool, angle: float = None):
-        """
-        pos: sets shields position center
-        angle: angles the shield
-        """
-        # TODO: I need to get the shield to move to the
-        # top of the player of the mouse is above the player
-        if angle:
-            self.__rotate_image(angle)
-
-        if facing_right:
-            new_pos = pos[0] + 20, pos[1]
-        else:
-            new_pos = pos[0] - 20, pos[1]
-
-        self.rect.center = new_pos
+        if self.moving:
+            self.x = float(self.x + self.directions[0])
+            self.y = float(self.y + self.directions[1])
+            self.rect.x, self.rect.y = self.x, self.y

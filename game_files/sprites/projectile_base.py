@@ -42,7 +42,7 @@ class Projectile(Sprite):
 
     def update(self):
         """
-        Update laser position
+        Update position
         """
         self.x = float(self.x + self.directions[0])
         self.y = float(self.y + self.directions[1])

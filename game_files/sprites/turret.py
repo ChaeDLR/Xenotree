@@ -41,7 +41,7 @@ class Turret(Sprite):
         loaded_images: list = []
         for img in images_list:
             img_path = os.path.join(turret_imgs_path, img)
-            loaded_images.append(pygame.image.load(img_path))
+            loaded_images.append(pygame.image.load(img_path).convert())
             
         return loaded_images
 
