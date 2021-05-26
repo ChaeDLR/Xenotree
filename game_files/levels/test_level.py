@@ -24,7 +24,7 @@ class TestLevel(LevelBase):
 
         self.colors = ScreenColors()
         self.__load_env()
-        self.player.rect.midbottom = self.floor.rect.midtop
+        self.player.set_position(self.floor.rect.midtop)
         self.__load_turret()
         self.__load_custom_events()
         self.__load_sprite_groups()
@@ -236,6 +236,9 @@ class TestLevel(LevelBase):
         if pygame.sprite.groupcollide(self.platforms, self.lasers, False, True):
             pass
         if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
+            pass
+        if (laser_list := pygame.sprite.spritecollide(self.player.shield, self.lasers, False)):
+            self.lasers.remove(laser_list[0])
             pass
 
     def __blit__sprites(self):

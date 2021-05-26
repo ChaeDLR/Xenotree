@@ -1,7 +1,6 @@
 import pygame
 import os
 from pygame.sprite import Sprite
-from ..utils.spritesheet import SpriteSheet
 from ..utils.game_math import GameMath
 from .wiz_shield import Shield
 
@@ -9,19 +8,20 @@ from .wiz_shield import Shield
 class Player(Sprite):
     """ player sprite class """
 
-    def __init__(self, level_rect):
+    def __init__(self, assets: dict, bound: int):
         super().__init__()
-        self.screen_rect = level_rect
-        self.screen_rows = self.screen_rect.bottom / 14
 
         self.__create_animation_variables()
-        self._load_player_images()
+        self.images = assets
+        self.image = self.images["idle_right"][1]
         self.__load_shield()
 
         # create players bool values
         self.__player_bools()
         self.falling_index: int = 0
         self.death_frame: int = 1
+        self.animation_index_limit: int = 3
+        self.screen_bound: int = bound
 
         self.rect = self.image.get_rect()
 
@@ -33,11 +33,17 @@ class Player(Sprite):
         self.cooldown_time: int = 1000
         self.health_points: int = 100
 
-        # set player initial position
-        self.rect.midbottom = self.screen_rect.midbottom
         self.shield.rect.center = self.rect.center
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
+
+    def set_position(self, x_y: tuple):
+        """
+        set player position using midbottom
+        the players feet
+        """
+        self.rect.midbottom = x_y
+        self.x, self.y = self.rect.x, self.rect.y
 
     def __load_shield(self):
         """
@@ -73,100 +79,6 @@ class Player(Sprite):
         self.animation_index_limit = 0
         self.animation_counter = 0
 
-    def _ss_idle_coords(self) -> list:
-        """ Rect positions and sizes needed to cut the sprite sheet for the idle images """
-        idle: list = [
-            # (8, 1, 21, 30), Animation looks a lot smoother without this image
-            (40, 0, 21, 30),
-            (72, 0, 24, 30),
-            (100, 1, 25, 30),
-            (133, 2, 24, 30),
-        ]
-        return idle
-
-    def _ss_walk_coords(self) -> list:
-        """ Rect positions and sizes needed to cut the sprite sheet for walking images """
-        walk: list = [
-            (2, 32, 28, 30),
-            (35, 33, 28, 30),
-            (67, 34, 28, 30),
-            (98, 34, 28, 30),
-        ]
-        return walk
-
-    def _ss_jump_coords(self) -> list:
-        """ Rect positions and sizes for jump animations """
-        jump: list = [
-            (2, 65, 28, 27),
-            (33, 66, 30, 27),
-            (65, 66, 30, 26),
-            (98, 66, 28, 27),
-        ]
-        return jump
-
-    def _load_player_images(self) -> None:
-        """ Load player image from assets folder """
-        p_colorkey = (0, 0, 0)
-        # set player image
-        current_path = os.path.dirname(__file__)
-        player_ss_path = os.path.join(
-            current_path, "sprite_assets/player_assets/MageSpriteSheet.png"
-        )
-        ss_tool = SpriteSheet(player_ss_path)
-
-        # nested funcs to break the code up a bit
-        def idle_animations():
-            self.idle_right_images = []
-            idle_coords = self._ss_idle_coords()
-            for coord in idle_coords:
-                image = ss_tool.image_at(coord, p_colorkey)
-                image = pygame.transform.scale(image, (41, 54))
-                self.idle_right_images.append(image)
-            self.animation_index_limit = len(self.idle_right_images) - 1
-
-            self.idle_left_images = self.idle_right_images[:]
-            for i in range(0, len(self.idle_right_images)):
-                self.idle_left_images[i] = pygame.transform.flip(
-                    self.idle_left_images[i], True, False
-                )
-
-        def walk_animations():
-            # walking right images
-            self.walk_right_images = []
-            walk_coords = self._ss_walk_coords()
-            for coord in walk_coords:
-                image = ss_tool.image_at(coord, p_colorkey)
-                image = pygame.transform.scale(image, (41, 54))
-                self.walk_right_images.append(image)
-
-            # walking left images
-            self.walk_left_images = self.walk_right_images[:]
-            for i in range(0, len(self.walk_right_images)):
-                self.walk_left_images[i] = pygame.transform.flip(
-                    self.walk_left_images[i], True, False
-                )
-
-        def jump_animations():
-            self.jump_right_images = []
-            jump_coords = self._ss_jump_coords()
-            for coord in jump_coords:
-                image = ss_tool.image_at(coord, p_colorkey)
-                image = pygame.transform.scale(image, (41, 54))
-                self.jump_right_images.append(image)
-
-            self.jump_left_images = self.jump_right_images[:]
-            for i in range(0, len(self.jump_right_images)):
-                self.jump_left_images[i] = pygame.transform.flip(
-                    self.jump_left_images[i], True, False
-                )
-
-        # create image lists and set the limit to idle list
-        idle_animations()
-        walk_animations()
-        jump_animations()
-        self.animation_index_limit = len(self.idle_right_images) - 1
-        self.image = self.idle_right_images[0]
-
     def __move_left(self):
         """
         Check if the player is alive and in bounds
@@ -182,14 +94,9 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if (
-            not self.player_hit
-            and (self.rect.right + self.movement_speed) <= self.screen_rect.right
-        ):
+        if not self.player_hit and self.rect.right <= self.screen_bound:
             self.x += self.movement_speed
             self.rect.x = self.x
-        elif not self.player_hit:
-            self.rect.right = self.screen_rect.right
 
     def __jump(self):
         """
@@ -250,9 +157,9 @@ class Player(Sprite):
         """
 
         if self.facing_right:
-            self.image = self.jump_right_images[2]
+            self.image = self.images["jump_right"][2]
         elif self.facing_left:
-            self.image = self.jump_left_images[2]
+            self.image = self.images["jump_left"][2]
 
         directions = GameMath.get_directions(
             self.rect.center,
@@ -339,36 +246,44 @@ class Player(Sprite):
             self.reset_animation()
 
         if self.defending and self.facing_right:
-            self.image = self.idle_right_images[1]
+            self.image = self.images["idle_right"][1]
+            #self.image = self.idle_right_images[1]
 
         elif self.defending and self.facing_left:
-            self.image = self.idle_left_images[1]
+            self.image = self.images["idle_left"][1]
+            #self.image = self.idle_left_images[1]
 
         elif self.jumping and self.facing_right:
-            if self.animation_index >= len(self.jump_right_images) - 1:
+            if self.animation_index >= len(self.images["jump_right"]) - 1:
                 self.reset_animation()
-            self.image = self.jump_right_images[self.animation_index]
+            self.image = self.images["jump_right"][self.animation_index]
+            #self.image = self.jump_right_images[self.animation_index]
 
         elif self.jumping and not self.facing_right:
-            if self.animation_index >= len(self.jump_left_images) - 1:
+            if self.animation_index >= len(self.images["jump_left"]) - 1:
                 self.reset_animation()
-            self.image = self.jump_left_images[self.animation_index]
+            self.image = self.images["jump_left"][self.animation_index]
+            #self.image = self.jump_left_images[self.animation_index]
 
         elif self.facing_right and self.moving:
-            if self.animation_index >= len(self.walk_right_images) - 1:
+            if self.animation_index >= len(self.images["walk_right"]) - 1:
                 self.reset_animation()
-            self.image = self.walk_right_images[self.animation_index]
+            self.image = self.images["walk_right"][self.animation_index]
+            #self.image = self.walk_right_images[self.animation_index]
 
         elif self.facing_left:
-            if self.animation_index >= len(self.walk_left_images) - 1:
+            if self.animation_index >= len(self.images["walk_left"]) - 1:
                 self.reset_animation()
-            self.image = self.walk_left_images[self.animation_index]
+            self.image = self.images["walk_left"][self.animation_index]
+            #self.image = self.walk_left_images[self.animation_index]
 
         elif not self.facing_right:
-            self.image = self.idle_left_images[self.animation_index]
+            self.image = self.images["idle_left"][self.animation_index]
+            #self.image = self.idle_left_images[self.animation_index]
 
         else:
-            self.image = self.idle_right_images[self.animation_index]
+            self.image = self.images["idle_right"][self.animation_index]
+            #self.image = self.idle_right_images[self.animation_index]
 
         self.animation_counter += 1
 

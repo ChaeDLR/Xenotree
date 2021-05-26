@@ -1,7 +1,4 @@
-import os
-import pygame
 from .projectile_base import Projectile
-from ..utils.spritesheet import SpriteSheet
 
 class Fireball(Projectile):
     def __init__(self, image):

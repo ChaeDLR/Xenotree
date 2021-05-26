@@ -1,6 +1,3 @@
-import os
-import pygame
-
 from .projectile_base import Projectile
 
 class Laser(Projectile):
@@ -13,3 +10,6 @@ class Laser(Projectile):
 
         self.image = image
         self.rect = self.image.get_rect()
+
+    def reflect_laser(self):
+        pass

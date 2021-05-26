@@ -54,7 +54,7 @@ class LevelBase(pygame.Surface, ABC):
 
     def __load_player(self):
         """ load the sprites needed for the level """
-        self.player = Player(self.rect)
+        self.player = Player(AssetManager.load_player_images(), self.width)
 
     def __load_base_custom_events(self):
         """ custom events that are the same in every level """
