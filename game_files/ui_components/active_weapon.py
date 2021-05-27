@@ -11,7 +11,7 @@ class WeaponBar:
         self.moving_up = True
 
         self.__load_weapon_bar()
-        self.set_positions()
+        self.set_positions(default=True)
 
     def __get_fireball(self, color: str) -> tuple:
         """
@@ -30,7 +30,14 @@ class WeaponBar:
         self.blue = self.__get_fireball("blue")
         self.purple = self.__get_fireball("purple")
 
-    def set_positions(self):
+        # default weapons bar order
+        self.fire_bar = {
+            "left": self.blue,
+            "mid": self.red,
+            "right": self.purple
+        }
+
+    def set_positions(self, default=True):
         """
         Set the positions of each fireball
         """
@@ -38,11 +45,18 @@ class WeaponBar:
         pos_mid = (160, 20)
         pos_right = (180, 20)
 
-        self.red[1].center = pos_mid
-        self.blue[1].center = pos_left
-        self.blue[0].set_alpha(50)
-        self.purple[1].center = pos_right
-        self.purple[0].set_alpha(50)
+        if default:
+            self.fire_bar["left"][1].center = pos_left
+            self.fire_bar["mid"][1].center = pos_mid
+            self.fire_bar["right"][1].center = pos_right
+
+            self.fire_bar["left"][0].set_alpha(50)
+            self.fire_bar["right"][0].set_alpha(50)
+
+        # start cycling code
+        elif self.fire_bar["mid"] is self.red:
+            pass
+            
 
     def update(self, active_fireball: str = None):
         """
