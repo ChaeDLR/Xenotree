@@ -237,7 +237,11 @@ class TestLevel(LevelBase):
             pass
         if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
             pass
-        if (laser_list := pygame.sprite.spritecollide(self.player.shield, self.lasers, False)):
+        if self.player.defending and (
+            laser_list := pygame.sprite.spritecollide(
+                self.player.shield, self.lasers, False
+            )
+        ):
             self.lasers.remove(laser_list[0])
             pass
 
