@@ -242,6 +242,7 @@ class TestLevel(LevelBase):
                 self.player.shield, self.lasers, False
             )
         ):
+            # TODO: add laser reflection
             self.lasers.remove(laser_list[0])
             pass
 

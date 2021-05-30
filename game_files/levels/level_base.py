@@ -87,6 +87,9 @@ class LevelBase(pygame.Surface, ABC):
             and not self.player.defending
         ):  # and not self.player.jumping:
             self.player.start_jump()
+        # cycle weapons bar
+        if event.key == pygame.K_r:
+            self.game_ui.active_weapon_bar.set_positions()
 
     def player_keyup_controller(self, event):
         """ Take event to control the player """
