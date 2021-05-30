@@ -2,6 +2,7 @@ from pygame.sprite import Sprite
 from pygame.rect import Rect
 from pygame.transform import rotate
 
+
 class Projectile(Sprite):
     def __init__(self):
         super().__init__()
@@ -17,9 +18,9 @@ class Projectile(Sprite):
         self.y = self.rect.y
         self.directions = (
             dir_x_y[0] * self.firing_speed,
-            dir_x_y[1] * self.firing_speed
-            )
-    
+            dir_x_y[1] * self.firing_speed,
+        )
+
     def update_rect(self):
         """
         Update the laser rect after rotation
@@ -31,11 +32,11 @@ class Projectile(Sprite):
         """
         Pass the angle that the laser image needs to be rotated
         """
-        rotated_image = rotate(self.image, rotation)
+        rotated_image = rotate(self.base_image, rotation)
         rotated_rect = rotated_image.get_rect(
             center=self.image.get_rect(center=(self.rect.x, self.rect.y)).center
         )
-        
+
         self.image = rotated_image
         self.rect = rotated_rect
         self.rect.center = self.start_coords
@@ -47,4 +48,3 @@ class Projectile(Sprite):
         self.x = float(self.x + self.directions[0])
         self.y = float(self.y + self.directions[1])
         self.rect.x, self.rect.y = self.x, self.y
-    

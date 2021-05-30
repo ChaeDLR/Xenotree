@@ -3,6 +3,7 @@ import os
 from pygame.sprite import Sprite
 from ..utils.game_math import GameMath
 from .wiz_shield import Shield
+from .fireball import Fireball
 
 
 class Player(Sprite):
@@ -14,7 +15,7 @@ class Player(Sprite):
         self.__create_animation_variables()
         self.images = assets
         self.image = self.images["idle_right"][1]
-        self.__load_shield()
+        self.__load_sprites()
 
         # create players bool values
         self.__player_bools()
@@ -45,7 +46,31 @@ class Player(Sprite):
         self.rect.midbottom = x_y
         self.x, self.y = self.rect.x, self.rect.y
 
-    def __load_shield(self):
+    def get_fireball(self, mouse_pos, type: str):
+        """
+        get a fireball
+        """
+        fireball_start_pos: list = [
+            self.rect.center[0],
+            self.rect.center[1] + 5,
+        ]
+        # set the x-axis offset of the fireball spawn position based on which way the player is facing
+        if self.facing_left:
+            fireball_start_pos[0] -= 10
+        elif self.facing_right:
+            fireball_start_pos[0] += 10
+
+        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
+
+        fireball = Fireball(self.images, type)
+        fireball.set_start(fireball_start_pos, directions)
+
+        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
+        fireball.rotate_image(angle)
+        fireball.update_rect()
+        return fireball
+
+    def __load_sprites(self):
         """
         Load the players shield sprite
         """
@@ -112,7 +137,7 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         self.falling_velocity += 0.5
 
-    def stop_movement(self, fall: bool=True) -> None:
+    def stop_movement(self, fall: bool = True) -> None:
         """
         Stop the player movement and make them fall if possible
         """
@@ -150,7 +175,7 @@ class Player(Sprite):
         self.reset_animation
         self.jumping_velocity = velocity
         self.rect.y += self.jumping_velocity
-    
+
     def start_defend(self, mouse_pos: tuple):
         """
         Activate shield and start defending
@@ -161,29 +186,22 @@ class Player(Sprite):
         elif self.facing_left:
             self.image = self.images["jump_left"][2]
 
-        directions = GameMath.get_directions(
-            self.rect.center,
-            mouse_pos
-        )
-        
+        directions = GameMath.get_directions(self.rect.center, mouse_pos)
+
         self.distance_limit = (
-            directions[0] * 20 + self.rect.centerx, 
-            directions[1] * 20 + self.rect.centery
-            )
+            directions[0] * 20 + self.rect.centerx,
+            directions[1] * 20 + self.rect.centery,
+        )
 
         self.shield.set_start(self.rect.center, directions)
 
-        angle = GameMath.get_angle_to(
-            self.rect.center,
-            mouse_pos
-        )
+        angle = GameMath.get_angle_to(self.rect.center, mouse_pos)
 
         self.shield.rotate_image(angle)
         self.shield.update_rect()
         self.can_fire = False
         self.defending = True
 
-    
     def hit(self):
         """
         Reduce player health and play hit animation
@@ -247,43 +265,35 @@ class Player(Sprite):
 
         if self.defending and self.facing_right:
             self.image = self.images["idle_right"][1]
-            #self.image = self.idle_right_images[1]
 
         elif self.defending and self.facing_left:
             self.image = self.images["idle_left"][1]
-            #self.image = self.idle_left_images[1]
 
         elif self.jumping and self.facing_right:
             if self.animation_index >= len(self.images["jump_right"]) - 1:
                 self.reset_animation()
             self.image = self.images["jump_right"][self.animation_index]
-            #self.image = self.jump_right_images[self.animation_index]
 
         elif self.jumping and not self.facing_right:
             if self.animation_index >= len(self.images["jump_left"]) - 1:
                 self.reset_animation()
             self.image = self.images["jump_left"][self.animation_index]
-            #self.image = self.jump_left_images[self.animation_index]
 
         elif self.facing_right and self.moving:
             if self.animation_index >= len(self.images["walk_right"]) - 1:
                 self.reset_animation()
             self.image = self.images["walk_right"][self.animation_index]
-            #self.image = self.walk_right_images[self.animation_index]
 
         elif self.facing_left:
             if self.animation_index >= len(self.images["walk_left"]) - 1:
                 self.reset_animation()
             self.image = self.images["walk_left"][self.animation_index]
-            #self.image = self.walk_left_images[self.animation_index]
 
         elif not self.facing_right:
             self.image = self.images["idle_left"][self.animation_index]
-            #self.image = self.idle_left_images[self.animation_index]
 
         else:
             self.image = self.images["idle_right"][self.animation_index]
-            #self.image = self.idle_right_images[self.animation_index]
 
         self.animation_counter += 1
 
@@ -297,11 +307,9 @@ class Player(Sprite):
         """
         mouse_pos = pygame.mouse.get_pos()
         if mouse_pos[0] < self.rect.center[0]:
-            self.facing_left = True
-            self.facing_right = False
+            self.facing_left, self.facing_right = True, False
         else:
-            self.facing_left = False
-            self.facing_right = True
+            self.facing_left, self.facing_right = False, True
 
     def update(self):
         """
@@ -309,8 +317,7 @@ class Player(Sprite):
         """
         if self.defending:
             self.shield.update()
-
-        if not self.defending:
+        else:
             self.update_facing()
             self.update_animation()
             self.update_movement()

@@ -30,15 +30,8 @@ class Shield(Projectile):
         """
         Rotate the image so that the front of the shield is facing the mouse
         """
-        rotated_image = pygame.transform.rotate(self.base_image, rotation)
-        rotated_rect = rotated_image.get_rect(
-            center=self.image.get_rect(center=(self.rect.x, self.rect.y)).center
-        )
-
+        super().rotate_image(rotation)
         self.movement_counter = 0
-        self.image = rotated_image
-        self.rect = rotated_rect
-        self.rect.center = self.start_coords
 
     def update(self):
         """

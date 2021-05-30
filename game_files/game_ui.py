@@ -23,11 +23,11 @@ class Game_Ui:
             self.active_weapon_bar.purple,
         ]
 
-    def update(self, player_health: int, fireball_type: str = None):
+    def update(self, player_health: int):
         """
         Calls needed to update ui elements
         """
         self.health_bar.update(player_health)
         # if the player changes the fireball type
         # if fireball_type:
-        self.active_weapon_bar.update(fireball_type)
+        self.active_weapon_bar.update()

@@ -1,22 +1,32 @@
 from .projectile_base import Projectile
 
+
 class Fireball(Projectile):
-    def __init__(self, image):
+    def __init__(self, images: dict, type: str):
         """
         Create fireball transformed based on direction
         """
         super().__init__()
+        self.images = images
         self.firing_speed = 20
-        self.image = image
+        self.type = type
+
+        self.__set_type()
         self.rect = self.image.get_rect()
 
-    def set_color(self, purple:bool=False, blue:bool=False, red:bool=False):
+    def __set_type(self):
         """
-        Set the color the fireball should be
+        Set the fireball type
         """
-        if purple:
-            self.color = purple
-        elif blue:
-            self.color = blue
-        elif red:
-            self.color = red
+        if self.type == "red":
+            self.base_image = self.images["red_fb_fire_imgs"][1]
+            self.image = self.base_image
+        elif self.type == "blue":
+            self.base_image = self.images["blue_fb_fire_imgs"][1]
+            self.image = self.base_image
+        elif self.type == "purple":
+            self.base_image = self.images["purple_fb_fire_imgs"][1]
+            self.image = self.base_image
+
+    def update(self):
+        super().update()

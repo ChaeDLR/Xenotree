@@ -29,6 +29,7 @@ class WeaponBar:
         self.red = self.__get_fireball("red")
         self.blue = self.__get_fireball("blue")
         self.purple = self.__get_fireball("purple")
+        self.type = "red"
 
         # default weapons bar order
         self.fire_bar = {"left": self.blue, "mid": self.red, "right": self.purple}
@@ -47,16 +48,19 @@ class WeaponBar:
                 self.fire_bar["mid"] = self.blue
                 self.fire_bar["left"] = self.purple
                 self.fire_bar["right"] = self.red
+                self.type = "blue"
 
             elif self.fire_bar["mid"] is self.blue:
                 self.fire_bar["mid"] = self.purple
                 self.fire_bar["left"] = self.red
                 self.fire_bar["right"] = self.blue
+                self.type = "purple"
 
             elif self.fire_bar["mid"] is self.purple:
                 self.fire_bar["mid"] = self.red
                 self.fire_bar["left"] = self.blue
                 self.fire_bar["right"] = self.purple
+                self.type = "red"
 
         self.fire_bar["left"][1].center = pos_left
         self.fire_bar["mid"][1].center = pos_mid
@@ -66,9 +70,9 @@ class WeaponBar:
         self.fire_bar["mid"][0].set_alpha(255)
         self.fire_bar["right"][0].set_alpha(50)
 
-    def update(self, active_fireball: str = None):
+    def update(self):
         """
-        'red', 'blue', 'purple'
+        Move the active(middle) fireball within the bounds
         """
         if self.moving_up:
             self.y -= 0.2

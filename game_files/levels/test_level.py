@@ -6,7 +6,6 @@ from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..sprites.laser import Laser
-from ..sprites.fireball import Fireball
 
 
 class TestLevel(LevelBase):
@@ -54,28 +53,11 @@ class TestLevel(LevelBase):
         laser.update_rect()
         self.lasers.add(laser)
 
-    def __create_fireball(self, mouse_pos):
+    def __create_fireball(self, mouse_pos, type: str):
         """
         Create the players fireball attack
         """
-        fireball_start_pos: list = [
-            self.player.rect.center[0],
-            self.player.rect.center[1] + 5,
-        ]
-        # set the x-axis offset of the fireball spawn position based on which way the player is facing
-        if self.player.facing_left:
-            fireball_start_pos[0] -= 10
-        elif self.player.facing_right:
-            fireball_start_pos[0] += 10
-
-        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
-
-        fireball = Fireball(self.assets["red_fb_fire_imgs"][0])
-        fireball.set_start(fireball_start_pos, directions)
-
-        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
-        fireball.rotate_image(angle)
-        fireball.update_rect()
+        fireball = self.player.get_fireball(mouse_pos, type)
         self.fireballs.add(fireball)
 
     def __load_sprite_groups(self):
@@ -135,7 +117,7 @@ class TestLevel(LevelBase):
             mouse_button = pygame.mouse.get_pressed()
             # if mouse left clicked
             if mouse_button[0]:
-                self.__create_fireball(event.pos)
+                self.__create_fireball(event.pos, self.game_ui.active_weapon_bar.type)
 
             elif mouse_button[2] and not self.player.defending:
                 # if mouse right clicked
