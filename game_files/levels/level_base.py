@@ -30,8 +30,9 @@ class LevelBase(pygame.Surface, ABC):
         self.settings = settings
         self.game_sound = game_sound
         self.game_stats = stats
-        self.assets: dict = AssetManager.level_one_assets()
-        self.game_ui = Game_Ui(self.settings, self.game_stats, self.assets)
+        self.projectile_assets: dict = AssetManager.projectile_assets()
+        self.platform_assets: dict = AssetManager.platform_assets()
+        self.game_ui = Game_Ui(self.settings, self.game_stats, self.projectile_assets)
 
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0
@@ -55,7 +56,7 @@ class LevelBase(pygame.Surface, ABC):
     def __load_player(self):
         """ load the sprites needed for the level """
         self.player = Player(
-            {**AssetManager.load_player_images(), **self.assets}, self.width
+            {**AssetManager.load_player_images(), **self.projectile_assets}, self.width
         )
 
     def __load_base_custom_events(self):
@@ -130,10 +131,6 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.set_active_screen(game_over=True)
         pygame.mixer.music.stop()
         pygame.mouse.set_cursor(pygame.cursors.arrow)
-
-    def update_ui(self):
-        """ Update everything in the player ui """
-        self.game_ui.update_ui()
 
     def update_background(self):
         """

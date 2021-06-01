@@ -10,7 +10,7 @@ class Platform(Sprite):
     Stops player from moving
     """
 
-    def __init__(self, w_h: tuple, x_y: tuple):
+    def __init__(self, w_h: tuple, x_y: tuple, image=None):
         """
         w_h: tuple (width, height)
         x_y: tuple (x_position, y_position)
@@ -19,9 +19,20 @@ class Platform(Sprite):
         super().__init__()
         self.colors = ScreenColors()
 
-        self._build_wall(x_y[0], x_y[1])
+        if image:
+            self.__create_imaged_platform(x_y[0], x_y[1], image)
+        else:
+            self.__build_black_platform(x_y[0], x_y[1])
 
-    def _build_wall(self, x: int, y: int):
+    def __create_imaged_platform(self, x: int, y: int, image):
+        """
+        Create a platform out of given image
+        """
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = x, y
+
+    def __build_black_platform(self, x: int, y: int):
         self.image = Surface((self.width, self.height))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -38,4 +49,3 @@ class Platform(Sprite):
     def resize_wall(self, width: int, height: int):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
-        self.fill(self.colors.button_color)

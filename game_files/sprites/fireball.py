@@ -2,14 +2,14 @@ from .projectile_base import Projectile
 
 
 class Fireball(Projectile):
-    def __init__(self, images: dict, type: str):
+    def __init__(self, images: dict, element_type: str):
         """
         Create fireball transformed based on direction
         """
         super().__init__()
         self.images = images
         self.firing_speed = 20
-        self.type = type
+        self.type = element_type
 
         self.__set_type()
         self.rect = self.image.get_rect()

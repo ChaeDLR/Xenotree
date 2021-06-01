@@ -20,7 +20,7 @@ class WeaponBar:
         fb_img = self.assets[f"{color}_fb_idle_imgs"][0]
         fb_img = transform.scale(fb_img, (17, 25))
         fb_rect = fb_img.get_rect()
-        return (fb_img, fb_rect)
+        return fb_img, fb_rect
 
     def __load_weapon_bar(self):
         """
@@ -29,7 +29,7 @@ class WeaponBar:
         self.red = self.__get_fireball("red")
         self.blue = self.__get_fireball("blue")
         self.purple = self.__get_fireball("purple")
-        self.type = "red"
+        self.element_type = "red"
 
         # default weapons bar order
         self.fire_bar = {"left": self.blue, "mid": self.red, "right": self.purple}
@@ -48,19 +48,19 @@ class WeaponBar:
                 self.fire_bar["mid"] = self.blue
                 self.fire_bar["left"] = self.purple
                 self.fire_bar["right"] = self.red
-                self.type = "blue"
+                self.element_type = "blue"
 
             elif self.fire_bar["mid"] is self.blue:
                 self.fire_bar["mid"] = self.purple
                 self.fire_bar["left"] = self.red
                 self.fire_bar["right"] = self.blue
-                self.type = "purple"
+                self.element_type = "purple"
 
             elif self.fire_bar["mid"] is self.purple:
                 self.fire_bar["mid"] = self.red
                 self.fire_bar["left"] = self.blue
                 self.fire_bar["right"] = self.purple
-                self.type = "red"
+                self.element_type = "red"
 
         self.fire_bar["left"][1].center = pos_left
         self.fire_bar["mid"][1].center = pos_mid

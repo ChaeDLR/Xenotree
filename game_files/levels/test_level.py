@@ -42,7 +42,7 @@ class TestLevel(LevelBase):
         )
 
         # Create the laser and give it the starting point and it's directions
-        laser = Laser(self.assets["laser_img"])
+        laser = Laser(self.projectile_assets["laser_img"])
         laser.set_start(self.turret.rect.center, directions)
 
         angle = GameMath.get_angle_to(
@@ -53,11 +53,11 @@ class TestLevel(LevelBase):
         laser.update_rect()
         self.lasers.add(laser)
 
-    def __create_fireball(self, mouse_pos, type: str):
+    def __create_fireball(self, mouse_pos, element_type: str):
         """
         Create the players fireball attack
         """
-        fireball = self.player.get_fireball(mouse_pos, type)
+        fireball = self.player.get_fireball(mouse_pos, element_type)
         self.fireballs.add(fireball)
 
     def __load_sprite_groups(self):
@@ -83,21 +83,21 @@ class TestLevel(LevelBase):
         platform_2 = Platform(
             (self.width / 2, 40), (self.width / 2, (self.height / 3) * 2)
         )
-        self.platforms.append(platform)
-        self.platforms.append(platform_2)
+        self.platforms.add(platform)
+        self.platforms.add(platform_2)
 
     def __load_floor(self):
         """
         Load base floor
         """
-        self.floor = Platform((self.width, 100), (0, self.height - 25))
+        self.floor = Platform((self.width, 100), (0, self.height - 25), self.platform_assets["floor_image"])
 
     def __load_env(self):
         """
         Load initial environment
         and platform lists
         """
-        self.platforms = []
+        self.platforms = pygame.sprite.Group()
         self.__load_climbable_platforms()
         self.__load_floor()
 
@@ -114,10 +114,10 @@ class TestLevel(LevelBase):
             self.check_keyup_events(event)
 
         elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
-            mouse_button = pygame.mouse.get_pressed()
+            mouse_button = pygame.mouse.get_pressed(3)
             # if mouse left clicked
             if mouse_button[0]:
-                self.__create_fireball(event.pos, self.game_ui.active_weapon_bar.type)
+                self.__create_fireball(event.pos, self.game_ui.active_weapon_bar.element_type)
 
             elif mouse_button[2] and not self.player.defending:
                 # if mouse right clicked
@@ -167,9 +167,8 @@ class TestLevel(LevelBase):
         for platform in self.platforms:
 
             if (  # If the player should be standing on the platform
-                self.player.rect.bottom >= platform.rect.top
-                and self.player.rect.bottom <= platform.rect.top + 20
-                and pygame.sprite.collide_rect(self.player, platform)
+                platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
+                    and pygame.sprite.collide_rect(self.player, platform)
             ):
                 self.player.on_ground()
                 self.player.rect.bottom = platform.rect.top
@@ -197,11 +196,19 @@ class TestLevel(LevelBase):
         check if the player is on the ground
         """
         # If the player is on the floor ( The base platform )
-        if self.player.rect.bottom >= self.floor.rect.top:
+        if pygame.sprite.collide_rect(self.player, self.floor) and self.player.rect.bottom >= self.floor.rect.top:
             self.player.on_ground()
             self.player.rect.bottom = self.floor.rect.top
+        elif self.player.rect.bottom == self.floor.rect.top and (
+                self.player.rect.right < self.floor.rect.left or self.player.rect.left > self.floor.rect.right
+        ):
+            self.player.falling = True
         # Check player interaction with climbable platforms
         self.__check_platforms()
+
+        # if the player falls off the bottom of the screen
+        if self.player.rect.top > self.rect.bottom:
+            self.base_game_over()
 
     def __check_collisions(self):
         # Need impact sounds

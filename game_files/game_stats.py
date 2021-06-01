@@ -14,14 +14,9 @@ class GameStats:
         self.active_level = 0
 
         # initial setup
-        self._load_game_bools()
-        self.reset_stats()
-        self._read_high_score()
-
-    def _load_game_bools(self):
-        """
-        Load active screen bools
-        """
+        self.level = 1
+        self.lives_left = self.player_life_limit
+        self.__read_high_score()
         # These are all of the bools that
         # together determine which menu screen should be showing
         self.change_screen = False
@@ -31,7 +26,7 @@ class GameStats:
         self.new_high_score = False
         self.main_menu_active = True
 
-    def _read_high_score(self):
+    def __read_high_score(self):
         """
         Check if the high_score dir exists
         If it does, read the high score from the json file
