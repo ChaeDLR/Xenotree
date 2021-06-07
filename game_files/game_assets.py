@@ -153,6 +153,8 @@ class AssetManager:
             img_path = os.path.join(turret_imgs_path, img)
             loaded_images.append(pygame.image.load(img_path).convert())
 
+        return {"turret_images": loaded_images}
+
     @classmethod
     def projectile_assets(cls) -> dict:
         """

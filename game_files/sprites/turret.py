@@ -11,11 +11,11 @@ class Turret(Sprite):
     def __init__(self, images: dict):
         """
         image assets with keys 
-        "laser_img", 
+        "laser_img": surface, "turret_images": list
         """
         super().__init__()
-        self.images: dict = images
-
+        self.images: list = images["turret_images"]
+        self.laser_image = images["laser_img"]
         # vars that will control the turret animations
         self.animation_counter = 0
         self.animation_index = 0
@@ -26,7 +26,6 @@ class Turret(Sprite):
         self.health_points: int = 3
         self.firing_speed = 1700
         self.is_alive: bool = True
-
         self.lasers = Group()
     
     def create_laser(self, target: tuple):
@@ -40,7 +39,16 @@ class Turret(Sprite):
             (target[0], target[1])
         )
 
-        laser = Laser()
+        laser = Laser(self.laser_image)
+        laser.set_start(self.rect.center, directions)
+
+        angle = GameMath.get_angle_to(
+            (self.rect.x, self.rect.y),
+            (target[0], target[1])
+        )
+        laser.rotate_image(angle)
+        laser.update_rect()
+        self.lasers.add(laser)
 
 
     def set_position(self, x_y: tuple):

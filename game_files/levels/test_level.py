@@ -1,12 +1,9 @@
 import pygame
 
-from random import randint
-from ..utils.game_math import GameMath
 from .level_base import LevelBase
 from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
-from ..sprites.laser import Laser
 
 
 class TestLevel(LevelBase):
@@ -36,29 +33,6 @@ class TestLevel(LevelBase):
         # To activate turret
         pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
 
-    # TODO: Move laser sprite group to the turret class
-    # let turret do the math and update the laser
-    def __create_laser(self):
-        """
-        Create a laser for the turret to fire
-        """
-        directions = GameMath.get_directions(
-            (self.turret.rect.x, self.turret.rect.y),
-            (self.player.rect.x, self.player.rect.y),
-        )
-
-        # Create the laser and give it the starting point and it's directions
-        laser = Laser(self.projectile_assets["laser_img"])
-        laser.set_start(self.turret.rect.center, directions)
-
-        angle = GameMath.get_angle_to(
-            (self.turret.rect.x, self.turret.rect.y),
-            (self.player.rect.x, self.player.rect.y),
-        )
-        laser.rotate_image(angle)
-        laser.update_rect()
-        self.lasers.add(laser)
-
     def __create_fireball(self, mouse_pos, element_type: str):
         """
         Create the players fireball attack
@@ -70,7 +44,6 @@ class TestLevel(LevelBase):
         """
         Create the sprite groups needed for the level
         """
-        self.lasers = pygame.sprite.Group()
         self.fireballs = pygame.sprite.Group()
 
     def __load_turret(self):
@@ -78,13 +51,8 @@ class TestLevel(LevelBase):
         Load turret and set its position
         """
         #TODO: either put in sprie group or re-pos and switch is_alive
-        self.turret = Turret(self.rect)
+        self.turret = Turret(self.turret_assets)
         self.turret.rect.x, self.turret.rect.y = (self.width-self.turret.rect.width, 0)
-        # set turret random position
-        #self.turret.rect.x, self.turret.rect.y = (
-         #   randint(0, self.width-self.turret.rect.width), 
-          #  randint(0, self.height-self.turret.rect.height)
-           # )
 
     def __load_platforms(self):
         """
@@ -167,7 +135,7 @@ class TestLevel(LevelBase):
         # CUSTOM EVENTS
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
-            self.__create_laser()
+            self.turret.create_laser(self.player.rect.center)
 
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
@@ -247,26 +215,26 @@ class TestLevel(LevelBase):
     def __check_collisions(self):
         # Need impact sounds
         self.__check_grounded()
-        if pygame.sprite.spritecollide(self.player, self.lasers, True):
+        if pygame.sprite.spritecollide(self.player, self.turret.lasers, True):
             self.player_collide_hit()
         if pygame.sprite.spritecollide(self.turret, self.fireballs, True):
             if self.turret.health_points == 0:
                 self.turret.is_alive = False
             else:
                 self.turret.health_points -= 1
-        if pygame.sprite.groupcollide(self.lasers, self.fireballs, True, True):
+        if pygame.sprite.groupcollide(self.turret.lasers, self.fireballs, True, True):
             pass
-        if pygame.sprite.groupcollide(self.platforms, self.lasers, False, True):
+        if pygame.sprite.groupcollide(self.platforms, self.turret.lasers, False, True):
             pass
         if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
             pass
         if self.player.defending and (
             laser_list := pygame.sprite.spritecollide(
-                self.player.shield, self.lasers, False
+                self.player.shield, self.turret.lasers, False
             )
         ):
             # TODO: add laser reflection
-            self.lasers.remove(laser_list[0])
+            self.turret.lasers.remove(laser_list[0])
             pass
 
     def __blit__sprites(self):
@@ -280,13 +248,13 @@ class TestLevel(LevelBase):
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
-        self.lasers.update()
+        self.turret.lasers.update()
         self.fireballs.update()
 
-        for laser in self.lasers:
+        for laser in self.turret.lasers:
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
-                self.lasers.remove(laser)
+                self.turret.lasers.remove(laser)
         for fireball in self.fireballs:
             self.blit(fireball.image, fireball.rect)
             if fireball.rect.x < -250 or fireball.rect.y > self.rect.height:
