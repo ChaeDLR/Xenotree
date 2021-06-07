@@ -1,5 +1,4 @@
-from pygame import Surface
-from pygame import Rect
+from pygame import Surface, Rect, transform
 from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
 
@@ -10,33 +9,42 @@ class Platform(Sprite):
     Stops player from moving
     """
 
-    def __init__(self, w_h: tuple, x_y: tuple, image=None):
+    def __init__(self, x_y: tuple, w_h: tuple=None, image=None):
         """
         w_h: tuple (width, height)
         x_y: tuple (x_position, y_position)
         """
-        self.width, self.height = w_h[0], w_h[1]
         super().__init__()
         self.colors = ScreenColors()
 
-        if image:
-            self.__create_imaged_platform(x_y[0], x_y[1], image)
+        # use a platform image but resize it
+        if w_h and image:
+            self.__create_imaged_platform(x_y, image)
+            self.image = transform.scale(self.image, w_h)
+        # use platform image at the default size
+        elif image:
+            self.__create_imaged_platform(x_y, image)
         else:
-            self.__build_black_platform(x_y[0], x_y[1])
+            self.__build_black_platform(x_y, w_h)
 
-    def __create_imaged_platform(self, x: int, y: int, image):
+    def __create_imaged_platform(self, pos: tuple, image):
         """
         Create a platform out of given image
         """
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = x, y
+        self.rect.x, self.rect.y = pos
+        self.width, self.height = self.rect.width, self.rect.height
 
-    def __build_black_platform(self, x: int, y: int):
+    def __build_black_platform(self, pos: tuple, dims: tuple):
+        """
+        x_y position
+        wodth_height dimentions
+        """
+        self.width, self.height = pos
         self.image = Surface((self.width, self.height))
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x, self.rect.y = dims
         self.image.fill(self.colors.platform_color)
 
     def set_position(self, x_pos=None, y_pos=None):

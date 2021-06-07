@@ -137,6 +137,21 @@ class AssetManager:
             **get_animations(cls.player_coords["walk"], "walk"),
             **get_animations(cls.player_coords["jump"], "jump"),
         }
+    
+    @classmethod
+    def turret_assets(cls) -> dict:
+        """
+        Get turret images for animation and projectile
+        """
+        turret_imgs_path = os.path.join(cls.current_path, "sprites/sprite_assets/turret")
+        images_list: list = os.listdir(turret_imgs_path)
+        # Sort the images by the number value in the file name string
+        images_list.sort(key=lambda img_string: img_string[7])
+
+        loaded_images: list = []
+        for img in images_list:
+            img_path = os.path.join(turret_imgs_path, img)
+            loaded_images.append(pygame.image.load(img_path).convert())
 
     @classmethod
     def projectile_assets(cls) -> dict:

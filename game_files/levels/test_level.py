@@ -1,5 +1,6 @@
 import pygame
 
+from random import randint
 from ..utils.game_math import GameMath
 from .level_base import LevelBase
 from .environment.platform import Platform
@@ -29,9 +30,14 @@ class TestLevel(LevelBase):
         self.__load_sprite_groups()
         self.turret.firing = True
 
+        self.platform_speed = 2500
+        self.turret_spawn_speed = 2500
+
         # To activate turret
         pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
 
+    # TODO: Move laser sprite group to the turret class
+    # let turret do the math and update the laser
     def __create_laser(self):
         """
         Create a laser for the turret to fire
@@ -71,26 +77,47 @@ class TestLevel(LevelBase):
         """
         Load turret and set its position
         """
+        #TODO: either put in sprie group or re-pos and switch is_alive
         self.turret = Turret(self.rect)
-        self.turret.rect.top = self.rect.top
-        self.turret.rect.right = self.rect.right
+        self.turret.rect.x, self.turret.rect.y = (self.width-self.turret.rect.width, 0)
+        # set turret random position
+        #self.turret.rect.x, self.turret.rect.y = (
+         #   randint(0, self.width-self.turret.rect.width), 
+          #  randint(0, self.height-self.turret.rect.height)
+           # )
 
-    def __load_climbable_platforms(self):
+    def __load_platforms(self):
         """
-        Load platforms that are climbable
+        Load base platforms for testing
         """
-        platform = Platform((self.width / 2, 40), (0, self.height / 4))
-        platform_2 = Platform(
-            (self.width / 2, 40), (self.width / 2, (self.height / 3) * 2)
-        )
-        self.platforms.add(platform)
-        self.platforms.add(platform_2)
+        # x_y
+        platform_positions = [
+            (0, 100),
+            (self.width-50, 175),
+            (self.width/2, 250),
+            (200, 375),
+            (300, 450)
+        ]
+
+        for pos in platform_positions:
+            self.platforms.add(
+                Platform(pos, image=self.platform_assets["floor_image"], w_h=(96, 36))
+            )
+        
 
     def __load_floor(self):
         """
         Load base floor
         """
-        self.floor = Platform((self.width, 100), (0, self.height - 25), self.platform_assets["floor_image"])
+        self.floor = Platform((0, self.height - 25), image=self.platform_assets["floor_image"])
+        self.platforms.add(self.floor)
+
+        # make the floor cover the entire width of the screen
+        floor_tile_number = round(self.width / self.floor.width) + 1
+        for i in range(1, floor_tile_number):
+            self.platforms.add(
+                Platform((self.floor.width*i, self.height - 25), image=self.platform_assets["floor_image"])
+                )
 
     def __load_env(self):
         """
@@ -98,13 +125,15 @@ class TestLevel(LevelBase):
         and platform lists
         """
         self.platforms = pygame.sprite.Group()
-        self.__load_climbable_platforms()
         self.__load_floor()
+        self.__load_platforms()
 
     def __load_custom_events(self):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
         self.player_fire_cooldown = pygame.USEREVENT + 9
+        self.new_platform = pygame.USEREVENT + 10
+        self.spawn_turret = pygame.USEREVENT + 11
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -140,8 +169,14 @@ class TestLevel(LevelBase):
             self.turret.firing = True
             self.__create_laser()
 
-        elif event.type == self.player_fire_cooldown:
+        if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
+
+        if event.type == self.new_platform:
+            self.__load_platform()
+        
+        if event.type == self.spawn_turret:
+            self.__load_turret()
 
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
@@ -165,7 +200,6 @@ class TestLevel(LevelBase):
         # if true then have the player stand on top of the platform
         # This is for platforms the player can jump on top of from underneath
         for platform in self.platforms:
-
             if (  # If the player should be standing on the platform
                 platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
                     and pygame.sprite.collide_rect(self.player, platform)

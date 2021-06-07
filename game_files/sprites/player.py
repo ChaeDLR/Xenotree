@@ -1,10 +1,9 @@
 import pygame
-import os
+
 from pygame.sprite import Sprite
 from ..utils.game_math import GameMath
 from .wiz_shield import Shield
 from .fireball import Fireball
-
 
 class Player(Sprite):
     """ player sprite class """
@@ -23,6 +22,8 @@ class Player(Sprite):
         self.death_frame: int = 1
         self.animation_index_limit: int = 3
         self.screen_bound: int = bound
+        # keep track of how many jumps the player has used in the air
+        self.jump_counter = 0
 
         self.rect = self.image.get_rect()
 
@@ -92,7 +93,6 @@ class Player(Sprite):
         self.player_hit = False
         # track player cooldowns
         self.can_fire = True
-        self.can_jump = True
         # check that the play still has health points
         self.is_alive = True
         # If the player has their shield up
@@ -171,10 +171,12 @@ class Player(Sprite):
         Reset animation
         Reset jump velocity
         """
-        self.jumping = True
-        self.reset_animation
-        self.jumping_velocity = velocity
-        self.rect.y += self.jumping_velocity
+        if self.jump_counter < 2:
+            self.jumping = True
+            self.reset_animation
+            self.jumping_velocity = velocity
+            self.rect.y += self.jumping_velocity
+            self.jump_counter += 1
 
     def start_defend(self, mouse_pos: tuple):
         """
@@ -215,6 +217,7 @@ class Player(Sprite):
         self.falling = False
         self.jumping = False
         self.falling_velocity = 0
+        self.jump_counter = 0
 
     def switch_move_left(self, move: bool):
         """
@@ -250,7 +253,7 @@ class Player(Sprite):
             self.__move_right()
         elif self.moving_left:
             self.__move_left()
-        if self.jumping and self.can_jump:
+        if self.jumping:
             self.__jump()
         elif self.falling:
             self.__fall()
