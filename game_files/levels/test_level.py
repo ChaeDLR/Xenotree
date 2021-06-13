@@ -1,3 +1,4 @@
+from game_files.sprites.player import Player
 import pygame
 
 from .level_base import LevelBase
@@ -50,9 +51,12 @@ class TestLevel(LevelBase):
         """
         Load turret and set its position
         """
-        #TODO: either put in sprie group or re-pos and switch is_alive
+        # TODO: either put in sprie group or re-pos and switch is_alive
         self.turret = Turret(self.turret_assets)
-        self.turret.rect.x, self.turret.rect.y = (self.width-self.turret.rect.width, 0)
+        self.turret.rect.x, self.turret.rect.y = (
+            self.width - self.turret.rect.width,
+            0,
+        )
 
     def __load_platforms(self):
         """
@@ -61,31 +65,35 @@ class TestLevel(LevelBase):
         # x_y
         platform_positions = [
             (0, 100),
-            (self.width-50, 175),
-            (self.width/2, 250),
+            (self.width - 50, 175),
+            (self.width / 2, 250),
             (200, 375),
-            (300, 450)
+            (300, 450),
         ]
 
         for pos in platform_positions:
             self.platforms.add(
                 Platform(pos, image=self.platform_assets["floor_image"], w_h=(96, 36))
             )
-        
 
     def __load_floor(self):
         """
         Load base floor
         """
-        self.floor = Platform((0, self.height - 25), image=self.platform_assets["floor_image"])
+        self.floor = Platform(
+            (0, self.height - 25), image=self.platform_assets["floor_image"]
+        )
         self.platforms.add(self.floor)
 
         # make the floor cover the entire width of the screen
         floor_tile_number = round(self.width / self.floor.width) + 1
         for i in range(1, floor_tile_number):
             self.platforms.add(
-                Platform((self.floor.width*i, self.height - 25), image=self.platform_assets["floor_image"])
+                Platform(
+                    (self.floor.width * i, self.height - 25),
+                    image=self.platform_assets["floor_image"],
                 )
+            )
 
     def __load_env(self):
         """
@@ -100,8 +108,7 @@ class TestLevel(LevelBase):
         self.update_player_animation = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 8
         self.player_fire_cooldown = pygame.USEREVENT + 9
-        self.new_platform = pygame.USEREVENT + 10
-        self.spawn_turret = pygame.USEREVENT + 11
+        self.spawn_turret = pygame.USEREVENT + 10
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -114,7 +121,9 @@ class TestLevel(LevelBase):
             mouse_button = pygame.mouse.get_pressed(3)
             # if mouse left clicked
             if mouse_button[0]:
-                self.__create_fireball(event.pos, self.game_ui.active_weapon_bar.element_type)
+                self.__create_fireball(
+                    event.pos, self.game_ui.active_weapon_bar.element_type
+                )
 
             elif mouse_button[2] and not self.player.defending:
                 # if mouse right clicked
@@ -125,7 +134,8 @@ class TestLevel(LevelBase):
 
         elif event.type == pygame.MOUSEBUTTONUP:
             self.player.defending = False
-            self.player.falling = True
+            if self.player.jumping:
+                self.player.falling = True
             self.player.reset_animation()
 
         else:
@@ -140,9 +150,6 @@ class TestLevel(LevelBase):
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
 
-        if event.type == self.new_platform:
-            self.__load_platform()
-        
         if event.type == self.spawn_turret:
             self.__load_turret()
 
@@ -167,29 +174,39 @@ class TestLevel(LevelBase):
         # and if the player is colliding
         # if true then have the player stand on top of the platform
         # This is for platforms the player can jump on top of from underneath
+
         for platform in self.platforms:
-            if (  # If the player should be standing on the platform
-                platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
-                    and pygame.sprite.collide_rect(self.player, platform)
-            ):
-                self.player.on_ground()
-                self.player.rect.bottom = platform.rect.top
-            elif pygame.sprite.collide_rect(  # if the player hits the bottom or sides of a platform with their body
-                self.player, platform
-            ) and (
-                self.player.rect.top <= platform.rect.bottom
-                or self.player.rect.right >= platform.rect.left
-                or self.player.rect.left <= platform.rect.right
-            ):
-                self.player.stop_movement()
+            # TODO: Fix player going up left and right side when jumping close to edges
+            if pygame.sprite.collide_rect(self.player, platform):
+                if platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20:
+                    self.player.on_ground()
+                    self.player.rect.bottom = platform.rect.top - 1
+                # The logic here is that if the player hits a platform we want to stop the player movement
+                # and then move them just a bit away so that
+                # they're not always triggering the stop movement method
+                elif (
+                    self.player.rect.right >= platform.rect.left - 1
+                    and self.player.rect.right < platform.rect.center[0]
+                ):
+                    self.player.x = platform.rect.left - self.player.rect.width
+                    self.player.rect.x = self.player.x
+                    self.player.stop_movement(self.player.moving_left, False)
+                elif (
+                    self.player.rect.left <= platform.rect.right + 1
+                    and self.player.rect.left > platform.rect.center[0]
+                ):
+                    self.player.x = platform.rect.right - 2
+                    self.player.rect.x = self.player.x
+                    self.player.stop_movement(False, self.player.moving_right)
+                elif self.player.rect.top <= platform.rect.bottom:
+                    self.player.jumping = False
+                    self.player.falling = True
             elif (  # If the player is on the platform and moves off of the right side
-                self.player.rect.bottom == platform.rect.top
-                and self.player.rect.left >= platform.rect.right
-            ):
-                self.player.falling = True
-            elif (  # If the player is on the platform and moves off of the left side
-                self.player.rect.bottom == platform.rect.top
-                and self.player.rect.right <= platform.rect.left
+                self.player.rect.bottom == platform.rect.top - 1
+                and (
+                    self.player.rect.left >= platform.rect.right
+                    or self.player.rect.right <= platform.rect.left
+                )
             ):
                 self.player.falling = True
 
@@ -197,14 +214,6 @@ class TestLevel(LevelBase):
         """
         check if the player is on the ground
         """
-        # If the player is on the floor ( The base platform )
-        if pygame.sprite.collide_rect(self.player, self.floor) and self.player.rect.bottom >= self.floor.rect.top:
-            self.player.on_ground()
-            self.player.rect.bottom = self.floor.rect.top
-        elif self.player.rect.bottom == self.floor.rect.top and (
-                self.player.rect.right < self.floor.rect.left or self.player.rect.left > self.floor.rect.right
-        ):
-            self.player.falling = True
         # Check player interaction with climbable platforms
         self.__check_platforms()
 
@@ -264,7 +273,6 @@ class TestLevel(LevelBase):
         """
         blit test level env
         """
-        self.blit(self.floor.image, self.floor.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
 

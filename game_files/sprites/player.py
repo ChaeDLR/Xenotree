@@ -82,7 +82,7 @@ class Player(Sprite):
         bool values the player needs
         """
         # movement flags
-        self.moving = False
+        self.moving = False    # used in animation code
         self.jumping = False
         self.falling = False
         # Check which way the player is facing
@@ -137,18 +137,12 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         self.falling_velocity += 0.5
 
-    def stop_movement(self, fall: bool = True) -> None:
+    def stop_movement(self, left: bool, right: bool) -> None:
         """
-        Stop the player movement and make them fall if possible
+        Stop the player movement in a given direction
         """
-        self.moving = False
-        self.jumping = False
-        self.moving_right = False
-        self.moving_left = False
-        if fall:
-            self.falling = fall
-        else:
-            self.falling = True
+        self.moving_right = right
+        self.moving_left = left
 
     def reset_player(self):
         """ reset player position """
@@ -216,7 +210,8 @@ class Player(Sprite):
         """
         self.falling = False
         self.jumping = False
-        self.falling_velocity = 0
+        self.jumping_velocity = -7.5
+        self.falling_velocity = 7.5
         self.jump_counter = 0
 
     def switch_move_left(self, move: bool):

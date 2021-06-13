@@ -19,19 +19,20 @@ class Platform(Sprite):
 
         # use a platform image but resize it
         if w_h and image:
-            self.__create_imaged_platform(x_y, image)
-            self.image = transform.scale(self.image, w_h)
+            self.__create_imaged_platform(x_y, image, scale=w_h)
         # use platform image at the default size
         elif image:
             self.__create_imaged_platform(x_y, image)
         else:
             self.__build_black_platform(x_y, w_h)
 
-    def __create_imaged_platform(self, pos: tuple, image):
+    def __create_imaged_platform(self, pos: tuple, image, scale=None):
         """
         Create a platform out of given image
         """
         self.image = image
+        if scale:
+            self.image = transform.scale(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos
         self.width, self.height = self.rect.width, self.rect.height
