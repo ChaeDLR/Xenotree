@@ -178,7 +178,11 @@ class TestLevel(LevelBase):
         for platform in self.platforms:
             # TODO: Fix player going up left and right side when jumping close to edges
             if pygame.sprite.collide_rect(self.player, platform):
-                if platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20:
+                if (
+                    platform.rect.top
+                    <= self.player.rect.bottom
+                    <= platform.rect.top + 20
+                ):
                     self.player.on_ground()
                     self.player.rect.bottom = platform.rect.top - 1
                 # The logic here is that if the player hits a platform we want to stop the player movement
@@ -237,13 +241,13 @@ class TestLevel(LevelBase):
             pass
         if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
             pass
-        if self.player.defending and (
-            laser_list := pygame.sprite.spritecollide(
-                self.player.shield, self.turret.lasers, False
-            )
+        if self.player.defending and pygame.sprite.spritecollide(
+            self.player.shield,
+            self.turret.lasers,
+            True,
+            collided=pygame.sprite.collide_mask,
         ):
             # TODO: add laser reflection
-            self.turret.lasers.remove(laser_list[0])
             pass
 
     def __blit__sprites(self):

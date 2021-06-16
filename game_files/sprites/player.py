@@ -13,7 +13,7 @@ class Player(Sprite):
 
         self.__create_animation_variables()
         self.images = assets
-        self.image = self.images["idle_right"][1]
+        self.image, self.mask = self.images["idle_right"][1]
         self.__load_sprites()
 
         # create players bool values
@@ -29,7 +29,7 @@ class Player(Sprite):
 
         self.movement_speed: float = 6.0
         self.jumping_velocity: float = -7.5
-        self.falling_velocity: float = 7.5
+        self.falling_velocity: float = 1.0
 
         # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1000
@@ -38,38 +38,6 @@ class Player(Sprite):
         self.shield.rect.center = self.rect.center
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
-
-    def set_position(self, x_y: tuple):
-        """
-        set player position using midbottom
-        the players feet
-        """
-        self.rect.midbottom = x_y
-        self.x, self.y = self.rect.x, self.rect.y
-
-    def get_fireball(self, mouse_pos, type: str):
-        """
-        get a fireball
-        """
-        fireball_start_pos: list = [
-            self.rect.center[0],
-            self.rect.center[1] + 5,
-        ]
-        # set the x-axis offset of the fireball spawn position based on which way the player is facing
-        if self.facing_left:
-            fireball_start_pos[0] -= 10
-        elif self.facing_right:
-            fireball_start_pos[0] += 10
-
-        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
-
-        fireball = Fireball(self.images, type)
-        fireball.set_start(fireball_start_pos, directions)
-
-        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
-        fireball.rotate_image(angle)
-        fireball.update_rect()
-        return fireball
 
     def __load_sprites(self):
         """
@@ -137,6 +105,38 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         self.falling_velocity += 0.5
 
+    def set_position(self, x_y: tuple):
+        """
+        set player position using midbottom
+        the players feet
+        """
+        self.rect.midbottom = x_y
+        self.x, self.y = self.rect.x, self.rect.y
+
+    def get_fireball(self, mouse_pos, type: str):
+        """
+        get a fireball
+        """
+        fireball_start_pos: list = [
+            self.rect.center[0],
+            self.rect.center[1] + 5,
+        ]
+        # set the x-axis offset of the fireball spawn position based on which way the player is facing
+        if self.facing_left:
+            fireball_start_pos[0] -= 10
+        elif self.facing_right:
+            fireball_start_pos[0] += 10
+
+        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
+
+        fireball = Fireball(self.images, type)
+        fireball.set_start(fireball_start_pos, directions)
+
+        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
+        fireball.rotate_image(angle)
+        fireball.update_rect()
+        return fireball
+
     def stop_movement(self, left: bool, right: bool) -> None:
         """
         Stop the player movement in a given direction
@@ -178,9 +178,9 @@ class Player(Sprite):
         """
 
         if self.facing_right:
-            self.image = self.images["jump_right"][2]
+            self.image, self.mask = self.images["jump_right"][2]
         elif self.facing_left:
-            self.image = self.images["jump_left"][2]
+            self.image, self.mask = self.images["jump_left"][2]
 
         directions = GameMath.get_directions(self.rect.center, mouse_pos)
 
@@ -211,7 +211,7 @@ class Player(Sprite):
         self.falling = False
         self.jumping = False
         self.jumping_velocity = -7.5
-        self.falling_velocity = 7.5
+        self.falling_velocity = 1.0
         self.jump_counter = 0
 
     def switch_move_left(self, move: bool):
@@ -262,36 +262,36 @@ class Player(Sprite):
             self.reset_animation()
 
         if self.defending and self.facing_right:
-            self.image = self.images["idle_right"][1]
+            self.image, self.mask = self.images["idle_right"][1]
 
         elif self.defending and self.facing_left:
-            self.image = self.images["idle_left"][1]
+            self.image, self.mask = self.images["idle_left"][1]
 
         elif self.jumping and self.facing_right:
             if self.animation_index >= len(self.images["jump_right"]) - 1:
                 self.reset_animation()
-            self.image = self.images["jump_right"][self.animation_index]
+            self.image, self.mask = self.images["jump_right"][self.animation_index]
 
         elif self.jumping and not self.facing_right:
             if self.animation_index >= len(self.images["jump_left"]) - 1:
                 self.reset_animation()
-            self.image = self.images["jump_left"][self.animation_index]
+            self.image, self.mask = self.images["jump_left"][self.animation_index]
 
         elif self.facing_right and self.moving:
             if self.animation_index >= len(self.images["walk_right"]) - 1:
                 self.reset_animation()
-            self.image = self.images["walk_right"][self.animation_index]
+            self.image, self.mask = self.images["walk_right"][self.animation_index]
 
         elif self.facing_left:
             if self.animation_index >= len(self.images["walk_left"]) - 1:
                 self.reset_animation()
-            self.image = self.images["walk_left"][self.animation_index]
+            self.image, self.mask = self.images["walk_left"][self.animation_index]
 
         elif not self.facing_right:
-            self.image = self.images["idle_left"][self.animation_index]
+            self.image, self.mask = self.images["idle_left"][self.animation_index]
 
         else:
-            self.image = self.images["idle_right"][self.animation_index]
+            self.image, self.mask = self.images["idle_right"][self.animation_index]
 
         self.animation_counter += 1
 

@@ -114,7 +114,7 @@ class AssetManager:
 
     @classmethod
     def load_player_images(cls) -> dict:
-        """ Load player image from assets folder """
+        """ Load player images and masks from assets folder """
         player_ss_path = os.path.join(
             cls.current_path, "sprites/sprite_assets/player_assets/MageSpriteSheet.png"
         )
@@ -125,11 +125,19 @@ class AssetManager:
             for coord in coords_list:
                 image = ss_tool.image_at(coord, cls.p_colorkey)
                 image = pygame.transform.scale(image, (41, 54))
-                right_images.append(image)
+                mask = pygame.mask.from_surface(image)
+                right_images.append((image, mask))
 
-            left_images = right_images[:]
+            temp_image_masks = right_images[:]
+            left_images = []
             for i in range(0, len(right_images)):
-                left_images[i] = pygame.transform.flip(left_images[i], True, False)
+                left_images.append(
+                    (
+                        pygame.transform.flip(temp_image_masks[i][0], True, False),
+                        pygame.mask.from_surface(temp_image_masks[i][0]),
+                    )
+                )
+
             return {f"{key}_right": right_images, f"{key}_left": left_images}
 
         return {
@@ -137,13 +145,15 @@ class AssetManager:
             **get_animations(cls.player_coords["walk"], "walk"),
             **get_animations(cls.player_coords["jump"], "jump"),
         }
-    
+
     @classmethod
     def turret_assets(cls) -> dict:
         """
         Get turret images for animation and projectile
         """
-        turret_imgs_path = os.path.join(cls.current_path, "sprites/sprite_assets/turret")
+        turret_imgs_path = os.path.join(
+            cls.current_path, "sprites/sprite_assets/turret"
+        )
         images_list: list = os.listdir(turret_imgs_path)
         # Sort the images by the number value in the file name string
         images_list.sort(key=lambda img_string: img_string[7])

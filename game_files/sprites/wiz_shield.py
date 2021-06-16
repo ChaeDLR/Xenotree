@@ -31,6 +31,7 @@ class Shield(Projectile):
         Rotate the image so that the front of the shield is facing the mouse
         """
         super().rotate_image(rotation)
+        self.mask = pygame.mask.from_surface(self.image)
         self.movement_counter = 0
 
     def update(self):
