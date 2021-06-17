@@ -41,9 +41,10 @@ class Player(Sprite):
 
     def __load_sprites(self):
         """
-        Load the players shield sprite
+        Load the players shield sprite and fireball group
         """
         self.shield = Shield()
+        self.fireballs = pygame.sprite.Group()
 
     def __player_bools(self) -> None:
         """
@@ -113,7 +114,7 @@ class Player(Sprite):
         self.rect.midbottom = x_y
         self.x, self.y = self.rect.x, self.rect.y
 
-    def get_fireball(self, mouse_pos, type: str):
+    def create_fireball(self, mouse_pos, type: str):
         """
         get a fireball
         """
@@ -135,7 +136,7 @@ class Player(Sprite):
         angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
         fireball.rotate_image(angle)
         fireball.update_rect()
-        return fireball
+        self.fireballs.add(fireball)
 
     def stop_movement(self, left: bool, right: bool) -> None:
         """

@@ -15,6 +15,7 @@ class Turret(Sprite):
         """
         super().__init__()
         self.images: list = images["turret_images"]
+        self.mask = pygame.mask.from_surface(self.images[0])
         self.laser_image = images["laser_img"]
         # vars that will control the turret animations
         self.animation_counter = 0
@@ -36,7 +37,7 @@ class Turret(Sprite):
         """
         directions = GameMath.get_directions(
             (self.rect.x, self.rect.y),
-            (target[0], target[1])
+            target
         )
 
         laser = Laser(self.laser_image)
@@ -44,8 +45,9 @@ class Turret(Sprite):
 
         angle = GameMath.get_angle_to(
             (self.rect.x, self.rect.y),
-            (target[0], target[1])
+            target
         )
+        
         laser.rotate_image(angle)
         laser.update_rect()
         self.lasers.add(laser)

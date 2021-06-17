@@ -25,7 +25,6 @@ class TestLevel(LevelBase):
         self.player.set_position(self.floor.rect.midtop)
         self.__load_turret()
         self.__load_custom_events()
-        self.__load_sprite_groups()
         self.turret.firing = True
 
         self.platform_speed = 2500
@@ -33,19 +32,6 @@ class TestLevel(LevelBase):
 
         # To activate turret
         pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
-
-    def __create_fireball(self, mouse_pos, element_type: str):
-        """
-        Create the players fireball attack
-        """
-        fireball = self.player.get_fireball(mouse_pos, element_type)
-        self.fireballs.add(fireball)
-
-    def __load_sprite_groups(self):
-        """
-        Create the sprite groups needed for the level
-        """
-        self.fireballs = pygame.sprite.Group()
 
     def __load_turret(self):
         """
@@ -121,7 +107,7 @@ class TestLevel(LevelBase):
             mouse_button = pygame.mouse.get_pressed(3)
             # if mouse left clicked
             if mouse_button[0]:
-                self.__create_fireball(
+                self.player.create_fireball(
                     event.pos, self.game_ui.active_weapon_bar.element_type
                 )
 
@@ -145,7 +131,7 @@ class TestLevel(LevelBase):
         # CUSTOM EVENTS
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
-            self.turret.create_laser(self.player.rect.center)
+            self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
 
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
@@ -174,10 +160,12 @@ class TestLevel(LevelBase):
         # and if the player is colliding
         # if true then have the player stand on top of the platform
         # This is for platforms the player can jump on top of from underneath
+        if self.player.rect.top > self.rect.bottom:
+            self.base_game_over()
 
         for platform in self.platforms:
             # TODO: Fix player going up left and right side when jumping close to edges
-            if pygame.sprite.collide_rect(self.player, platform):
+            if pygame.sprite.collide_mask(self.player, platform):
                 if (
                     platform.rect.top
                     <= self.player.rect.bottom
@@ -214,32 +202,29 @@ class TestLevel(LevelBase):
             ):
                 self.player.falling = True
 
-    def __check_grounded(self):
+    def __turret_laser_collisions(self):
         """
-        check if the player is on the ground
+        Check the turret laser for collisions
         """
-        # Check player interaction with climbable platforms
-        self.__check_platforms()
-
-        # if the player falls off the bottom of the screen
-        if self.player.rect.top > self.rect.bottom:
-            self.base_game_over()
-
-    def __check_collisions(self):
-        # Need impact sounds
-        self.__check_grounded()
-        if pygame.sprite.spritecollide(self.player, self.turret.lasers, True):
+        if pygame.sprite.spritecollide(
+            self.player, self.turret.lasers, True, collided=pygame.sprite.collide_mask
+        ) or pygame.sprite.collide_mask(self.player, self.turret):
             self.player_collide_hit()
-        if pygame.sprite.spritecollide(self.turret, self.fireballs, True):
-            if self.turret.health_points == 0:
-                self.turret.is_alive = False
-            else:
-                self.turret.health_points -= 1
-        if pygame.sprite.groupcollide(self.turret.lasers, self.fireballs, True, True):
+        if pygame.sprite.groupcollide(
+            self.turret.lasers,
+            self.player.fireballs,
+            True,
+            True,
+            collided=pygame.sprite.collide_mask,
+        ):
             pass
-        if pygame.sprite.groupcollide(self.platforms, self.turret.lasers, False, True):
-            pass
-        if pygame.sprite.groupcollide(self.platforms, self.fireballs, False, True):
+        if pygame.sprite.groupcollide(
+            self.platforms,
+            self.turret.lasers,
+            False,
+            True,
+            collided=pygame.sprite.collide_mask,
+        ):
             pass
         if self.player.defending and pygame.sprite.spritecollide(
             self.player.shield,
@@ -249,6 +234,35 @@ class TestLevel(LevelBase):
         ):
             # TODO: add laser reflection
             pass
+
+    def __fireballs_collisions(self):
+        """
+        Check for the fireball collisions
+        """
+        if pygame.sprite.groupcollide(
+            self.platforms,
+            self.player.fireballs,
+            False,
+            True,
+            collided=pygame.sprite.collide_mask,
+        ):
+            pass
+        if pygame.sprite.spritecollide(
+            self.turret, self.player.fireballs, True, collided=pygame.sprite.collide_mask
+        ):
+            if self.turret.health_points == 0:
+                self.turret.is_alive = False
+            else:
+                self.turret.health_points -= 1
+
+    def __check_collisions(self):
+        # Need impact sounds
+        self.__check_platforms()
+        # only check for laser collisions if a laser exists
+        if len(self.turret.lasers.sprites()) > 0:
+            self.__turret_laser_collisions()
+        if len(self.player.fireballs.sprites()):
+            self.__fireballs_collisions()
 
     def __blit__sprites(self):
         """
@@ -262,16 +276,17 @@ class TestLevel(LevelBase):
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
         self.turret.lasers.update()
-        self.fireballs.update()
+        self.player.fireballs.update()
 
         for laser in self.turret.lasers:
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
                 self.turret.lasers.remove(laser)
-        for fireball in self.fireballs:
+                
+        for fireball in self.player.fireballs:
             self.blit(fireball.image, fireball.rect)
             if fireball.rect.x < -250 or fireball.rect.y > self.rect.height:
-                self.fireballs.remove(fireball)
+                self.player.fireballs.remove(fireball)
 
     def __blit_environment(self):
         """

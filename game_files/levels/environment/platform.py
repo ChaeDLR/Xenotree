@@ -1,4 +1,4 @@
-from pygame import Surface, Rect, transform
+from pygame import Surface, Rect, transform, mask
 from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
 
@@ -36,6 +36,7 @@ class Platform(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos
         self.width, self.height = self.rect.width, self.rect.height
+        self.mask = mask.from_surface(self.image)
 
     def __build_black_platform(self, pos: tuple, dims: tuple):
         """

@@ -1,5 +1,4 @@
 from pygame.sprite import Sprite
-from pygame.rect import Rect
 from pygame.transform import rotate
 
 

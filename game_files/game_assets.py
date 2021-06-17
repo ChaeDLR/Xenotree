@@ -11,7 +11,7 @@ class AssetManager:
     current_path = os.path.dirname(__file__)
     p_colorkey = (0, 0, 0)
 
-    fireball_coords = {
+    fireball_coords: dict = {
         "idle_purp": [(2, 1, 4, 7), (26, 3, 3, 5)],
         "idle_blue": [(2, 11, 4, 7), (26, 13, 3, 5)],
         "idle_red": [(2, 21, 4, 7), (26, 23, 3, 5)],
