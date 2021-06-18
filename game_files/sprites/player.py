@@ -5,6 +5,7 @@ from ..utils.game_math import GameMath
 from .wiz_shield import Shield
 from .fireball import Fireball
 
+
 class Player(Sprite):
     """ player sprite class """
 
@@ -30,6 +31,7 @@ class Player(Sprite):
         self.movement_speed: float = 6.0
         self.jumping_velocity: float = -7.5
         self.falling_velocity: float = 1.0
+        self.falling_speed_limit: float = 14.0
 
         # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1000
@@ -51,7 +53,7 @@ class Player(Sprite):
         bool values the player needs
         """
         # movement flags
-        self.moving = False    # used in animation code
+        self.moving = False  # used in animation code
         self.jumping = False
         self.falling = False
         # Check which way the player is facing
@@ -97,14 +99,16 @@ class Player(Sprite):
         Start player jump
         """
         self.rect.y += self.jumping_velocity
-        self.jumping_velocity += 0.5
+        if self.jumping_velocity < self.falling_speed_limit:
+            self.jumping_velocity += 0.5
 
     def __fall(self):
         """
         Make the player fall
         """
         self.rect.y += self.falling_velocity
-        self.falling_velocity += 0.5
+        if self.falling_velocity < self.falling_speed_limit:
+            self.falling_velocity += 0.5
 
     def set_position(self, x_y: tuple):
         """
@@ -214,6 +218,7 @@ class Player(Sprite):
         self.jumping_velocity = -7.5
         self.falling_velocity = 1.0
         self.jump_counter = 0
+        print("OnGround!")
 
     def switch_move_left(self, move: bool):
         """

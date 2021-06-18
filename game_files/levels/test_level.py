@@ -48,7 +48,6 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        # x_y
         platform_positions = [
             (0, 100),
             (self.width - 50, 175),
@@ -169,32 +168,41 @@ class TestLevel(LevelBase):
                 if (
                     platform.rect.top
                     <= self.player.rect.bottom
-                    <= platform.rect.top + 20
+                    <= platform.rect.top + 15
+                    and self.player.falling
                 ):
                     self.player.on_ground()
-                    self.player.rect.bottom = platform.rect.top - 1
+                    self.player.rect.bottom = platform.rect.top - 2
                 # The logic here is that if the player hits a platform we want to stop the player movement
                 # and then move them just a bit away so that
                 # they're not always triggering the stop movement method
                 elif (
-                    self.player.rect.right >= platform.rect.left - 1
-                    and self.player.rect.right < platform.rect.center[0]
+                    platform.rect.left + 20
+                    > self.player.rect.right
+                    >= platform.rect.left - 2
+                    and self.player.moving_right
                 ):
                     self.player.x = platform.rect.left - self.player.rect.width
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(self.player.moving_left, False)
+                    print("Stoping movement right")
                 elif (
-                    self.player.rect.left <= platform.rect.right + 1
-                    and self.player.rect.left > platform.rect.center[0]
+                    platform.rect.right - 20
+                    < self.player.rect.left
+                    <= platform.rect.right + 2
+                    and self.player.moving_left
                 ):
-                    self.player.x = platform.rect.right - 2
+                    self.player.x = platform.rect.right + 1
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(False, self.player.moving_right)
-                elif self.player.rect.top <= platform.rect.bottom:
+                    print("Stoping movement left")
+                elif (
+                    self.player.rect.top <= platform.rect.bottom and self.player.jumping
+                ):
                     self.player.jumping = False
                     self.player.falling = True
             elif (  # If the player is on the platform and moves off of the right side
-                self.player.rect.bottom == platform.rect.top - 1
+                self.player.rect.bottom == platform.rect.top - 2
                 and (
                     self.player.rect.left >= platform.rect.right
                     or self.player.rect.right <= platform.rect.left
@@ -248,7 +256,10 @@ class TestLevel(LevelBase):
         ):
             pass
         if pygame.sprite.spritecollide(
-            self.turret, self.player.fireballs, True, collided=pygame.sprite.collide_mask
+            self.turret,
+            self.player.fireballs,
+            True,
+            collided=pygame.sprite.collide_mask,
         ):
             if self.turret.health_points == 0:
                 self.turret.is_alive = False
@@ -282,7 +293,7 @@ class TestLevel(LevelBase):
             self.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
                 self.turret.lasers.remove(laser)
-                
+
         for fireball in self.player.fireballs:
             self.blit(fireball.image, fireball.rect)
             if fireball.rect.x < -250 or fireball.rect.y > self.rect.height:

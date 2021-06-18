@@ -9,24 +9,26 @@ class Platform(Sprite):
     Stops player from moving
     """
 
-    def __init__(self, x_y: tuple, w_h: tuple=None, image=None):
+    def __init__(self, x_y: tuple, w_h: tuple = None, image=None):
         """
         w_h: tuple (width, height)
         x_y: tuple (x_position, y_position)
         """
         super().__init__()
         self.colors = ScreenColors()
-
+        # TODO: Create a way to have multiple images use the same rect
+        # Need to make the floor have one rect or rework how i detect the player should
+        # fall off of the ends of the platforms
         # use a platform image but resize it
         if w_h and image:
-            self.__create_imaged_platform(x_y, image, scale=w_h)
+            self.__create_imaged_platform(x_y, image)
         # use platform image at the default size
         elif image:
             self.__create_imaged_platform(x_y, image)
         else:
             self.__build_black_platform(x_y, w_h)
 
-    def __create_imaged_platform(self, pos: tuple, image, scale=None):
+    def __create_imaged_platform(self, pos: tuple, image: Surface, scale=None):
         """
         Create a platform out of given image
         """
