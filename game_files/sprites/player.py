@@ -218,7 +218,6 @@ class Player(Sprite):
         self.jumping_velocity = -7.5
         self.falling_velocity = 1.0
         self.jump_counter = 0
-        print("OnGround!")
 
     def switch_move_left(self, move: bool):
         """

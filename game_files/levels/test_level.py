@@ -22,7 +22,7 @@ class TestLevel(LevelBase):
 
         self.colors = ScreenColors()
         self.__load_env()
-        self.player.set_position(self.floor.rect.midtop)
+        self.player.set_position((25, self.height - 26))
         self.__load_turret()
         self.__load_custom_events()
         self.turret.firing = True
@@ -65,20 +65,19 @@ class TestLevel(LevelBase):
         """
         Load base floor
         """
-        self.floor = Platform(
-            (0, self.height - 25), image=self.platform_assets["floor_image"]
-        )
-        self.platforms.add(self.floor)
+        floor_image = self.platform_assets["floor_image"]
+        floor_width = floor_image.get_width()
 
         # make the floor cover the entire width of the screen
-        floor_tile_number = round(self.width / self.floor.width) + 1
-        for i in range(1, floor_tile_number):
-            self.platforms.add(
-                Platform(
-                    (self.floor.width * i, self.height - 25),
-                    image=self.platform_assets["floor_image"],
-                )
+        floor_tile_number = round(self.width / floor_width) + 1
+        for i in range(0, floor_tile_number):
+            floor_tile = Platform(
+                (floor_width * i, self.height - 25),
+                image=floor_image,
+                connect_left=True,
+                connect_right=True,
             )
+            self.platforms.add(floor_tile)
 
     def __load_env(self):
         """
@@ -155,15 +154,10 @@ class TestLevel(LevelBase):
         this method will use logic needed to make the
         climbable platforms work
         """
-        # this checks if the player is in the top half or so zone of the platform
-        # and if the player is colliding
-        # if true then have the player stand on top of the platform
-        # This is for platforms the player can jump on top of from underneath
         if self.player.rect.top > self.rect.bottom:
             self.base_game_over()
 
         for platform in self.platforms:
-            # TODO: Fix player going up left and right side when jumping close to edges
             if pygame.sprite.collide_mask(self.player, platform):
                 if (
                     platform.rect.top
@@ -173,39 +167,37 @@ class TestLevel(LevelBase):
                 ):
                     self.player.on_ground()
                     self.player.rect.bottom = platform.rect.top - 2
-                # The logic here is that if the player hits a platform we want to stop the player movement
-                # and then move them just a bit away so that
-                # they're not always triggering the stop movement method
                 elif (
                     platform.rect.left + 20
                     > self.player.rect.right
-                    >= platform.rect.left - 2
+                    >= platform.rect.left - 1
                     and self.player.moving_right
                 ):
                     self.player.x = platform.rect.left - self.player.rect.width
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(self.player.moving_left, False)
-                    print("Stoping movement right")
                 elif (
                     platform.rect.right - 20
                     < self.player.rect.left
-                    <= platform.rect.right + 2
+                    <= platform.rect.right + 1
                     and self.player.moving_left
                 ):
                     self.player.x = platform.rect.right + 1
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(False, self.player.moving_right)
-                    print("Stoping movement left")
                 elif (
                     self.player.rect.top <= platform.rect.bottom and self.player.jumping
                 ):
                     self.player.jumping = False
                     self.player.falling = True
-            elif (  # If the player is on the platform and moves off of the right side
-                self.player.rect.bottom == platform.rect.top - 2
-                and (
+            elif self.player.rect.bottom == platform.rect.top - 2 and (
+                (
                     self.player.rect.left >= platform.rect.right
-                    or self.player.rect.right <= platform.rect.left
+                    and not platform.connected_right
+                )
+                or (
+                    self.player.rect.right <= platform.rect.left
+                    and not platform.connected_left
                 )
             ):
                 self.player.falling = True
