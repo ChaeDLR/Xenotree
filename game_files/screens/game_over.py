@@ -34,10 +34,14 @@ class Game_Over(MenuBase):
         self.game_over_img_rect.midtop = self.rect.midtop
         self.game_over_img_rect.y += 40
 
-    def check_buttons(self, mouse_pos):
-        if self.main_menu_button.check_button(mouse_pos):
+    def check_button_down(self, mouse_pos):
+        self.main_menu_button.check_button(mouse_pos)
+        self.quit_button.check_button(mouse_pos)
+
+    def check_button_up(self, mouse_pos):
+        if self.main_menu_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(main_menu=True)
-        elif self.quit_button.check_button(mouse_pos):
+        elif self.quit_button.check_button(mouse_pos, True):
             sys.exit()
 
     def update(self):

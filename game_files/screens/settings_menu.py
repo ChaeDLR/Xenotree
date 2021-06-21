@@ -198,9 +198,16 @@ class SettingsMenu(MenuBase):
         else:
             self.blit(self.music_minus_filled_image, self.music_minus_image_rect)
 
-    def check_buttons(self, mouse_pos):
+    def check_button_down(self, mouse_pos):
         """
         Respond to mouse down events
+        """
+        self.back_button.check_button(mouse_pos)
+        self.save_button.check_button(mouse_pos)
+
+    def check_button_up(self, mouse_pos):
+        """
+        Respond to mouse up events
         """
         # If the music plus rect is pressed
         if self.music_plus_image_rect.collidepoint(mouse_pos):
@@ -223,14 +230,14 @@ class SettingsMenu(MenuBase):
             self.game_sound.decrease_effects_volume()
             self.update_effects_volume_string()
         # If back button is pressed go to the main menu
-        elif self.back_button.check_button(mouse_pos):
+        elif self.back_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(main_menu=True)
         # If save button is pressed call save_volumes() to save the volume settings
-        elif self.save_button.check_button(mouse_pos):
+        elif self.save_button.check_button(mouse_pos, True):
             self.game_sound.save_volumes()
 
     def update(self):
-        self.check_base_events(self.check_buttons)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
         self.blit(self.settings_menu_img, self.settings_menu_img_rect)
         self._update_signs()

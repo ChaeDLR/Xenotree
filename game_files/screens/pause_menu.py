@@ -27,14 +27,18 @@ class PauseMenu(MenuBase):
         self.stats.game_active = True
         self.stats.game_paused = False
 
-    def check_buttons(self, mouse_pos):
-        if self.resume_button.check_button(mouse_pos):
+    def check_button_down(self, mouse_pos):
+        self.resume_button.check_button(mouse_pos)
+        self.quit_button.check_button(mouse_pos)
+
+    def check_button_up(self, mouse_pos):
+        if self.resume_button.check_button(mouse_pos, True):
             self._unpause_game()
-        elif self.quit_button.check_button(mouse_pos):
+        elif self.quit_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(main_menu=True)
 
     def update(self):
-        self.check_base_events(self.check_buttons)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
         self.blit(self.text_image, self.text_image_rect)
         self.quit_button.blitme()

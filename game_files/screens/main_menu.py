@@ -37,21 +37,28 @@ class MainMenu(MenuBase):
         self.main_menu_img_rect.midtop = self.rect.midtop
         self.main_menu_img_rect.y += 60
 
-    def check_buttons(self, mouse_pos):
+    def check_button_down(self, mouse_pos):
         """
-        Return 1 if play button clicked
-        Return 2 if quit button clicked
+        Respond to button clicks mouse down events
         """
-        if self.play_button.check_button(mouse_pos):
+        self.play_button.check_button(mouse_pos)
+        self.quit_button.check_button(mouse_pos)
+        self.settings_button.check_button(mouse_pos)
+    
+    def check_button_up(self, mouse_pos):
+        """
+        Respond to button clicks mouse ip events
+        """
+        if self.play_button.check_button(mouse_pos, True):
             self.start_game()
             self.level_manager.load_test_level()
-        elif self.quit_button.check_button(mouse_pos):
+        elif self.quit_button.check_button(mouse_pos, True):
             sys.exit()
-        elif self.settings_button.check_button(mouse_pos):
+        elif self.settings_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(settings_menu=True)
 
     def update(self):
-        self.check_base_events(self.check_buttons)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
         self.blit(self.main_menu_img, self.main_menu_img_rect)
         self.play_button.blitme()

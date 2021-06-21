@@ -32,22 +32,25 @@ class MenuBase(Surface, ABC):
         # TODO: Add game music
         # pygame.mixer.music.play()
 
-    def check_base_events(self, menu_check_event):
+    def check_base_events(self, menu_check_md_event, menu_check_mu_event):
         """ 
         check for exit event 
-        or mouse down events on the menu screens
+        or Mouse Down/Mouse Up events on the menu screens
         """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and not self.stats.game_active:
-                mouse_pos = pygame.mouse.get_pos()
-                menu_check_event(mouse_pos)
+            elif not self.stats.game_active:
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    menu_check_md_event(pygame.mouse.get_pos())
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    menu_check_mu_event(pygame.mouse.get_pos())
     
     @abstractmethod
     def update(self):
         """
-        Each level needs an update method that with contain all of blits for it
+        Each level needs an update method that with contain all of its blits
         This method is called from the main game loop
         """
         pass

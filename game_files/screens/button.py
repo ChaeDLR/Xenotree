@@ -4,7 +4,6 @@ from .screen_colors import ScreenColors
 
 
 class Button(Surface):
-    """ create a button """
 
     def __init__(self, surface: object, button_text: str):
         """ initialize button settings """
@@ -32,11 +31,16 @@ class Button(Surface):
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
         self._prep_text(font_size)
 
-    def check_button(self, mouse_pos):
+    def check_button(self, mouse_pos, mouse_up:bool=False) -> bool:
         """ check for button collision """
         if self.rect.collidepoint(mouse_pos):
-            return True
-        return False
+            if mouse_up:
+                self.set_alpha(255)
+                self.msg_image.set_alpha(255)
+                return True
+            
+            self.set_alpha(25)
+            self.msg_image.set_alpha(25)
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the button """
@@ -47,7 +51,7 @@ class Button(Surface):
 
         self.msg_image_rect.center = self.rect.center
 
-    def _prep_text(self, fontsize: int):
+    def _prep_text(self, fontsize: int=40):
         """ prep the text to be rendered in the button """
         font = pygame.font.SysFont(None, fontsize, bold=True)
         self.msg_image = font.render(
