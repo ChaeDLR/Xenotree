@@ -41,6 +41,9 @@ class Player(Sprite):
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
 
+        # TESTING SWITCH
+        self.testing = False
+
     def __load_sprites(self):
         """
         Load the players shield sprite and fireball group
@@ -262,11 +265,15 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        # check if the animation is the last in the list
-        if self.animation_index > self.animation_index_limit:
-            self.reset_animation()
+        # TODO: Fix this code
+        # Just use the conditions to pick a key
 
-        if self.defending and self.facing_right:
+        if self.testing:
+            if self.animation_index >= len(self.images["death_right"]):
+                self.reset_animation()
+            self.image, self.mask = self.images["death_right"][self.animation_index]
+
+        elif self.defending and self.facing_right:
             self.image, self.mask = self.images["idle_right"][1]
 
         elif self.defending and self.facing_left:
@@ -293,9 +300,13 @@ class Player(Sprite):
             self.image, self.mask = self.images["walk_left"][self.animation_index]
 
         elif not self.facing_right:
+            if self.animation_index >= len(self.images["idle_left"]) - 1:
+                self.reset_animation()
             self.image, self.mask = self.images["idle_left"][self.animation_index]
 
         else:
+            if self.animation_index >= len(self.images["idle_right"]) - 1:
+                self.reset_animation()
             self.image, self.mask = self.images["idle_right"][self.animation_index]
 
         self.animation_counter += 1

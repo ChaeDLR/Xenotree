@@ -237,8 +237,8 @@ class SettingsMenu(MenuBase):
             self.game_sound.save_volumes()
 
     def update(self):
-        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.blit(self.settings_menu_img, self.settings_menu_img_rect)
         self._update_signs()
         self.blit(self.music_volume_image, self.music_volume_image_rect)

@@ -30,6 +30,14 @@ class AssetManager:
         ],
         "walk": [(2, 32, 28, 30), (35, 33, 28, 30), (67, 34, 28, 30), (98, 34, 28, 30)],
         "jump": [(2, 65, 28, 27), (33, 66, 30, 27), (65, 66, 30, 26), (98, 66, 28, 27)],
+        "hit": [(8, 97, 22, 32), (39, 96, 24, 32)],
+        "death": [
+            (3, 129, 30, 27),
+            (36, 131, 29, 25),
+            (66, 137, 31, 22),
+            (97, 140, 31, 20),
+            (130, 141, 30, 19),
+        ],
     }
 
     @classmethod
@@ -144,6 +152,8 @@ class AssetManager:
             **get_animations(cls.player_coords["idle"], "idle"),
             **get_animations(cls.player_coords["walk"], "walk"),
             **get_animations(cls.player_coords["jump"], "jump"),
+            **get_animations(cls.player_coords["hit"], "hit"),
+            **get_animations(cls.player_coords["death"], "death"),
         }
 
     @classmethod

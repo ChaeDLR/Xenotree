@@ -35,12 +35,11 @@ class Button(Surface):
         """ check for button collision """
         if self.rect.collidepoint(mouse_pos):
             if mouse_up:
-                self.set_alpha(255)
-                self.msg_image.set_alpha(255)
+                self.set_alpha(255, pygame.RLEACCEL)
+                self.msg_image.set_alpha(255, pygame.RLEACCEL)
                 return True
-            
-            self.set_alpha(25)
-            self.msg_image.set_alpha(25)
+            self.set_alpha(25, pygame.RLEACCEL)
+            self.msg_image.set_alpha(25, pygame.RLEACCEL)
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the button """

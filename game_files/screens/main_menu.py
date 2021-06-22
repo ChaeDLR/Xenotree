@@ -58,8 +58,8 @@ class MainMenu(MenuBase):
             self.stats.set_active_screen(settings_menu=True)
 
     def update(self):
-        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.blit(self.main_menu_img, self.main_menu_img_rect)
         self.play_button.blitme()
         self.settings_button.blitme()
