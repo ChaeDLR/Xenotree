@@ -45,7 +45,7 @@ class Game_Over(MenuBase):
             sys.exit()
 
     def update(self):
-        self.check_base_events(self.check_buttons)
+        self.check_base_events(self.check_button_down, self.check_button_up)
         self.fill(self.background_color, self.rect)
         self.blit(self.game_over_img, self.game_over_img_rect)
         self.main_menu_button.blitme()

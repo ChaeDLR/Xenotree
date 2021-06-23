@@ -71,7 +71,7 @@ class LevelBase(pygame.Surface, ABC):
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == self.player_hit:
-                self.player.hit()
+                self.player.damaged()
                 self.game_ui.update(self.player.health_points)
                 # Health bar reaches zero at 20 health points because of the offset
                 if self.player.health_points <= 20:

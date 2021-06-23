@@ -101,7 +101,7 @@ class TestLevel(LevelBase):
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
 
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire and not self.player.hit:
             mouse_button = pygame.mouse.get_pressed(3)
             # if mouse left clicked
             if mouse_button[0]:
@@ -273,7 +273,7 @@ class TestLevel(LevelBase):
         """
         self.blit(self.player.image, self.player.rect)
         self.player.update()
-        if self.player.defending:
+        if self.player.defending and not self.player.hit:
             self.blit(self.player.shield.image, self.player.shield.rect)
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)

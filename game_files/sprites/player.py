@@ -64,7 +64,8 @@ class Player(Sprite):
         self.moving_right = False
         self.facing_right = True
 
-        self.player_hit = False
+        self.hit = False
+        self.dead = False
         # track player cooldowns
         self.can_fire = True
         # check that the play still has health points
@@ -82,7 +83,7 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if not self.player_hit and (self.x - self.movement_speed) >= 0:
+        if not (self.hit or self.dead) and (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
         elif not self.player_hit:
@@ -93,7 +94,7 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if not self.player_hit and self.rect.right <= self.screen_bound:
+        if not (self.hit or self.dead) and self.rect.right <= self.screen_bound:
             self.x += self.movement_speed
             self.rect.x = self.x
 
@@ -112,6 +113,22 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         if self.falling_velocity < self.falling_speed_limit:
             self.falling_velocity += 0.5
+    
+    def __stagger(self):
+        """
+        Staggered movement
+        """
+        self.stagger_counter += 1
+        
+        if self.facing_right:
+            self.x -= 2.5
+        else:
+            self.x += 2.5
+        
+        self.rect.x = self.x
+
+        if self.stagger_counter >= 15:
+            self.hit = False
 
     def set_position(self, x_y: tuple):
         """
@@ -206,11 +223,15 @@ class Player(Sprite):
         self.can_fire = False
         self.defending = True
 
-    def hit(self):
+    def damaged(self):
         """
         Reduce player health and play hit animation
         """
         self.health_points -= 10
+        self.defending = False
+        self.hit = True
+        self.stagger_counter = 0
+        self.x, self.y = self.rect.x, self.rect.y
 
     def on_ground(self):
         """
@@ -252,7 +273,9 @@ class Player(Sprite):
         """
         Update player position
         """
-        if self.moving_right:
+        if self.hit:
+            self.__stagger()
+        elif self.moving_right:
             self.__move_right()
         elif self.moving_left:
             self.__move_left()
@@ -265,50 +288,47 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        # TODO: Fix this code
-        # Just use the conditions to pick a key
-
         if self.testing:
-            if self.animation_index >= len(self.images["death_right"]):
-                self.reset_animation()
-            self.image, self.mask = self.images["death_right"][self.animation_index]
+            key = "death_right"
 
-        elif self.defending and self.facing_right:
-            self.image, self.mask = self.images["idle_right"][1]
-
-        elif self.defending and self.facing_left:
-            self.image, self.mask = self.images["idle_left"][1]
-
-        elif self.jumping and self.facing_right:
-            if self.animation_index >= len(self.images["jump_right"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["jump_right"][self.animation_index]
-
-        elif self.jumping and not self.facing_right:
-            if self.animation_index >= len(self.images["jump_left"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["jump_left"][self.animation_index]
-
-        elif self.facing_right and self.moving:
-            if self.animation_index >= len(self.images["walk_right"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["walk_right"][self.animation_index]
+        elif self.facing_right:
+            if self.dead:
+                key = "death_right"
+                if self.animation_index > 1:
+                    self.animation_index = 1
+            elif self.hit:
+                key = "hit_right"
+            elif self.defending:
+                key = "idle_right"
+                self.animation_index = 1
+            elif self.jumping:
+                key = "jump_right"
+            elif self.moving:
+                key = "walk_right"
+            else:
+                key = "idle_right"
 
         elif self.facing_left:
-            if self.animation_index >= len(self.images["walk_left"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["walk_left"][self.animation_index]
+            if self.dead:
+                key = "death_left"
+                if self.animation_index > 1:
+                    self.animation_index = 1
+            elif self.hit:
+                key = "hit_left"
+            elif self.defending:
+                key = "idle_left"
+                self.animation_index = 1
+            elif self.jumping:
+                key = "jump_left"
+            elif self.moving:
+                key = "walk_left"
+            else:
+                key = "idle_left"
 
-        elif not self.facing_right:
-            if self.animation_index >= len(self.images["idle_left"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["idle_left"][self.animation_index]
+        if self.animation_index >= len(self.images[key]):
+            self.reset_animation()
 
-        else:
-            if self.animation_index >= len(self.images["idle_right"]) - 1:
-                self.reset_animation()
-            self.image, self.mask = self.images["idle_right"][self.animation_index]
-
+        self.image, self.mask = self.images[key][self.animation_index]
         self.animation_counter += 1
 
         if self.animation_counter % 16 == 0:
@@ -329,9 +349,10 @@ class Player(Sprite):
         """
         Update the player image and movement
         """
-        if self.defending:
-            self.shield.update()
-        else:
-            self.update_facing()
-            self.update_animation()
-            self.update_movement()
+        if not self.dead:
+            if self.defending and not self.hit:
+                self.shield.update()
+            else:
+                self.update_facing()
+                self.update_animation()
+                self.update_movement()
