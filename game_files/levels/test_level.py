@@ -89,10 +89,10 @@ class TestLevel(LevelBase):
         self.__load_platforms()
 
     def __load_custom_events(self):
-        self.update_player_animation = pygame.USEREVENT + 7
-        self.start_turret_attack = pygame.USEREVENT + 8
-        self.player_fire_cooldown = pygame.USEREVENT + 9
-        self.spawn_turret = pygame.USEREVENT + 10
+        self.update_player_animation = pygame.USEREVENT + 8
+        self.start_turret_attack = pygame.USEREVENT + 9
+        self.player_fire_cooldown = pygame.USEREVENT + 10
+        self.spawn_turret = pygame.USEREVENT + 11
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -101,7 +101,11 @@ class TestLevel(LevelBase):
         elif event.type == pygame.KEYUP:
             self.check_keyup_events(event)
 
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.player.can_fire and not self.player.hit:
+        elif (
+            event.type == pygame.MOUSEBUTTONDOWN
+            and self.player.can_fire
+            and not (self.player.hit or self.player.dying)
+        ):
             mouse_button = pygame.mouse.get_pressed(3)
             # if mouse left clicked
             if mouse_button[0]:
@@ -116,7 +120,7 @@ class TestLevel(LevelBase):
 
             pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
 
-        elif event.type == pygame.MOUSEBUTTONUP:
+        elif event.type == pygame.MOUSEBUTTONUP and not self.player.dying:
             self.player.defending = False
             if self.player.jumping:
                 self.player.falling = True
@@ -137,17 +141,22 @@ class TestLevel(LevelBase):
         if event.type == self.spawn_turret:
             self.__load_turret()
 
+        if event.type == self.player_dead:
+            self.base_game_over()
+
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
-        if event.key == pygame.K_ESCAPE:
-            self.pause_events()
-        else:
-            # Player movement
-            self.player_keydown_controller(event)
+        if not self.player.dying:
+            if event.key == pygame.K_ESCAPE:
+                self.pause_events()
+            else:
+                # Player movement
+                self.player_keydown_controller(event)
 
     def check_keyup_events(self, event):
         """ Check for and respond to player keyup events """
-        self.player_keyup_controller(event)
+        if not self.player.dying:
+            self.player_keyup_controller(event)
 
     def __check_platforms(self):
         """
@@ -159,10 +168,13 @@ class TestLevel(LevelBase):
 
         for platform in self.platforms:
             if pygame.sprite.collide_mask(self.player, platform):
-                if (
+                if self.player.dying:
+                    self.player.falling = False
+                    self.player.rect.bottom = platform.rect.top + 25
+                elif (
                     platform.rect.top
                     <= self.player.rect.bottom
-                    <= platform.rect.top + 15
+                    <= platform.rect.top + 25
                     and self.player.falling
                 ):
                     self.player.on_ground()
@@ -206,9 +218,15 @@ class TestLevel(LevelBase):
         """
         Check the turret laser for collisions
         """
-        if pygame.sprite.spritecollide(
-            self.player, self.turret.lasers, True, collided=pygame.sprite.collide_mask
-        ) or pygame.sprite.collide_mask(self.player, self.turret):
+        if not self.player.dying and (
+            pygame.sprite.spritecollide(
+                self.player,
+                self.turret.lasers,
+                True,
+                collided=pygame.sprite.collide_mask,
+            )
+            or pygame.sprite.collide_mask(self.player, self.turret)
+        ):
             self.player_collide_hit()
         if pygame.sprite.groupcollide(
             self.turret.lasers,

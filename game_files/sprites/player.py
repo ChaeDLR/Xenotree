@@ -31,7 +31,7 @@ class Player(Sprite):
         self.movement_speed: float = 6.0
         self.jumping_velocity: float = -7.5
         self.falling_velocity: float = 1.0
-        self.falling_speed_limit: float = 14.0
+        self.falling_speed_limit: float = 12.0
 
         # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1000
@@ -65,6 +65,9 @@ class Player(Sprite):
         self.facing_right = True
 
         self.hit = False
+        # dying will start the death animation and stop the users control
+        self.dying = False
+        # dead will end the game
         self.dead = False
         # track player cooldowns
         self.can_fire = True
@@ -102,6 +105,7 @@ class Player(Sprite):
         """
         Start player jump
         """
+        self.falling = False
         self.rect.y += self.jumping_velocity
         if self.jumping_velocity < self.falling_speed_limit:
             self.jumping_velocity += 0.5
@@ -121,14 +125,15 @@ class Player(Sprite):
         self.stagger_counter += 1
         
         if self.facing_right:
-            self.x -= 2.5
+            self.x -= 3.0
         else:
-            self.x += 2.5
-        
-        self.rect.x = self.x
+            self.x += 3.0
+        self.y -= 1.5
+        self.rect.x, self.rect.y = self.x, self.y
 
-        if self.stagger_counter >= 15:
+        if self.stagger_counter >= 8:
             self.hit = False
+            self.falling = True
 
     def set_position(self, x_y: tuple):
         """
@@ -228,6 +233,10 @@ class Player(Sprite):
         Reduce player health and play hit animation
         """
         self.health_points -= 10
+        if self.health_points <= 20:
+            self.dying = True
+            self.falling = True
+
         self.defending = False
         self.hit = True
         self.stagger_counter = 0
@@ -273,15 +282,16 @@ class Player(Sprite):
         """
         Update player position
         """
-        if self.hit:
-            self.__stagger()
-        elif self.moving_right:
-            self.__move_right()
-        elif self.moving_left:
-            self.__move_left()
-        if self.jumping:
-            self.__jump()
-        elif self.falling:
+        if not self.dying:
+            if self.hit:
+                self.__stagger()
+            elif self.moving_right:
+                self.__move_right()
+            elif self.moving_left:
+                self.__move_left()
+            if self.jumping:
+                self.__jump()
+        if self.falling:
             self.__fall()
 
     def update_animation(self):
@@ -292,10 +302,8 @@ class Player(Sprite):
             key = "death_right"
 
         elif self.facing_right:
-            if self.dead:
+            if self.dying:
                 key = "death_right"
-                if self.animation_index > 1:
-                    self.animation_index = 1
             elif self.hit:
                 key = "hit_right"
             elif self.defending:
@@ -309,10 +317,8 @@ class Player(Sprite):
                 key = "idle_right"
 
         elif self.facing_left:
-            if self.dead:
+            if self.dying:
                 key = "death_left"
-                if self.animation_index > 1:
-                    self.animation_index = 1
             elif self.hit:
                 key = "hit_left"
             elif self.defending:
@@ -326,13 +332,22 @@ class Player(Sprite):
                 key = "idle_left"
 
         if self.animation_index >= len(self.images[key]):
-            self.reset_animation()
+            if self.dying:
+                self.animation_index = len(self.images[key])-1
+            elif self.hit:
+                self.animation_index = len(self.images[key])-1
+            else:
+                self.reset_animation()
 
         self.image, self.mask = self.images[key][self.animation_index]
         self.animation_counter += 1
 
-        if self.animation_counter % 16 == 0:
-            self.animation_index += 1
+        if self.dying:
+            if self.animation_counter % 24 == 0:
+                self.animation_index += 1
+        else:
+            if self.animation_counter % 16 == 0:
+                self.animation_index += 1
 
     def update_facing(self):
         """
@@ -349,10 +364,9 @@ class Player(Sprite):
         """
         Update the player image and movement
         """
-        if not self.dead:
-            if self.defending and not self.hit:
-                self.shield.update()
-            else:
-                self.update_facing()
-                self.update_animation()
-                self.update_movement()
+        if self.defending and not self.hit:
+            self.shield.update()
+        elif not self.dying:
+            self.update_facing()
+        self.update_movement()
+        self.update_animation()

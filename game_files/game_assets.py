@@ -132,7 +132,7 @@ class AssetManager:
             right_images = []
             for coord in coords_list:
                 image = ss_tool.image_at(coord, cls.p_colorkey)
-                image = pygame.transform.scale(image, (41, 54))
+                image = pygame.transform.scale(image, (int(image.get_width()*1.8), int(image.get_height()*1.8)))
                 mask = pygame.mask.from_surface(image)
                 right_images.append((image, mask))
 

@@ -65,6 +65,7 @@ class LevelBase(pygame.Surface, ABC):
         """ custom events that are the same in every level """
         self.player_hit = pygame.USEREVENT + 5
         self.unpause_game = pygame.USEREVENT + 6
+        self.player_dead = pygame.USEREVENT + 7
 
     def check_levelbase_events(self, level_event_check):
         for event in pygame.event.get():
@@ -73,11 +74,12 @@ class LevelBase(pygame.Surface, ABC):
             elif event.type == self.player_hit:
                 self.player.damaged()
                 self.game_ui.update(self.player.health_points)
-                # Health bar reaches zero at 20 health points because of the offset
-                if self.player.health_points <= 20:
-                    self.base_game_over()
+                if self.player.dying:
+                    pygame.time.set_timer(self.player_dead, 2000, True)
             else:
                 level_event_check(event)
+        if self.player.dead:
+            self.base_game_over()
 
     def player_keydown_controller(self, event):
         """ Take event to control the player """
