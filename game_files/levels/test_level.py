@@ -27,7 +27,8 @@ class TestLevel(LevelBase):
         self.__load_custom_events()
         self.turret.firing = True
 
-        self.platform_speed = 2500
+        self.difficulty = {"easy": (0, 0), "medium": (0, 0), "hard": (0, 0), "nightmare": (0, 0)}
+
         self.turret_spawn_speed = 2500
 
         # To activate turret
@@ -107,18 +108,13 @@ class TestLevel(LevelBase):
             and not (self.player.hit or self.player.dying)
         ):
             mouse_button = pygame.mouse.get_pressed(3)
-            # if mouse left clicked
+
             if mouse_button[0]:
                 self.player.create_fireball(
                     event.pos, self.game_ui.active_weapon_bar.element_type
                 )
-
-            elif mouse_button[2] and not self.player.defending:
-                # if mouse right clicked
-                self.player.shield.moving = True
-                self.player.start_defend(event.pos)
-
-            pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time)
+                self.player.can_fire = False
+                pygame.time.set_timer(self.player_fire_cooldown, self.player.cooldown_time, True)
 
         elif event.type == pygame.MOUSEBUTTONUP and not self.player.dying:
             self.player.defending = False
@@ -170,11 +166,11 @@ class TestLevel(LevelBase):
             if pygame.sprite.collide_mask(self.player, platform):
                 if self.player.dying:
                     self.player.falling = False
-                    self.player.rect.bottom = platform.rect.top + 25
+                    self.player.rect.bottom = platform.rect.top + 20
                 elif (
                     platform.rect.top
                     <= self.player.rect.bottom
-                    <= platform.rect.top + 25
+                    <= platform.rect.top + 20
                     and self.player.falling
                 ):
                     self.player.on_ground()
@@ -185,7 +181,7 @@ class TestLevel(LevelBase):
                     >= platform.rect.left - 1
                     and self.player.moving_right
                 ):
-                    self.player.x = platform.rect.left - self.player.rect.width
+                    self.player.x = platform.rect.left - (self.player.rect.width+2)
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(self.player.moving_left, False)
                 elif (
@@ -194,7 +190,7 @@ class TestLevel(LevelBase):
                     <= platform.rect.right + 1
                     and self.player.moving_left
                 ):
-                    self.player.x = platform.rect.right + 1
+                    self.player.x = platform.rect.right + 2
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(False, self.player.moving_right)
                 elif (
@@ -244,14 +240,6 @@ class TestLevel(LevelBase):
             collided=pygame.sprite.collide_mask,
         ):
             pass
-        if self.player.defending and pygame.sprite.spritecollide(
-            self.player.shield,
-            self.turret.lasers,
-            True,
-            collided=pygame.sprite.collide_mask,
-        ):
-            # TODO: add laser reflection
-            pass
 
     def __fireballs_collisions(self):
         """
@@ -291,8 +279,6 @@ class TestLevel(LevelBase):
         """
         self.blit(self.player.image, self.player.rect)
         self.player.update()
-        if self.player.defending and not self.player.hit:
-            self.blit(self.player.shield.image, self.player.shield.rect)
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()

@@ -2,7 +2,6 @@ import pygame
 
 from pygame.sprite import Sprite
 from ..utils.game_math import GameMath
-from .wiz_shield import Shield
 from .fireball import Fireball
 
 
@@ -37,7 +36,6 @@ class Player(Sprite):
         self.cooldown_time: int = 1000
         self.health_points: int = 100
 
-        self.shield.rect.center = self.rect.center
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
 
@@ -48,7 +46,6 @@ class Player(Sprite):
         """
         Load the players shield sprite and fireball group
         """
-        self.shield = Shield()
         self.fireballs = pygame.sprite.Group()
 
     def __player_bools(self) -> None:
@@ -89,7 +86,7 @@ class Player(Sprite):
         if not (self.hit or self.dead) and (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
-        elif not self.player_hit:
+        elif not self.hit:
             self.x = 0
             self.rect.x = self.x
 
@@ -364,9 +361,7 @@ class Player(Sprite):
         """
         Update the player image and movement
         """
-        if self.defending and not self.hit:
-            self.shield.update()
-        elif not self.dying:
+        if not self.dying:
             self.update_facing()
         self.update_movement()
         self.update_animation()
