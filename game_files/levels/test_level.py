@@ -164,6 +164,7 @@ class TestLevel(LevelBase):
 
         for platform in self.platforms:
             if pygame.sprite.collide_mask(self.player, platform):
+                self.player.dashing = False
                 if self.player.dying:
                     self.player.falling = False
                     self.player.rect.bottom = platform.rect.top + 20

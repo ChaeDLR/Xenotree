@@ -97,6 +97,9 @@ class LevelBase(pygame.Surface, ABC):
         # cycle weapons bar
         if event.key == pygame.K_r:
             self.game_ui.active_weapon_bar.set_positions()
+        # player dashing
+        if event.key == pygame.K_LSHIFT:
+            self.player.start_dash()
 
     def player_keyup_controller(self, event):
         """ Take event to control the player """

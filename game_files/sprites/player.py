@@ -22,15 +22,18 @@ class Player(Sprite):
         self.death_frame: int = 1
         self.animation_index_limit: int = 3
         self.screen_bound: int = bound
-        # keep track of how many jumps the player has used in the air
+
+        # counters
         self.jump_counter = 0
+        self.dash_counter = 0
 
         self.rect = self.image.get_rect()
 
-        self.movement_speed: float = 6.0
+        self.movement_speed: float = 5.5
         self.jumping_velocity: float = -7.5
         self.falling_velocity: float = 1.0
         self.falling_speed_limit: float = 12.0
+        self.dashing_speed: float = 13.5
 
         # int passed to the pygame timer used to reset attack available flag
         self.cooldown_time: int = 1000
@@ -56,6 +59,8 @@ class Player(Sprite):
         self.moving = False  # used in animation code
         self.jumping = False
         self.falling = False
+        self.dashing = False
+        self.dash_dir_right = False
         # Check which way the player is facing
         self.moving_left = False
         self.moving_right = False
@@ -83,7 +88,7 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if not (self.hit or self.dead) and (self.x - self.movement_speed) >= 0:
+        if (self.x - self.movement_speed) >= 0:
             self.x -= self.movement_speed
             self.rect.x = self.x
         elif not self.hit:
@@ -94,9 +99,26 @@ class Player(Sprite):
         """
         Check if the player is alive and in bounds
         """
-        if not (self.hit or self.dead) and self.rect.right <= self.screen_bound:
+        if self.rect.right <= self.screen_bound:
             self.x += self.movement_speed
             self.rect.x = self.x
+
+    def __dash(self):
+        """
+        Player quickly move across the x axis
+        """
+        if self.dash_dir_right and (self.x + self.dashing_speed) < (self.screen_bound + self.rect.width):
+            self.x += self.dashing_speed
+            self.rect.x = self.x
+        elif (self.x - self.dashing_speed) > 0:
+            self.x -= self.dashing_speed
+            self.rect.x = self.x
+
+        self.dash_counter += 1
+
+        if self.dash_counter >= 10:
+            self.dashing = False
+            self.falling = True
 
     def __jump(self):
         """
@@ -131,6 +153,16 @@ class Player(Sprite):
         if self.stagger_counter >= 8:
             self.hit = False
             self.falling = True
+    
+    def start_dash(self):
+        """
+        Tell player to start dashing and start a counter
+        """
+        # Capture which way the player is facing when dash is pressed
+        self.dash_dir_right = self.facing_right
+        self.dashing = True
+        self.falling = False
+        self.dash_counter = 0
 
     def set_position(self, x_y: tuple):
         """
@@ -282,12 +314,15 @@ class Player(Sprite):
         if not self.dying:
             if self.hit:
                 self.__stagger()
-            elif self.moving_right:
-                self.__move_right()
-            elif self.moving_left:
-                self.__move_left()
-            if self.jumping:
-                self.__jump()
+            elif not (self.hit or self.dead):
+                if self.dashing:
+                    self.__dash()
+                elif self.moving_right:
+                    self.__move_right()
+                elif self.moving_left:
+                    self.__move_left()
+                if self.jumping:
+                    self.__jump()
         if self.falling:
             self.__fall()
 
@@ -296,7 +331,8 @@ class Player(Sprite):
         Update the player animation frame
         """
         if self.testing:
-            key = "death_right"
+            # place any images i want to test here and switch bool to True
+            pass
 
         elif self.facing_right:
             if self.dying:
@@ -306,7 +342,7 @@ class Player(Sprite):
             elif self.defending:
                 key = "idle_right"
                 self.animation_index = 1
-            elif self.jumping:
+            elif self.dashing or self.jumping:
                 key = "jump_right"
             elif self.moving:
                 key = "walk_right"
@@ -321,7 +357,7 @@ class Player(Sprite):
             elif self.defending:
                 key = "idle_left"
                 self.animation_index = 1
-            elif self.jumping:
+            elif self.dashing or self.jumping:
                 key = "jump_left"
             elif self.moving:
                 key = "walk_left"
