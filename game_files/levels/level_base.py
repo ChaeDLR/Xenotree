@@ -130,7 +130,7 @@ class LevelBase(pygame.Surface, ABC):
         #   self.game_sound.player_impact_sound.play()
         pygame.time.set_timer(self.player_hit, 1, True)
 
-    def base_game_over(self):
+    def game_over(self):
         """ Reset the current level """
         self.game_stats.set_high_score()
         self.game_stats.reset_stats()

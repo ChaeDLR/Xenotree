@@ -46,7 +46,7 @@ class MenuBase(Surface, ABC):
                     menu_check_md_event(pygame.mouse.get_pos())
                 elif event.type == pygame.MOUSEBUTTONUP:
                     menu_check_mu_event(pygame.mouse.get_pos())
-    
+
     @abstractmethod
     def update(self):
         """

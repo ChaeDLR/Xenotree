@@ -9,12 +9,10 @@ class MainMenu(MenuBase):
     Play the game, Enter settings menu, or Quit the game
     """
 
-    def __init__(
-        self, w_h: tuple, stats: object, settings: object, level_manager: object
-    ):
+    def __init__(self, w_h: tuple, stats: object, settings: object, level_manager: object):
         super().__init__((w_h[0], w_h[1]), stats, settings)
-        self.level_manager = level_manager
 
+        self.level_manager = level_manager
         self._load_title()
         self._load_buttons()
 

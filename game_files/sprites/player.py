@@ -307,10 +307,13 @@ class Player(Sprite):
         self.animation_counter = 0
         self.animation_index = 0
 
-    def update_movement(self):
+    def update_movement(self, platform_speed: int):
         """
         Update player position
         """
+        if not self.jumping and not self.falling:
+            self.x -= platform_speed
+            self.rect.x = self.x
         if not self.dying:
             if self.hit:
                 self.__stagger()
@@ -393,11 +396,11 @@ class Player(Sprite):
         else:
             self.facing_left, self.facing_right = False, True
 
-    def update(self):
+    def update(self, platform_speed: int):
         """
         Update the player image and movement
         """
         if not self.dying:
             self.update_facing()
-        self.update_movement()
+        self.update_movement(platform_speed)
         self.update_animation()

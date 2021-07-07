@@ -22,8 +22,8 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             self.settings,
             self.stats,
-            self.game_sound,
-        )
+            self.game_sound
+            )
 
         self._load_game_screens()
 
@@ -35,7 +35,7 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             self.stats,
             self.settings,
-            self.level_manager,
+            self.level_manager
         )
 
         self.game_over = game_files.Game_Over(

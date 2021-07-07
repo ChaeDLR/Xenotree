@@ -5,7 +5,7 @@ from ...screens.screen_colors import ScreenColors
 
 class Platform(Sprite):
     """
-    Wall object size of width, height args
+    platform size of width, height args
     Stops player from moving
     """
 
@@ -16,6 +16,7 @@ class Platform(Sprite):
         image=None,
         connect_left: bool = False,
         connect_right: bool = False,
+        moving: bool = False
     ):
         """
         w_h: tuple (width, height)
@@ -27,6 +28,8 @@ class Platform(Sprite):
         # on either side
         self.connected_left = connect_left
         self.connected_right = connect_right
+
+        self.moving = moving
 
         if w_h and image:
             self.__create_imaged_platform(x_y, image, scale=w_h)
@@ -45,6 +48,7 @@ class Platform(Sprite):
             self.image = transform.scale(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos
+        self.x, self.y = float(self.rect.x), float(self.rect.y)
         self.width, self.height = self.rect.width, self.rect.height
         self.mask = mask.from_surface(self.image)
 
@@ -69,3 +73,11 @@ class Platform(Sprite):
     def resize_wall(self, width: int, height: int):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
+    
+    def update(self, movement_speed: int):
+        """
+        update the platforms position if it should be moving
+        """
+        if self.moving:
+            self.x -= movement_speed
+            self.rect.x = self.x
