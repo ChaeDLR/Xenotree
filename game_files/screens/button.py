@@ -5,9 +5,13 @@ from .screen_colors import ScreenColors
 
 class Button(Surface):
 
-    def __init__(self, surface: object, button_text: str):
+    def __init__(self, surface: object, button_text: str, size:tuple=None, font_size:tuple=None, name:str=None):
         """ initialize button settings """
-        self.width, self.height = 150, 50
+        if size != None:
+            self.width, self.height = size
+        else:
+            self.width, self.height = 150, 50
+
         super(Button, self).__init__((self.width, self.height))
         colors = ScreenColors()
         self.surface = surface
@@ -18,8 +22,14 @@ class Button(Surface):
         self.button_mid_pos_x = (surface.width / 2) - (self.width / 2)
         self.button_mid_pos_y = (surface.height / 3) * 2
 
-        # build the button rect and text. Set it's position
-        self.resize((self.width, self.height))
+        if font_size:
+            self.resize((self.width, self.height), font_size)
+        else:
+            # build the button rect and text. Set it's position
+            self.resize((self.width, self.height))
+        
+        if name:
+            self.name = name
 
         self.fill(self.button_color)
 
@@ -28,8 +38,9 @@ class Button(Surface):
         Resize the buttone given the width, height tuple
         """
         self.rect = pygame.Rect(0, 0, w_h[0], w_h[1])
+        self.fill(self.button_color)
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
-        self._prep_text(font_size)
+        self.__prep_text(font_size)
 
     def check_button(self, mouse_pos, mouse_up:bool=False) -> bool:
         """ check for button collision """
@@ -50,7 +61,7 @@ class Button(Surface):
 
         self.msg_image_rect.center = self.rect.center
 
-    def _prep_text(self, fontsize: int=40):
+    def __prep_text(self, fontsize: int=40):
         """ prep the text to be rendered in the button """
         font = pygame.font.SysFont(None, fontsize, bold=True)
         self.msg_image = font.render(

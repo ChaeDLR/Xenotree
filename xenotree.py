@@ -66,12 +66,6 @@ class Xenotree:
             self.clock.tick(60)
             self._update_screen()
 
-    def _stop_game(self):
-        """ Game Over """
-        self.stats.game_active = False
-        self.stats.game_over = True
-        #pygame.mouse.set_visible(True)
-
     def _get_active_level(self):
         """ return the active level """
         if self.stats.active_level == 1:

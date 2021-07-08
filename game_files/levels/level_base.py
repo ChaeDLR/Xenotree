@@ -83,22 +83,21 @@ class LevelBase(pygame.Surface, ABC):
 
     def player_keydown_controller(self, event):
         """ Take event to control the player """
-        if event.key == pygame.K_a:
+        if event.key == self.settings.key_bindings["move_left"]:
             self.player.switch_move_left(True)
-        elif event.key == pygame.K_d:
+        elif event.key == self.settings.key_bindings["move_right"]:
             self.player.switch_move_right(True)
         # check for player jump input
         if (
-            event.key == pygame.K_SPACE
+            event.key == self.settings.key_bindings["jump"]
             and self.player.rect.top >= 0
-            and not self.player.defending
         ):  # and not self.player.jumping:
             self.player.start_jump()
         # cycle weapons bar
-        if event.key == pygame.K_r:
+        if event.key == self.settings.key_bindings["cycle_fireball"]:
             self.game_ui.active_weapon_bar.set_positions()
         # player dashing
-        if event.key == pygame.K_LSHIFT:
+        if event.key == self.settings.key_bindings["dash"]:
             self.player.start_dash()
 
     def player_keyup_controller(self, event):
@@ -107,6 +106,19 @@ class LevelBase(pygame.Surface, ABC):
             self.player.switch_move_left(False)
         elif event.key == pygame.K_d:
             self.player.switch_move_right(False)
+    
+    def player_mouse_controller(self, event):
+        """ respond to mouse input """
+        mouse_button = pygame.mouse.get_pressed(3)
+
+        if mouse_button[0]:
+            self.player.create_fireball(
+                event.pos, self.game_ui.active_weapon_bar.element_type
+            )
+            self.player.can_fire = False
+            pygame.time.set_timer(
+                self.player_fire_cooldown, self.player.cooldown_time, True
+            )
 
     def pause_events(self):
         self.game_stats.game_paused = True

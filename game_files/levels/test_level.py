@@ -29,12 +29,13 @@ class TestLevel(LevelBase):
 
         # spawnspeed_movementspeed
         self.difficulty = [
-            (0, 0),  # standstill
-            (3000, 2),  # easy 0 index (5 seconds, 20 pixels per loop)
-            (2800, 2.5),  # medium 1 index
-            (2500, 3),  # hard 2 index
-            (2200, 3.5),  # nightmare 3 index
-            (2000, 4.0)
+            (0, 0),
+            (3000, 2.0),
+            (2800, 2.5),
+            (2500, 3.0),
+            (2200, 3.5),
+            (2000, 4.0),
+            (1800, 4.5)
         ]
 
         self.difficulty_mode: int = 0
@@ -65,6 +66,7 @@ class TestLevel(LevelBase):
         disable the levels custom timers
         """
         pygame.time.set_timer(self.start_turret_attack, 0)
+        pygame.time.set_timer(self.difficulty_increase, 0)
 
     def __load_turret(self):
         """
@@ -362,21 +364,9 @@ class TestLevel(LevelBase):
             and self.player.can_fire
             and not (self.player.hit or self.player.dying)
         ):
-            mouse_button = pygame.mouse.get_pressed(3)
-
-            if mouse_button[0]:
-                self.player.create_fireball(
-                    event.pos, self.game_ui.active_weapon_bar.element_type
-                )
-                self.player.can_fire = False
-                pygame.time.set_timer(
-                    self.player_fire_cooldown, self.player.cooldown_time, True
-                )
+            self.player_mouse_controller(event)
 
         elif event.type == pygame.MOUSEBUTTONUP and not self.player.dying:
-            self.player.defending = False
-            if self.player.jumping:
-                self.player.falling = True
             self.player.reset_animation()
 
         else:

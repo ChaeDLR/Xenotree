@@ -75,8 +75,6 @@ class Player(Sprite):
         self.can_fire = True
         # check that the play still has health points
         self.is_alive = True
-        # If the player has their shield up
-        self.defending = False
 
     def __create_animation_variables(self) -> None:
         """ These are the animation variables needed to animate the player smoothly """
@@ -176,6 +174,7 @@ class Player(Sprite):
         """
         get a fireball
         """
+        self.fireball_type = type
         fireball_start_pos: list = [
             self.rect.center[0],
             self.rect.center[1] + 5,
@@ -231,32 +230,6 @@ class Player(Sprite):
             self.rect.y += self.jumping_velocity
             self.jump_counter += 1
 
-    def start_defend(self, mouse_pos: tuple):
-        """
-        Activate shield and start defending
-        """
-
-        if self.facing_right:
-            self.image, self.mask = self.images["jump_right"][2]
-        elif self.facing_left:
-            self.image, self.mask = self.images["jump_left"][2]
-
-        directions = GameMath.get_directions(self.rect.center, mouse_pos)
-
-        self.distance_limit = (
-            directions[0] * 20 + self.rect.centerx,
-            directions[1] * 20 + self.rect.centery,
-        )
-
-        self.shield.set_start(self.rect.center, directions)
-
-        angle = GameMath.get_angle_to(self.rect.center, mouse_pos)
-
-        self.shield.rotate_image(angle)
-        self.shield.update_rect()
-        self.can_fire = False
-        self.defending = True
-
     def damaged(self):
         """
         Reduce player health and play hit animation
@@ -265,8 +238,6 @@ class Player(Sprite):
         if self.health_points <= 20:
             self.dying = True
             self.falling = True
-
-        self.defending = False
         self.hit = True
         self.stagger_counter = 0
         self.x, self.y = self.rect.x, self.rect.y
@@ -342,9 +313,6 @@ class Player(Sprite):
                 key = "death_right"
             elif self.hit:
                 key = "hit_right"
-            elif self.defending:
-                key = "idle_right"
-                self.animation_index = 1
             elif self.dashing or self.jumping:
                 key = "jump_right"
             elif self.moving:
@@ -357,9 +325,6 @@ class Player(Sprite):
                 key = "death_left"
             elif self.hit:
                 key = "hit_left"
-            elif self.defending:
-                key = "idle_left"
-                self.animation_index = 1
             elif self.dashing or self.jumping:
                 key = "jump_left"
             elif self.moving:

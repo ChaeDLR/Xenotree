@@ -10,6 +10,10 @@ class MenuBase(Surface, ABC):
 
     def __init__(self, w_h: tuple, stats: object, settings: object):
         super().__init__((w_h[0], w_h[1]))
+
+        self.screen_rows = w_h[1] / 6
+        self.screen_columns = w_h[0] / 6
+        
         self.stats = stats
         self.settings = settings
         # Set menu colors

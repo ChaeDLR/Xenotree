@@ -1,3 +1,4 @@
+import pygame
 class Settings:
     """ organize our game settings """
 
@@ -16,6 +17,14 @@ class Settings:
         self.screen_rows = self.screen_height / 12
 
         self.player_life_limit = 3
+
+        self.key_bindings: dict = {
+            "move_left": pygame.K_a,
+            "move_right": pygame.K_d,
+            "jump": pygame.K_SPACE,
+            "dash": pygame.K_LSHIFT,
+            "cycle_fireball": pygame.K_r
+        }
 
     def set_resolution(self, x_y: tuple):
         """ change screen dimensions """

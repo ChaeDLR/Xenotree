@@ -74,10 +74,10 @@ class Platform(Sprite):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
     
-    def update(self, movement_speed: int):
+    def update(self, movement_speed: float):
         """
         update the platforms position if it should be moving
         """
         if self.moving:
-            self.x -= movement_speed
+            self.x -= float(movement_speed)
             self.rect.x = self.x

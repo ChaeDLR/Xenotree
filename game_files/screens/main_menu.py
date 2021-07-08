@@ -13,10 +13,10 @@ class MainMenu(MenuBase):
         super().__init__((w_h[0], w_h[1]), stats, settings)
 
         self.level_manager = level_manager
-        self._load_title()
-        self._load_buttons()
+        self.__load_title()
+        self.__load_buttons()
 
-    def _load_buttons(self):
+    def __load_buttons(self):
         button_row = self.height / 6
         self.play_button = Button(self, "Play")
         self.quit_button = Button(self, "Quit")
@@ -26,7 +26,7 @@ class MainMenu(MenuBase):
         self.settings_button.set_position(y_pos=button_row * 3)
         self.quit_button.set_position(y_pos=button_row * 4)
 
-    def _load_title(self):
+    def __load_title(self):
         """ load game title """
         self.main_menu_img = self.font.render(
             "XENOTREE", True, self.text_color, self.background_color
