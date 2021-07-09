@@ -40,10 +40,9 @@ class SettingsMenu(MenuBase):
             self.settings_menu_img_rect.y + 100
             )
 
-        self.keybindings_button = Button(self, "Key bindings")
+        self.keybindings_button = Button(self, "Key bindings", font_size=29)
         self.keybindings_button.resize(
-            (self.keybindings_button.width, self.keybindings_button.height),
-            29
+            (self.keybindings_button.width, self.keybindings_button.height)
             )
         self.keybindings_button.set_position(
             self.rect.centerx-(self.keybindings_button.width/2), 
@@ -105,5 +104,9 @@ class SettingsMenu(MenuBase):
             self.sound_screen.update()
 
         elif self.active_settings_screen == "key_bindings":
-            self.check_base_events(self.keybind_screen.check_button_down, self.keybind_screen.check_button_up)
-            self.keybind_screen.update()
+            self.keybind_screen.update(
+                self.check_base_events(
+                    self.keybind_screen.check_button_down, 
+                    self.keybind_screen.check_button_up
+                    )
+                )

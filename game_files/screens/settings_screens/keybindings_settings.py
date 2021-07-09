@@ -10,14 +10,16 @@ class KeybindSettings(MenuBase):
         super().__init__(w_h, stats, settings)
 
         self.main_screen = screen
-
         self.settings = settings
-
         self.back_func = back
+
+        self.listening = False
+        self.listening_keybind = ""
 
         self.__load_title()
         self.__load_keybind_labels_buttons()
         self.__load_buttons()
+        # TODO: Create text that tells the user to enter a keybind
 
     def __load_buttons(self):
         """
@@ -85,11 +87,16 @@ class KeybindSettings(MenuBase):
     def check_button_up(self, mouse_pos):
         if self.back_button.check_button(mouse_pos, True):
             self.back_func()
+        for button in self.keybind_button_dict:
+            if self.keybind_button_dict[button].check_button(mouse_pos, True):
+                self.listening = True
+                self.listening_keybind_button = self.keybind_button_dict[button]
+                self.keybind_button_dict[button].clear_text()
 
     def check_button_down(self, mouse_pos):
         self.back_button.check_button(mouse_pos)
 
-    def update(self):
+    def update(self, keydown_event):
         self.main_screen.blit(self.keybind_menu_img, self.keybind_menu_img_rect)
         self.back_button.blitme()
         for option in self.options_image_dict:
@@ -99,3 +106,12 @@ class KeybindSettings(MenuBase):
                 )
         for button in self.keybind_button_dict:
             self.keybind_button_dict[button].blitme()
+        
+        if self.listening and keydown_event:
+            pressed_key = keydown_event.key
+            print(key.name(pressed_key))
+            self.keybind_button_dict[self.listening_keybind_button.name].set_text(key.name(pressed_key), 20)
+            self.listening_keybind_button.reset_alpha()
+            # set keybind
+            self.settings.key_bindings[self.listening_keybind_button.name] = pressed_key
+            self.listening = False

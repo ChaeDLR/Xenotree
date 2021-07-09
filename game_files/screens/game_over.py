@@ -19,8 +19,8 @@ class Game_Over(MenuBase):
         self._load_text()
 
     def _load_buttons(self):
-        self.main_menu_button = Button(self, "Main Menu")
-        self.main_menu_button.resize((150, 50), 32)
+        self.main_menu_button = Button(self, "Main Menu", font_size=32)
+        self.main_menu_button.resize((150, 50))
         self.quit_button = Button(self, "Quit")
 
         self.main_menu_button.set_position(y_pos=self.rect.height / 2)

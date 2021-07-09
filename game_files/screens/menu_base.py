@@ -13,7 +13,7 @@ class MenuBase(Surface, ABC):
 
         self.screen_rows = w_h[1] / 6
         self.screen_columns = w_h[0] / 6
-        
+
         self.stats = stats
         self.settings = settings
         # Set menu colors
@@ -50,6 +50,8 @@ class MenuBase(Surface, ABC):
                     menu_check_md_event(pygame.mouse.get_pos())
                 elif event.type == pygame.MOUSEBUTTONUP:
                     menu_check_mu_event(pygame.mouse.get_pos())
+                elif event.type == pygame.KEYDOWN:
+                    return event
 
     @abstractmethod
     def update(self):

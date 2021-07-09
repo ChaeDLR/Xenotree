@@ -102,9 +102,9 @@ class LevelBase(pygame.Surface, ABC):
 
     def player_keyup_controller(self, event):
         """ Take event to control the player """
-        if event.key == pygame.K_a:
+        if event.key == self.settings.key_bindings["move_left"]:
             self.player.switch_move_left(False)
-        elif event.key == pygame.K_d:
+        elif event.key == self.settings.key_bindings["move_right"]:
             self.player.switch_move_right(False)
     
     def player_mouse_controller(self, event):
