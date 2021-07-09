@@ -53,6 +53,18 @@ class MenuBase(Surface, ABC):
                 elif event.type == pygame.KEYDOWN:
                     return event
 
+    def create_text(self, x_y: tuple, text: str, textsize: int=56, boldtext: bool=True) -> tuple:
+        """
+        Tuple -> (text_img, text_rect)
+        """
+        text_font = pygame.font.SysFont(None, textsize, bold=boldtext)
+        text_img = text_font.render(
+            text, True, self.text_color, self.background_color
+        )
+        text_rect = text_img.get_rect()
+        text_rect.center = x_y
+        return (text_img, text_rect)
+
     @abstractmethod
     def update(self):
         """

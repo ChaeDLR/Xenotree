@@ -27,7 +27,10 @@ class SettingsMenu(MenuBase):
         self.sound_screen = SoundSettings(w_h, stats, settings, game_sound, self.set_main_screen, self)
         self.keybind_screen = KeybindSettings(w_h, stats, settings, self.set_main_screen, self)
 
-        self.__load_title()
+        self.settings_menu_img, self.settings_menu_img_rect = self.create_text(
+            (self.rect.centerx, 60),
+            "SETTINGS"
+        )
         self.__load_buttons()
     
     def __load_buttons(self):
@@ -55,15 +58,6 @@ class SettingsMenu(MenuBase):
             self.keybindings_button.rect.y + 100
             )
 
-    def __load_title(self):
-        """ load settings title """
-        font = pygame.font.SysFont(None, 56, bold=True)
-        self.settings_menu_img = font.render(
-            "SETTINGS", True, self.text_color, self.background_color
-        )
-        self.settings_menu_img_rect = self.settings_menu_img.get_rect()
-        self.settings_menu_img_rect.midtop = self.rect.midtop
-        self.settings_menu_img_rect.y += 60
 
     def check_button_down(self, mouse_pos):
         """

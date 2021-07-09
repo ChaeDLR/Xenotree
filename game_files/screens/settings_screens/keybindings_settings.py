@@ -1,6 +1,4 @@
-import os
-
-from pygame import font, key
+from pygame import font, key, RLEACCEL
 from ..menu_base import MenuBase
 from ..button import Button
 
@@ -16,10 +14,19 @@ class KeybindSettings(MenuBase):
         self.listening = False
         self.listening_keybind = ""
 
-        self.__load_title()
+        self.keybind_menu_img, self.keybind_menu_img_rect = self.create_text(
+            (self.rect.centerx, 60),
+            "KEY BINDINGS"
+            )
+
+        self.set_keybind_img, self.set_keybind_rect = self.create_text(
+            (self.rect.centerx, self.rect.height-160),
+            "Press key...",
+            textsize=40
+        )
+
         self.__load_keybind_labels_buttons()
         self.__load_buttons()
-        # TODO: Create text that tells the user to enter a keybind
 
     def __load_buttons(self):
         """
@@ -27,16 +34,6 @@ class KeybindSettings(MenuBase):
         """
         self.back_button = Button(self.main_screen, "Back")
         self.back_button.set_position(self.rect.centerx-(self.back_button.width/2), self.screen_rows * 5)
-
-    def __load_title(self):
-        """ load settings title """
-        title_font = font.SysFont(None, 56, bold=True)
-        self.keybind_menu_img = title_font.render(
-            "KEY BINDINGS", True, self.text_color, self.background_color
-        )
-        self.keybind_menu_img_rect = self.keybind_menu_img.get_rect()
-        self.keybind_menu_img_rect.midtop = self.rect.midtop
-        self.keybind_menu_img_rect.y += 60
 
     def __load_keybind_labels_buttons(self):
         """ Labels displaying the different keybindings available to change """
@@ -83,6 +80,21 @@ class KeybindSettings(MenuBase):
                 (positions[keybind][0]+(self.screen_columns*2)), 
                 positions[keybind][1]-25
                 )
+    
+    def __animate_set_keybind_text(self):
+        """
+        Blinks the set keybind text by adjusting alpha
+        """
+        if self.keybind_alpha >= 250:
+            self.alpha_switch = -1
+        elif self.keybind_alpha <= 200:
+            self.alpha_switch = 1
+
+        self.keybind_alpha += (1 * self.alpha_switch)
+        self.set_keybind_img.set_alpha(
+            self.keybind_alpha*self.alpha_switch,
+            RLEACCEL
+            )
 
     def check_button_up(self, mouse_pos):
         if self.back_button.check_button(mouse_pos, True):
@@ -92,6 +104,8 @@ class KeybindSettings(MenuBase):
                 self.listening = True
                 self.listening_keybind_button = self.keybind_button_dict[button]
                 self.keybind_button_dict[button].clear_text()
+                self.keybind_alpha = 200
+                self.set_keybind_img.set_alpha(self.keybind_alpha, RLEACCEL)
 
     def check_button_down(self, mouse_pos):
         self.back_button.check_button(mouse_pos)
@@ -109,9 +123,11 @@ class KeybindSettings(MenuBase):
         
         if self.listening and keydown_event:
             pressed_key = keydown_event.key
-            print(key.name(pressed_key))
             self.keybind_button_dict[self.listening_keybind_button.name].set_text(key.name(pressed_key), 20)
             self.listening_keybind_button.reset_alpha()
             # set keybind
             self.settings.key_bindings[self.listening_keybind_button.name] = pressed_key
             self.listening = False
+        elif self.listening:
+            self.main_screen.blit(self.set_keybind_img, self.set_keybind_rect)
+            self.__animate_set_keybind_text()

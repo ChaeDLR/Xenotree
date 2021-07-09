@@ -19,7 +19,11 @@ class SoundSettings(MenuBase):
         self.music_plus_pressed, self.music_minus_pressed = False, False
         self.effects_plus_pressed, self.effects_minus_pressed = False, False
 
-        self.__load_title()
+        self.sound_menu_img, self.sound_menu_img_rect = self.create_text(
+            (self.rect.centerx, 60),
+            "SOUND"
+        )
+
         self.__load_images()
         self.__load_options_text()
         self.__load_buttons()
@@ -135,16 +139,6 @@ class SoundSettings(MenuBase):
         self.effects_volume_image_rect = self.effects_volume_image.get_rect()
         self.effects_volume_image_rect.y = (self.screen_rows * 3) + 20
         self.effects_volume_image_rect.x = self.screen_rows * 2
-
-    def __load_title(self):
-        """ load settings title """
-        title_font = font.SysFont(None, 56, bold=True)
-        self.sound_menu_img = title_font.render(
-            "SOUND", True, self.text_color, self.background_color
-        )
-        self.sound_menu_img_rect = self.sound_menu_img.get_rect()
-        self.sound_menu_img_rect.midtop = self.rect.midtop
-        self.sound_menu_img_rect.y += 60
 
     def __update_signs(self):
         """
