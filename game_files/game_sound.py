@@ -1,6 +1,7 @@
 import pygame
 import os
-import json
+
+from .settings import Settings
 
 # TODO: need music and effect assets
 
@@ -11,20 +12,18 @@ class GameSound:
         pygame.mixer.init()
         # self._load_sound_assets()
         self.music_volume, self.effects_volume = 0.1, 0.3
-        # self._read_volume_data()
+        self.__read_volume_data()
 
-    def _read_volume_data(self):
+    def __read_volume_data(self):
         """
-        Check if the user has previously saved volume data to load
+        Try to load existing volume data
+        if it fails load the default settings
         """
-        directory = f"{os.getcwd()}/Settings_data"
-        if os.path.isdir(directory):
-            with open(f"{directory}/volume.json", "r") as volume_json_file:
-                volume_data = json.load(volume_json_file)
-            volume_json_file.close()
+        try:
+            volume_data = Settings.load_setting("volume.json")
             self.set_effects_volume(volume_data["effects_volume"])
             self.set_music_volume(volume_data["music_volume"])
-        else:
+        except:
             self.set_music_volume(self.music_volume)
             self.set_effects_volume(self.effects_volume)
 
@@ -32,17 +31,13 @@ class GameSound:
         """
         save the current volumes as json data
         """
-        directory = f"{os.getcwd()}/Settings_data"
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
-
-        volumes_json_data = {
-            "music_volume": self.music_volume,
-            "effects_volume": self.effects_volume,
-        }
-        with open(f"{directory}/volume.json", "w") as volume_json_file:
-            json.dump(volumes_json_data, volume_json_file, indent=4)
-        volume_json_file.close()
+        Settings.save_setting(
+            {
+                "music_volume": self.music_volume,
+                "effects_volume": self.effects_volume,
+            },
+            "volume.json",
+        )
 
     def _load_sound_assets(self):
         """ Load sound from assets folder """

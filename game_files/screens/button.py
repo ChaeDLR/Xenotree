@@ -4,8 +4,14 @@ from .screen_colors import ScreenColors
 
 
 class Button(Surface):
-
-    def __init__(self, surface: object, button_text: str, size:tuple=None, font_size:int=40, name:str=None):
+    def __init__(
+        self,
+        surface: object,
+        button_text: str,
+        size: tuple = None,
+        font_size: int = 40,
+        name: str = None,
+    ):
         """ initialize button settings """
         if size != None:
             self.width, self.height = size
@@ -40,7 +46,7 @@ class Button(Surface):
         self.fill(self.button_color)
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
 
-    def check_button(self, mouse_pos, mouse_up:bool=False) -> bool:
+    def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
         """ check for button collision """
         if self.rect.collidepoint(mouse_pos):
             if mouse_up:
@@ -48,10 +54,11 @@ class Button(Surface):
                 return True
             self.set_alpha(25, pygame.RLEACCEL)
             self.msg_image.set_alpha(25, pygame.RLEACCEL)
-    
+
     def reset_alpha(self):
         self.set_alpha(255, pygame.RLEACCEL)
         self.msg_image.set_alpha(255, pygame.RLEACCEL)
+        self.fill(self.button_color)
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the button """
@@ -61,15 +68,13 @@ class Button(Surface):
             self.rect.y = y_pos
 
         self.msg_image_rect.center = self.rect.center
-    
+
     def clear_text(self):
         self.msg_image.fill(self.button_color)
-    
-    def set_text(self, txt: str, fontsize: int=40):
+
+    def set_text(self, txt: str, fontsize: int = 40):
         txt_font = pygame.font.SysFont(None, fontsize, bold=True)
-        self.msg_image = txt_font.render(
-            txt, True, self.text_color, self.button_color
-        )
+        self.msg_image = txt_font.render(txt, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
 

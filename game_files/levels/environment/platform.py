@@ -16,7 +16,7 @@ class Platform(Sprite):
         image=None,
         connect_left: bool = False,
         connect_right: bool = False,
-        moving: bool = False
+        moving: bool = False,
     ):
         """
         w_h: tuple (width, height)
@@ -73,7 +73,7 @@ class Platform(Sprite):
     def resize_wall(self, width: int, height: int):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
-    
+
     def update(self, movement_speed: float):
         """
         update the platforms position if it should be moving
