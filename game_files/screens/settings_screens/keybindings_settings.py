@@ -1,5 +1,3 @@
-from typing import Set
-from game_files.settings import Settings
 from pygame import font, key, RLEACCEL
 from ..menu_base import MenuBase
 from ..button import Button
@@ -32,9 +30,9 @@ class KeybindSettings(MenuBase):
         Create apply and back buttons
         """
         self.back_button = Button(self.main_screen, "Back")
-        self.back_button.set_position(
-            self.rect.centerx - (self.back_button.width / 2), self.screen_rows * 5
-        )
+        self.back_button.set_position(self.screen_columns, self.screen_rows * 5)
+        self.reset_button = Button(self.main_screen, "Reset")
+        self.reset_button.set_position(self.screen_columns * 4, self.screen_rows * 5)
 
     def __load_keybind_labels_buttons(self):
         """ Labels displaying the different keybindings available to change """
@@ -84,6 +82,13 @@ class KeybindSettings(MenuBase):
                 positions[keybind][1] - 25,
             )
 
+    def __reset_keybinds(self):
+        self.settings.reset_keybinds()
+        for keybind in self.settings.key_bindings:
+            self.keybind_button_dict[keybind].set_text(
+                key.name(self.settings.key_bindings[keybind]), 20
+            )
+
     def __animate_set_keybind_text(self):
         """
         Blinks the set keybind text by adjusting alpha
@@ -98,8 +103,10 @@ class KeybindSettings(MenuBase):
 
     def check_button_up(self, mouse_pos):
         if self.back_button.check_button(mouse_pos, True):
-            Settings.save_setting(self.settings.key_bindings, "keybinds.json")
+            self.settings.save_setting(self.settings.key_bindings, "keybinds.json")
             self.back_func()
+        elif self.reset_button.check_button(mouse_pos, True):
+            self.__reset_keybinds()
         for button in self.keybind_button_dict:
             if self.keybind_button_dict[button].check_button(mouse_pos, True):
                 self.listening = True
@@ -110,10 +117,12 @@ class KeybindSettings(MenuBase):
 
     def check_button_down(self, mouse_pos):
         self.back_button.check_button(mouse_pos)
+        self.reset_button.check_button(mouse_pos)
 
     def update(self, keydown_event):
         self.main_screen.blit(self.keybind_menu_img, self.keybind_menu_img_rect)
         self.back_button.blitme()
+        self.reset_button.blitme()
         for option in self.options_image_dict:
             self.main_screen.blit(
                 self.options_image_dict[option][0], self.options_image_dict[option][1]

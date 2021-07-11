@@ -33,13 +33,19 @@ class Settings:
         try:
             self.key_bindings: dict = self.load_setting("keybinds.json")
         except:
-            self.key_bindings: dict = {
-                "move_left": pygame.K_a,
-                "move_right": pygame.K_d,
-                "jump": pygame.K_SPACE,
-                "dash": pygame.K_LSHIFT,
-                "cycle_fireball": pygame.K_r,
-            }
+            self.reset_keybinds()
+
+    def reset_keybinds(self):
+        """
+        Set keybinds to their original bindings
+        """
+        self.key_bindings: dict = {
+            "move_left": pygame.K_a,
+            "move_right": pygame.K_d,
+            "jump": pygame.K_SPACE,
+            "dash": pygame.K_LSHIFT,
+            "cycle_fireball": pygame.K_r,
+        }
 
     @classmethod
     def load_setting(self, file: str) -> dict:
