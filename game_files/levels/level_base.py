@@ -67,9 +67,8 @@ class LevelBase(pygame.Surface, ABC):
         and their capture variables
         """
         self.player_hit = pygame.USEREVENT + 5
-        self.unpause_game = pygame.USEREVENT + 6
-        self.player_dead = pygame.USEREVENT + 7
-        self.player_fire_cooldown = pygame.USEREVENT + 8
+        self.player_dead = pygame.USEREVENT + 6
+        self.player_fire_cooldown = pygame.USEREVENT + 7
 
         self.pd_capture: int = 0
         self.pfc_capture: int = 0
@@ -137,9 +136,8 @@ class LevelBase(pygame.Surface, ABC):
         # pygame.mouse.set_visible(True)
         # pygame.event.wait(self.unpause_game)
 
-    def resume_game(self):
+    def unpause(self):
         """ Method call to set a timer that sets off the unpause_game custom event """
-        pygame.time.set_timer(self.unpause_game, 1, True)
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
     def player_collide_hit(self):
