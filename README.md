@@ -10,7 +10,6 @@ Player can get staggered off screen
 ## To do list
 * Add spell effects to enemies and special platforms
 * Smoooth out health bar
-* Give player an ability to dash or short teleport (probably mapped to shift)
 * Add sound effects
 * Add spell collision animation
 * Cut up more platform sprites to use

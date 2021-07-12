@@ -44,6 +44,7 @@ class TestLevel(LevelBase):
 
         self.__set_timers()
         pygame.time.set_timer(self.start, 3000, True)
+        self.s_capture = pygame.time.get_ticks()
 
     def __start_movement(self):
         """
@@ -55,11 +56,13 @@ class TestLevel(LevelBase):
         pygame.time.set_timer(
             self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
         )
+        self.sp_capture = pygame.time.get_ticks()
 
     def __set_timers(self):
         """ Set levels timers """
         # To activate turret
-        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
+        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
+        self.sta_capture = pygame.time.get_ticks()
 
     def __disable_timers(self):
         """
@@ -67,6 +70,18 @@ class TestLevel(LevelBase):
         """
         pygame.time.set_timer(self.start_turret_attack, 0)
         pygame.time.set_timer(self.difficulty_increase, 0)
+        pygame.time.set_timer(self.player_fire_cooldown, 0)
+        pygame.time.set_timer(self.player_dead, 0)
+        pygame.time.set_timer(self.start, 0)
+        pygame.time.set_timer(self.spawn_platform, 0)
+
+    def __capture_timers(self):
+        """
+        Capture how much time a timer has waited 
+        and calculate how much time if left on it
+        """
+        current_time = pygame.time.get_ticks()
+        # TODO: calculate how much time has elapsed on the timers
 
     def __load_turret(self):
         """
@@ -128,13 +143,19 @@ class TestLevel(LevelBase):
         self.__load_platforms()
 
     def __load_custom_events(self):
-        self.update_player_animation = pygame.USEREVENT + 8
+        """
+        Load custom events and their capture variable if they need one
+        """
         self.start_turret_attack = pygame.USEREVENT + 9
-        self.player_fire_cooldown = pygame.USEREVENT + 10
-        self.spawn_turret = pygame.USEREVENT + 11
-        self.spawn_platform = pygame.USEREVENT + 12
-        self.start = pygame.USEREVENT + 13
-        self.difficulty_increase = pygame.USEREVENT + 14
+        self.spawn_turret = pygame.USEREVENT + 10
+        self.spawn_platform = pygame.USEREVENT + 11
+        self.start = pygame.USEREVENT + 12
+        self.difficulty_increase = pygame.USEREVENT + 13
+
+        self.sta_capture: int = 0
+        self.sp_capture: int = 0
+        self.s_capture: int = 0
+        self.di_capture: int = 0
 
     def __check_platforms(self):
         """
@@ -377,6 +398,8 @@ class TestLevel(LevelBase):
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
+            pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
+            self.sta_capture = pygame.time.get_ticks()
 
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
@@ -393,9 +416,11 @@ class TestLevel(LevelBase):
             pygame.time.set_timer(
                 self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
             )
+            self.sp_capture = pygame.time.get_ticks()
 
         if event.type == self.start:
             pygame.time.set_timer(self.difficulty_increase, 10000)
+            self.di_capture = pygame.time.get_ticks()
             self.difficulty_mode += 1
             self.__start_movement()
 
