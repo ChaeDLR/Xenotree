@@ -5,6 +5,7 @@ from .level_base import LevelBase
 from .environment.platform import Platform
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
+from ..screens.pause_menu import PauseMenu
 
 
 class TestLevel(LevelBase):
@@ -25,6 +26,15 @@ class TestLevel(LevelBase):
         self.player.set_position((25, self.height - 26))
         self.__load_turret()
         self.__load_custom_events()
+
+        # has check events in update
+        self.pause_menu = PauseMenu(
+            (self.settings.screen_width, self.settings.screen_height),
+            self.game_stats,
+            self.settings,
+            self.unpause
+        )
+
         self.turret.firing = True
 
         # spawnspeed_movementspeed
@@ -35,15 +45,16 @@ class TestLevel(LevelBase):
             (2500, 3.0),
             (2200, 3.5),
             (2000, 4.0),
-            (1800, 4.5)
+            (1800, 4.5),
         ]
 
         self.difficulty_mode: int = 0
-
-        self.turret_spawn_speed = 2500
+        self.turret_spawn_speed: int = 2500
+        self.level_start_delay: int = 3000
 
         self.__set_timers()
-        pygame.time.set_timer(self.start, 3000, True)
+        pygame.time.set_timer(self.start, self.level_start_delay, True)
+        self.s_capture = pygame.time.get_ticks()
 
     def __start_movement(self):
         """
@@ -55,11 +66,13 @@ class TestLevel(LevelBase):
         pygame.time.set_timer(
             self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
         )
+        self.sp_capture = pygame.time.get_ticks()
 
     def __set_timers(self):
         """ Set levels timers """
         # To activate turret
-        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed)
+        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
+        self.sta_capture = pygame.time.get_ticks()
 
     def __disable_timers(self):
         """
@@ -67,6 +80,45 @@ class TestLevel(LevelBase):
         """
         pygame.time.set_timer(self.start_turret_attack, 0)
         pygame.time.set_timer(self.difficulty_increase, 0)
+        pygame.time.set_timer(self.player_fire_cooldown, 0)
+        pygame.time.set_timer(self.player_dead, 0)
+        pygame.time.set_timer(self.start, 0)
+        pygame.time.set_timer(self.spawn_platform, 0)
+
+    def __capture_timers(self):
+        """
+        Capture how much time a timer has waited
+        and calculate how much time if left on it
+        """
+        current_time = pygame.time.get_ticks()
+
+        if not self.player.can_fire:
+            self.pfc_timeleft = 1000 - (current_time - self.pfc_capture)
+            if self.pfc_timeleft <= 0: 
+                self.pfc_timeleft = 1
+
+        if self.player.dying:
+            self.pd_timeleft = 2000 - (current_time - self.pd_capture)
+            if self.pd_timeleft <= 0: 
+                self.pd_timeleft = 1
+
+        if self.turret.is_alive:
+            self.sta_timeleft = self.turret.firing_speed - (current_time - self.sta_capture)
+            if self.sta_timeleft <= 0: 
+                self.sta_timeleft = 1
+
+        if self.difficulty_mode == 0:
+            self.s_timeleft = self.level_start_delay - (current_time - self.s_capture)
+            if self.s_timeleft <= 0: 
+                self.s_timeleft = 1
+        else:
+            self.sp_timeleft = self.difficulty[self.difficulty_mode][0] - (current_time - self.sp_capture)
+            if self.sp_timeleft <= 0: 
+                self.sp_timeleft = 1
+
+        self.di_timeleft = 10000 - (current_time - self.di_capture)
+        if self.di_timeleft < -1: 
+            self.di_timeleft = 1
 
     def __load_turret(self):
         """
@@ -128,20 +180,36 @@ class TestLevel(LevelBase):
         self.__load_platforms()
 
     def __load_custom_events(self):
-        self.update_player_animation = pygame.USEREVENT + 8
+        """
+        Load custom events and their capture variable if they need one
+        """
         self.start_turret_attack = pygame.USEREVENT + 9
-        self.player_fire_cooldown = pygame.USEREVENT + 10
-        self.spawn_turret = pygame.USEREVENT + 11
-        self.spawn_platform = pygame.USEREVENT + 12
-        self.start = pygame.USEREVENT + 13
-        self.difficulty_increase = pygame.USEREVENT + 14
+        self.spawn_turret = pygame.USEREVENT + 10
+        self.spawn_platform = pygame.USEREVENT + 11
+        self.start = pygame.USEREVENT + 12
+        self.difficulty_increase = pygame.USEREVENT + 13
+
+        self.sta_capture: int = 0
+        self.sp_capture: int = 0
+        self.s_capture: int = 0
+        self.di_capture: int = 0
+
+        self.sta_timeleft: int = 0
+        self.sp_timeleft: int = 0
+        self.s_timeleft: int = 0
+        self.di_timeleft: int = 0
+        self.pfc_timeleft: int = 0
+        self.pd_timeleft: int = 0
 
     def __check_platforms(self):
         """
         this method will use logic needed to make the
         climbable platforms work
         """
-        if self.player.rect.top > self.rect.bottom or (self.player.rect.x + self.player.rect.width) < 0:
+        if (
+            self.player.rect.top > self.rect.bottom
+            or (self.player.rect.x + self.player.rect.width) < 0
+        ):
             self.game_over()
 
         for platform in self.platforms:
@@ -352,6 +420,33 @@ class TestLevel(LevelBase):
         super().game_over()
         self.__disable_timers()
 
+    def pause_events(self):
+        self.__capture_timers()
+        self.__disable_timers()
+        super().pause_events()
+
+    def unpause(self):
+        """
+        Start game timers with the captured time
+        """
+        super().unpause()
+        if self.pfc_timeleft >= 1:
+            pygame.time.set_timer(self.player_fire_cooldown, self.pfc_timeleft, True)
+        if self.pd_timeleft >= 1:
+            pygame.time.set_timer(self.player_dead, self.pd_timeleft, True)
+        if self.sta_timeleft >= 1:
+            pygame.time.set_timer(self.start_turret_attack, self.sta_timeleft, True)
+        if self.difficulty_mode < 1 and self.s_timeleft >= 1:
+            pygame.time.set_timer(self.start, self.s_timeleft, True)
+        else:
+            pygame.time.set_timer(self.difficulty_increase, self.di_timeleft, True)
+        if self.sp_timeleft >= 1:
+            pygame.time.set_timer(self.spawn_platform, self.sp_timeleft, True)
+
+        self.player.moving_left, self.player.moving_right, self.player.moving = False, False, False
+        self.game_stats.game_active = True
+        self.game_stats.game_paused = False
+
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
             self.check_keydown_events(event)
@@ -377,6 +472,10 @@ class TestLevel(LevelBase):
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
+            pygame.time.set_timer(
+                self.start_turret_attack, self.turret.firing_speed, True
+            )
+            self.sta_capture = pygame.time.get_ticks()
 
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
@@ -393,9 +492,11 @@ class TestLevel(LevelBase):
             pygame.time.set_timer(
                 self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
             )
+            self.sp_capture = pygame.time.get_ticks()
 
         if event.type == self.start:
             pygame.time.set_timer(self.difficulty_increase, 10000)
+            self.di_capture = pygame.time.get_ticks()
             self.difficulty_mode += 1
             self.__start_movement()
 
@@ -421,10 +522,14 @@ class TestLevel(LevelBase):
         """
         Update level elements
         """
-        self.check_levelbase_events(self.check_level_events)
-        self.__check_collisions()
-        self.blit(self.bg_image, self.bg_image_rect)
-        self.platforms.update(self.difficulty[self.difficulty_mode][1])
-        self.__blit_environment()
-        self.__blit__sprites()
-        self.__blit_ui()
+        if self.game_stats.game_paused:
+            self.pause_menu.update()
+            self.blit(self.pause_menu, self.pause_menu.rect)
+        else:
+            self.check_levelbase_events(self.check_level_events)
+            self.__check_collisions()
+            self.blit(self.bg_image, self.bg_image_rect)
+            self.platforms.update(self.difficulty[self.difficulty_mode][1])
+            self.__blit_environment()
+            self.__blit__sprites()
+            self.__blit_ui()

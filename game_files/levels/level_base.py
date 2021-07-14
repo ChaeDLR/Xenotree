@@ -34,7 +34,7 @@ class LevelBase(pygame.Surface, ABC):
         self.platform_assets: dict = AssetManager.platform_assets()
         self.turret_assets: dict = AssetManager.turret_assets()
         self.turret_assets["laser_img"] = self.projectile_assets["laser_img"]
-        self.game_ui = Game_Ui(self.settings, self.game_stats, self.projectile_assets)
+        self.game_ui = Game_Ui(settings, stats, self.projectile_assets)
 
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0
@@ -62,10 +62,16 @@ class LevelBase(pygame.Surface, ABC):
         )
 
     def __load_base_custom_events(self):
-        """ custom events that are the same in every level """
+        """ 
+        custom events that are the same in every level 
+        and their capture variables
+        """
         self.player_hit = pygame.USEREVENT + 5
-        self.unpause_game = pygame.USEREVENT + 6
-        self.player_dead = pygame.USEREVENT + 7
+        self.player_dead = pygame.USEREVENT + 6
+        self.player_fire_cooldown = pygame.USEREVENT + 7
+
+        self.pd_capture: int = 0
+        self.pfc_capture: int = 0
 
     def check_levelbase_events(self, level_event_check):
         for event in pygame.event.get():
@@ -76,6 +82,7 @@ class LevelBase(pygame.Surface, ABC):
                 self.game_ui.update(self.player.health_points)
                 if self.player.dying:
                     pygame.time.set_timer(self.player_dead, 2000, True)
+                    self.pd_capture = pygame.time.get_ticks()
             else:
                 level_event_check(event)
         if self.player.dead:
@@ -106,7 +113,7 @@ class LevelBase(pygame.Surface, ABC):
             self.player.switch_move_left(False)
         elif event.key == self.settings.key_bindings["move_right"]:
             self.player.switch_move_right(False)
-    
+
     def player_mouse_controller(self, event):
         """ respond to mouse input """
         mouse_button = pygame.mouse.get_pressed(3)
@@ -119,6 +126,7 @@ class LevelBase(pygame.Surface, ABC):
             pygame.time.set_timer(
                 self.player_fire_cooldown, self.player.cooldown_time, True
             )
+            self.pfc_capture = pygame.time.get_ticks()
 
     def pause_events(self):
         self.game_stats.game_paused = True
@@ -128,9 +136,8 @@ class LevelBase(pygame.Surface, ABC):
         # pygame.mouse.set_visible(True)
         # pygame.event.wait(self.unpause_game)
 
-    def resume_game(self):
+    def unpause(self):
         """ Method call to set a timer that sets off the unpause_game custom event """
-        pygame.time.set_timer(self.unpause_game, 1, True)
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
     def player_collide_hit(self):

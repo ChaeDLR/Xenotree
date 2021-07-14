@@ -4,8 +4,10 @@ from .button import Button
 
 
 class PauseMenu(MenuBase):
-    def __init__(self, w_h: tuple, stats: object, settings: object):
+    def __init__(self, w_h: tuple, stats: object, settings: object, unpause_func):
         super().__init__(w_h, stats, settings)
+
+        self.unpause_function = unpause_func
 
         self.__load_buttons()
         self.text_image, self.text_image_rect = self.create_text(
@@ -19,17 +21,13 @@ class PauseMenu(MenuBase):
         self.quit_button = Button(self, "Quit")
         self.resume_button.set_position(y_pos=(self.height / 2))
 
-    def __unpause_game(self):
-        self.stats.game_active = True
-        self.stats.game_paused = False
-
     def check_button_down(self, mouse_pos):
         self.resume_button.check_button(mouse_pos)
         self.quit_button.check_button(mouse_pos)
 
     def check_button_up(self, mouse_pos):
         if self.resume_button.check_button(mouse_pos, True):
-            self.__unpause_game()
+            self.unpause_function()
         elif self.quit_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(main_menu=True)
 

@@ -25,9 +25,9 @@ class Xenotree:
             self.game_sound
             )
 
-        self._load_game_screens()
+        self.__load_game_screens()
 
-    def _load_game_screens(self):
+    def __load_game_screens(self):
         """ Load starting game screens and set the current screen to the main menu """
 
         # has check events in update
@@ -45,12 +45,6 @@ class Xenotree:
         )
 
         # has check events in update
-        self.pause_menu = game_files.PauseMenu(
-            (self.settings.screen_width, self.settings.screen_height),
-            self.stats,
-            self.settings,
-        )
-        # has check events in update
         self.settings_menu = game_files.SettingsMenu(
             (self.settings.screen_width, self.settings.screen_height),
             self.stats,
@@ -60,22 +54,16 @@ class Xenotree:
 
         self.active_screen = self.main_menu
 
-    def run_game(self):
-        """ main loop """
-        while True:
-            self.clock.tick(60)
-            self._update_screen()
-
-    def _get_active_level(self):
+    def __get_active_level(self):
         """ return the active level """
         if self.stats.active_level == 1:
             return self.level_manager.active_level
 
-    def _set_active_screen(self):
+    def __set_active_screen(self):
         """ Check game bools to choose the active screen """
         # Else if the game is active we need to get the active level
         if self.stats.game_active:
-            self.active_screen = self._get_active_level()
+            self.active_screen = self.__get_active_level()
         # Else if the game is not active we need to know which menu screen we should show
         elif not self.stats.game_active:
             # if its the game over screen
@@ -91,19 +79,22 @@ class Xenotree:
         # So switch the bool to False so the loop doesn't trying grabbing a new screen again
         self.stats.change_screen = False
 
-    def _update_screen(self):
+    def __update_screen(self):
         """ things to be updated """
         if self.stats.change_screen:
-            self._set_active_screen()
+            self.__set_active_screen()
 
-        if not self.stats.game_paused:
-            self.screen.fill(self.settings.bg_color)
-            self.active_screen.update()
-            self.screen.blit(self.active_screen, self.active_screen.rect)
-        else:
-            self.pause_menu.update()
-            self.screen.blit(self.pause_menu, self.pause_menu.rect)
+        self.screen.fill(self.settings.bg_color)
+        self.active_screen.update()
+        self.screen.blit(self.active_screen, self.active_screen.rect)
+
         pygame.display.update()
+
+    def run_game(self):
+        """ main loop """
+        while True:
+            self.clock.tick(60)
+            self.__update_screen()
 
 
 if __name__ == "__main__":
