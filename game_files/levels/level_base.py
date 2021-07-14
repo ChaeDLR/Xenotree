@@ -34,7 +34,7 @@ class LevelBase(pygame.Surface, ABC):
         self.platform_assets: dict = AssetManager.platform_assets()
         self.turret_assets: dict = AssetManager.turret_assets()
         self.turret_assets["laser_img"] = self.projectile_assets["laser_img"]
-        self.game_ui = Game_Ui(self.settings, self.game_stats, self.projectile_assets)
+        self.game_ui = Game_Ui(settings, stats, self.projectile_assets)
 
         self.difficulty_tracker = 1
         self.patroller_difficulty = 0

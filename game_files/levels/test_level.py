@@ -49,11 +49,11 @@ class TestLevel(LevelBase):
         ]
 
         self.difficulty_mode: int = 0
-
-        self.turret_spawn_speed = 2500
+        self.turret_spawn_speed: int = 2500
+        self.level_start_delay: int = 3000
 
         self.__set_timers()
-        pygame.time.set_timer(self.start, 3000, True)
+        pygame.time.set_timer(self.start, self.level_start_delay, True)
         self.s_capture = pygame.time.get_ticks()
 
     def __start_movement(self):
@@ -93,19 +93,32 @@ class TestLevel(LevelBase):
         current_time = pygame.time.get_ticks()
 
         if not self.player.can_fire:
-            self.pfc_capture = current_time - self.pfc_capture
+            self.pfc_timeleft = 1000 - (current_time - self.pfc_capture)
+            if self.pfc_timeleft <= 0: 
+                self.pfc_timeleft = 1
 
         if self.player.dying:
-            self.pd_capture = current_time - self.pd_capture
+            self.pd_timeleft = 2000 - (current_time - self.pd_capture)
+            if self.pd_timeleft <= 0: 
+                self.pd_timeleft = 1
 
-        if self.turret.firing:
-            self.sta_capture = current_time - self.sta_capture
+        if self.turret.is_alive:
+            self.sta_timeleft = self.turret.firing_speed - (current_time - self.sta_capture)
+            if self.sta_timeleft <= 0: 
+                self.sta_timeleft = 1
 
-        if self.difficulty_mode >= 1:
-            self.s_capture = current_time - self.s_capture
-            self.sp_capture = current_time - self.sp_capture
+        if self.difficulty_mode == 0:
+            self.s_timeleft = self.level_start_delay - (current_time - self.s_capture)
+            if self.s_timeleft <= 0: 
+                self.s_timeleft = 1
+        else:
+            self.sp_timeleft = self.difficulty[self.difficulty_mode][0] - (current_time - self.sp_capture)
+            if self.sp_timeleft <= 0: 
+                self.sp_timeleft = 1
 
-        self.di_capture = current_time - self.di_capture
+        self.di_timeleft = 10000 - (current_time - self.di_capture)
+        if self.di_timeleft < -1: 
+            self.di_timeleft = 1
 
     def __load_turret(self):
         """
@@ -180,6 +193,13 @@ class TestLevel(LevelBase):
         self.sp_capture: int = 0
         self.s_capture: int = 0
         self.di_capture: int = 0
+
+        self.sta_timeleft: int = 0
+        self.sp_timeleft: int = 0
+        self.s_timeleft: int = 0
+        self.di_timeleft: int = 0
+        self.pfc_timeleft: int = 0
+        self.pd_timeleft: int = 0
 
     def __check_platforms(self):
         """
@@ -401,35 +421,31 @@ class TestLevel(LevelBase):
         self.__disable_timers()
 
     def pause_events(self):
-        super().pause_events()
         self.__capture_timers()
         self.__disable_timers()
+        super().pause_events()
 
     def unpause(self):
         """
         Start game timers with the captured time
         """
         super().unpause()
-        if self.pfc_capture > 0:
-            pygame.time.set_timer(self.player_fire_cooldown, self.pfc_capture, True)
-        if self.pd_capture > 0:
-            pygame.time.set_timer(self.player_dead, self.pd_capture, True)
-        if self.sta_capture > 0:
-            pygame.time.set_timer(self.start_turret_attack, self.sta_capture, True)
-        if self.difficulty_mode < 1:
-            pygame.time.set_timer(self.start, self.s_capture, True)
-        elif self.sp_capture > 0:
-            pygame.time.set_timer(self.spawn_platform, self.sp_capture, True)
-        pygame.time.set_timer(self.difficulty_increase, self.di_capture, True)
-        self.pfc_capture = 0
-        self.pd_capture = 0
-        self.sta_capture = 0
-        self.s_capture = 0
-        self.sp_capture = 0
-        self.di_capture = 0
+        if self.pfc_timeleft >= 1:
+            pygame.time.set_timer(self.player_fire_cooldown, self.pfc_timeleft, True)
+        if self.pd_timeleft >= 1:
+            pygame.time.set_timer(self.player_dead, self.pd_timeleft, True)
+        if self.sta_timeleft >= 1:
+            pygame.time.set_timer(self.start_turret_attack, self.sta_timeleft, True)
+        if self.difficulty_mode < 1 and self.s_timeleft >= 1:
+            pygame.time.set_timer(self.start, self.s_timeleft, True)
+        else:
+            pygame.time.set_timer(self.difficulty_increase, self.di_timeleft, True)
+        if self.sp_timeleft >= 1:
+            pygame.time.set_timer(self.spawn_platform, self.sp_timeleft, True)
+
+        self.player.moving_left, self.player.moving_right, self.player.moving = False, False, False
         self.game_stats.game_active = True
         self.game_stats.game_paused = False
-        # TODO: It looks like the timers are still really out of sync and break if you pause often
 
     def check_level_events(self, event):
         if event.type == pygame.KEYDOWN:
