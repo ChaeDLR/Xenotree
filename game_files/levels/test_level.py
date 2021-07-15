@@ -2,7 +2,7 @@ import pygame
 import random
 
 from .level_base import LevelBase
-from .environment.platform import Platform
+from .environment.platform import Platform, Wave
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
@@ -44,8 +44,9 @@ class TestLevel(LevelBase):
             (2800, 2.5),
             (2500, 3.0),
             (2200, 3.5),
-            (2000, 4.0),
             (1800, 4.5),
+            (1700, 5.5),
+            (1700, 6.5)
         ]
 
         self.difficulty_mode: int = 0
@@ -155,7 +156,7 @@ class TestLevel(LevelBase):
         floor_width = floor_image.get_width()
 
         # make the floor cover the entire width of the screen
-        floor_tile_number = round(self.width / floor_width) + 1
+        floor_tile_number = round(self.width / floor_width) - 4
         for i in range(0, floor_tile_number):
             if i == floor_tile_number - 1:
                 connected_right = False
@@ -176,8 +177,10 @@ class TestLevel(LevelBase):
         and platform lists
         """
         self.platforms = pygame.sprite.Group()
+        self.waves = pygame.sprite.Group()
         self.__load_floor()
         self.__load_platforms()
+        self.__load_waves()
 
     def __load_custom_events(self):
         """
@@ -369,6 +372,50 @@ class TestLevel(LevelBase):
         for newPlatform in new_platforms:
             self.platforms.add(newPlatform)
 
+    def __load_waves(self):
+        """
+        run the water at the bottom of the screen
+        """
+        water_rect = self.platform_assets["water_image"].get_rect()
+        wave_width = water_rect.width
+        num_of_waves: int = int(self.width / water_rect.width) + 2
+
+        for i in range(num_of_waves, -1, -1):
+            new_wave = Wave(
+                    (wave_width*i, self.height-20),
+                    image=self.platform_assets["water_image"],
+                    moving=True
+                )
+
+            if i == 0:
+                Wave.first = new_wave
+                new_wave.next = previous_wave
+            elif i == num_of_waves:
+                Wave.last = new_wave
+            else:
+                new_wave.next = previous_wave
+
+            previous_wave = new_wave
+
+            self.waves.add(
+                new_wave
+            )
+
+    def __run_water(self):
+        """
+        Move the waves
+        """
+        if Wave.first.rect.x < -Wave.first.rect.width:
+            # set first waves new position
+            Wave.first.set_position(x_pos=(Wave.last.rect.x+Wave.last.rect.width))
+            # Set the old lasts next to the new last
+            Wave.last.next = Wave.first
+            # make the old first the new last
+            Wave.last = Wave.first
+            # make the new first the old firsts next
+            Wave.first = Wave.first.next
+
+
     def __check_collisions(self):
         # Need impact sounds
         self.__check_platforms()
@@ -404,6 +451,8 @@ class TestLevel(LevelBase):
         """
         blit test level env
         """
+        for wave in self.waves:
+            self.blit(wave.image, wave.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
 
@@ -530,6 +579,8 @@ class TestLevel(LevelBase):
             self.__check_collisions()
             self.blit(self.bg_image, self.bg_image_rect)
             self.platforms.update(self.difficulty[self.difficulty_mode][1])
-            self.__blit_environment()
+            self.__run_water() # Loop the waves
+            self.waves.update(4.5) # wave speed
             self.__blit__sprites()
+            self.__blit_environment()
             self.__blit_ui()

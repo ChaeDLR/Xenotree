@@ -66,8 +66,10 @@ class Platform(Sprite):
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
         if x_pos:
-            self.rect.x = x_pos
+            self.x = float(x_pos)
+            self.rect.x = self.x
         if y_pos:
+            self.y = float(y_pos)
             self.rect.y = y_pos
 
     def resize_wall(self, width: int, height: int):
@@ -81,3 +83,17 @@ class Platform(Sprite):
         if self.moving:
             self.x -= float(movement_speed)
             self.rect.x = self.x
+
+class Wave(Platform):
+    """
+    Child platform with class variables used to track their position in a queue
+    """
+    first: Platform = None
+    last: Platform = None
+
+    def __init__(self, x_y: tuple, image, w_h: tuple=None, connect_left: bool=False, connect_right: bool=False, moving: bool=True):
+        super().__init__(x_y, w_h=w_h, image=image, connect_left=connect_left, connect_right=connect_right, moving=moving)
+        # Each wave will point to the next wave in the queue
+        self.next: Platform = None
+
+
