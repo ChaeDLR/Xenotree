@@ -273,7 +273,7 @@ class TestLevel(LevelBase):
         Check the turret laser for collisions
         """
         if not self.player.dying and (
-            pygame.sprite.spritecollide(
+            collided_laser := pygame.sprite.spritecollide(
                 self.player,
                 self.turret.lasers,
                 True,
@@ -281,7 +281,11 @@ class TestLevel(LevelBase):
             )
             or pygame.sprite.collide_mask(self.player, self.turret)
         ):
-            self.player_collide_hit()
+            if collided_laser:
+                angle = collided_laser[0].angle_fired
+            else:
+                angle = 0
+            self.player_collide_hit(angle)
         if pygame.sprite.groupcollide(
             self.turret.lasers,
             self.player.fireballs,

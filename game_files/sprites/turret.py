@@ -47,9 +47,10 @@ class Turret(Sprite):
             (self.rect.x, self.rect.y),
             target
         )
-        
+
         laser.rotate_image(angle)
         laser.update_rect()
+        laser.angle_fired = angle
         self.lasers.add(laser)
 
 

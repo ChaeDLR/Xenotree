@@ -18,10 +18,14 @@ class Player(Sprite):
 
         # create players bool values
         self.__player_bools()
+
+        # animation trackers
         self.falling_index: int = 0
         self.death_frame: int = 1
         self.animation_index_limit: int = 3
+
         self.screen_bound: int = bound
+        self.hit_angle: int = 0
 
         # counters
         self.jump_counter = 0
@@ -124,8 +128,10 @@ class Player(Sprite):
         """
         self.falling = False
         self.rect.y += self.jumping_velocity
-        if self.jumping_velocity < self.falling_speed_limit:
-            self.jumping_velocity += 0.5
+        self.jumping_velocity += 0.5
+        if self.jumping_velocity >= 0:
+            self.jumping = False
+            self.falling = True
 
     def __fall(self):
         """
@@ -140,10 +146,9 @@ class Player(Sprite):
         Staggered movement
         """
         self.stagger_counter += 1
-        
-        if self.facing_right:
+        if int(self.hit_angle) in range(90, 270):
             self.x -= 3.0
-        else:
+        elif int(self.hit_angle) in range(270, 360) or range(0, 90):
             self.x += 3.0
         self.y -= 1.5
         self.rect.x, self.rect.y = self.x, self.y
@@ -227,13 +232,15 @@ class Player(Sprite):
             self.jumping = True
             self.reset_animation
             self.jumping_velocity = velocity
+            self.falling_velocity = 1.0
             self.rect.y += self.jumping_velocity
             self.jump_counter += 1
 
-    def damaged(self):
+    def damaged(self, angle: int=None):
         """
         Reduce player health and play hit animation
         """
+        self.hit_angle = angle
         self.health_points -= 10
         if self.health_points <= 20:
             self.dying = True

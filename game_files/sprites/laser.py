@@ -11,6 +11,7 @@ class Laser(Projectile):
         self.base_image = image
         self.image = self.base_image
         self.rect = self.image.get_rect()
+        self.angle_fired: float = 0.0
 
     def rotate_image(self, angle: float):
         """

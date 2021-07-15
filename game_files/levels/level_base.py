@@ -77,12 +77,6 @@ class LevelBase(pygame.Surface, ABC):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == self.player_hit:
-                self.player.damaged()
-                self.game_ui.update(self.player.health_points)
-                if self.player.dying:
-                    pygame.time.set_timer(self.player_dead, 2000, True)
-                    self.pd_capture = pygame.time.get_ticks()
             else:
                 level_event_check(event)
         if self.player.dead:
@@ -140,14 +134,18 @@ class LevelBase(pygame.Surface, ABC):
         """ Method call to set a timer that sets off the unpause_game custom event """
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
-    def player_collide_hit(self):
+    def player_collide_hit(self, angle:float=200.0):
         """
         If the player collides with something that hurts it
         """
         # TODO: Need player sound
         # if self.player.player_hit == False:
         #   self.game_sound.player_impact_sound.play()
-        pygame.time.set_timer(self.player_hit, 1, True)
+        self.player.damaged(angle)
+        self.game_ui.update(self.player.health_points)
+        if self.player.dying:
+            pygame.time.set_timer(self.player_dead, 2000, True)
+            self.pd_capture = pygame.time.get_ticks()
 
     def game_over(self):
         """ Reset the current level """
