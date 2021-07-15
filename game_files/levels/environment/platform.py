@@ -1,4 +1,5 @@
 from pygame import Surface, Rect, transform, mask
+import pygame
 from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
 
@@ -13,7 +14,8 @@ class Platform(Sprite):
         self,
         x_y: tuple,
         w_h: tuple = None,
-        image=None,
+        images: list=None,
+        image_key: str=None,
         connect_left: bool = False,
         connect_right: bool = False,
         moving: bool = False,
@@ -31,21 +33,29 @@ class Platform(Sprite):
 
         self.moving = moving
 
-        if w_h and image:
-            self.__create_imaged_platform(x_y, image, scale=w_h)
+        if image_key:
+            img_key = image_key
+        else:
+            img_key = "normal"
+
+        if w_h and images:
+            self.images = images
+            self.__create_imaged_platform(x_y, image_key=img_key, scale=w_h)
         # use platform image at the default size
-        elif image:
-            self.__create_imaged_platform(x_y, image)
+        elif images:
+            self.images = images
+            self.__create_imaged_platform(x_y, image_key=img_key)
         else:
             self.__build_black_platform(x_y, w_h)
 
-    def __create_imaged_platform(self, pos: tuple, image: Surface, scale=None):
+    def __create_imaged_platform(self, pos: tuple, image_key: str, scale=None):
         """
         Create a platform out of given image
         """
-        self.image = image
         if scale:
-            self.image = transform.scale(self.image, scale)
+            for img_str in self.images:
+                self.images[img_str] = transform.scale(self.images[img_str], scale)
+        self.image = self.images[image_key]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = pos
         self.x, self.y = float(self.rect.x), float(self.rect.y)
@@ -62,6 +72,20 @@ class Platform(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = dims
         self.image.fill(self.colors.platform_color)
+    
+    def freeze(self):
+        """
+        Switch the platform image and stop it's movement
+        """
+        self.image = self.images["frozen"]
+        #self.moving = False
+
+    def unfreeze(self):
+        """
+        Switch platform image and start movement
+        """
+        self.image = self.images["normal"]
+        #self.moving = True
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
@@ -91,9 +115,7 @@ class Wave(Platform):
     first: Platform = None
     last: Platform = None
 
-    def __init__(self, x_y: tuple, image, w_h: tuple=None, connect_left: bool=False, connect_right: bool=False, moving: bool=True):
-        super().__init__(x_y, w_h=w_h, image=image, connect_left=connect_left, connect_right=connect_right, moving=moving)
+    def __init__(self, x_y: tuple, images, w_h: tuple=None):
+        super().__init__(x_y, w_h=w_h, images=images, image_key="wave_image", moving=True)
         # Each wave will point to the next wave in the queue
         self.next: Platform = None
-
-

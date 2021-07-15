@@ -49,7 +49,14 @@ class AssetManager:
             cls.current_path, "levels/environment/env_assets/FloorFirst.png"
         )
         # 96, 48
-        floor_image = pygame.image.load(platform_image_path).convert()
+        platform_image = pygame.image.load(platform_image_path).convert()
+        frozen_platform_image = pygame.image.load(platform_image_path).convert()
+        frozen_img_array = pygame.surfarray.pixels3d(frozen_platform_image)
+        for pixl_list in frozen_img_array:
+            for rgb in pixl_list:
+                rgb[2] += 55
+
+        del frozen_img_array
 
         water_image_path = os.path.join(
             cls.current_path, "levels/environment/env_assets/water.png"
@@ -65,7 +72,10 @@ class AssetManager:
         colorkey = wbg_image.get_at((1, 1))
         wbg_image.set_colorkey(colorkey, pygame.RLEACCEL)
 
-        return {"floor_image": floor_image, "water_image": wbg_image}
+        return {
+            "platform_images": {"normal": platform_image, "frozen": frozen_platform_image}, 
+            "wave_image": wbg_image,
+            }
 
     @classmethod
     def enemy_projectile_assets(cls) -> dict:

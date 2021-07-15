@@ -145,15 +145,15 @@ class TestLevel(LevelBase):
 
         for pos in platform_positions:
             self.platforms.add(
-                Platform(pos, image=self.platform_assets["floor_image"], w_h=(96, 36))
+                Platform(pos, images=self.platform_assets["platform_images"], w_h=(96, 36))
             )
 
     def __load_floor(self):
         """
         Load base floor
         """
-        floor_image = self.platform_assets["floor_image"]
-        floor_width = floor_image.get_width()
+        platform_images = self.platform_assets["platform_images"]
+        floor_width = platform_images["normal"].get_width()
 
         # make the floor cover the entire width of the screen
         floor_tile_number = round(self.width / floor_width) - 4
@@ -165,7 +165,7 @@ class TestLevel(LevelBase):
 
             floor_tile = Platform(
                 (floor_width * i, self.height - 25),
-                image=floor_image,
+                images=platform_images,
                 connect_left=True,
                 connect_right=connected_right,
             )
@@ -307,14 +307,19 @@ class TestLevel(LevelBase):
         """
         Check for the fireball collisions
         """
-        if pygame.sprite.groupcollide(
+        if collide_dict := pygame.sprite.groupcollide(
             self.platforms,
             self.player.fireballs,
             False,
             True,
             collided=pygame.sprite.collide_mask,
         ):
-            pass
+            for collide_items in collide_dict.items():
+                coll_fb = collide_items[1][0]
+                coll_platform = collide_items[0]
+            if coll_fb.type == "blue":
+                coll_platform.freeze()
+
         if pygame.sprite.spritecollide(
             self.turret,
             self.player.fireballs,
@@ -348,7 +353,7 @@ class TestLevel(LevelBase):
         new_platforms: list = [
             Platform(
                 (self.width, platform_y),
-                image=self.platform_assets["floor_image"],
+                images=self.platform_assets["platform_images"], # TEST FROZEN IMG
                 moving=True,
             )
         ]
@@ -367,7 +372,7 @@ class TestLevel(LevelBase):
             new_platforms.append(
                 Platform(
                     x_y,
-                    image=self.platform_assets["floor_image"],
+                    images=self.platform_assets["platform_images"],
                     connect_left=True,
                     moving=True,
                 )
@@ -380,15 +385,14 @@ class TestLevel(LevelBase):
         """
         run the water at the bottom of the screen
         """
-        water_rect = self.platform_assets["water_image"].get_rect()
+        water_rect = self.platform_assets["wave_image"].get_rect()
         wave_width = water_rect.width
         num_of_waves: int = int(self.width / water_rect.width) + 2
 
         for i in range(num_of_waves, -1, -1):
             new_wave = Wave(
                     (wave_width*i, self.height-20),
-                    image=self.platform_assets["water_image"],
-                    moving=True
+                    images=self.platform_assets,
                 )
 
             if i == 0:
