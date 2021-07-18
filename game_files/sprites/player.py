@@ -1,3 +1,4 @@
+from game_files.levels.environment.platform import Platform
 import pygame
 
 from pygame.sprite import Sprite
@@ -40,7 +41,7 @@ class Player(Sprite):
         self.dashing_speed: float = 13.5
 
         # int passed to the pygame timer used to reset attack available flag
-        self.cooldown_time: int = 1000
+        self.cooldown_time: int = 500
         self.health_points: int = 100
 
         self.y: float = float(self.rect.y)
@@ -109,7 +110,9 @@ class Player(Sprite):
         """
         Player quickly move across the x axis
         """
-        if self.dash_dir_right and (self.x + self.dashing_speed) < (self.screen_bound + self.rect.width):
+        if self.dash_dir_right and (self.x + self.dashing_speed) < (
+            self.screen_bound + self.rect.width
+        ):
             self.x += self.dashing_speed
             self.rect.x = self.x
         elif (self.x - self.dashing_speed) > 0:
@@ -127,6 +130,7 @@ class Player(Sprite):
         Start player jump
         """
         self.falling = False
+        self.grounded = False
         self.rect.y += self.jumping_velocity
         self.jumping_velocity += 0.5
         if self.jumping_velocity >= 0:
@@ -140,7 +144,7 @@ class Player(Sprite):
         self.rect.y += self.falling_velocity
         if self.falling_velocity < self.falling_speed_limit:
             self.falling_velocity += 0.5
-    
+
     def __stagger(self):
         """
         Staggered movement
@@ -156,7 +160,7 @@ class Player(Sprite):
         if self.stagger_counter >= 8:
             self.hit = False
             self.falling = True
-    
+
     def start_dash(self):
         """
         Tell player to start dashing and start a counter
@@ -236,7 +240,7 @@ class Player(Sprite):
             self.rect.y += self.jumping_velocity
             self.jump_counter += 1
 
-    def damaged(self, angle: int=None):
+    def damaged(self, angle: int = None):
         """
         Reduce player health and play hit animation
         """
@@ -249,10 +253,13 @@ class Player(Sprite):
         self.stagger_counter = 0
         self.x, self.y = self.rect.x, self.rect.y
 
-    def on_ground(self):
+    def on_ground(self, platform: Platform):
         """
         Call if the player is on the ground to reset the variables
+        If the ground the player is on is moving switch bool
         """
+        # store the platform that the playe is on so we can check the platform status
+        self.current_platform = platform
         self.falling = False
         self.jumping = False
         self.jumping_velocity = -7.5
@@ -285,12 +292,12 @@ class Player(Sprite):
         self.animation_counter = 0
         self.animation_index = 0
 
-    def update_movement(self, platform_speed: int):
+    def update_movement(self):
         """
         Update player position
         """
-        if not self.jumping and not self.falling:
-            self.x -= platform_speed
+        if self.current_platform.moving:
+            self.x -= self.current_platform.movement_speed
             self.rect.x = self.x
         if not self.dying:
             if self.hit:
@@ -341,9 +348,9 @@ class Player(Sprite):
 
         if self.animation_index >= len(self.images[key]):
             if self.dying:
-                self.animation_index = len(self.images[key])-1
+                self.animation_index = len(self.images[key]) - 1
             elif self.hit:
-                self.animation_index = len(self.images[key])-1
+                self.animation_index = len(self.images[key]) - 1
             else:
                 self.reset_animation()
 
@@ -368,11 +375,11 @@ class Player(Sprite):
         else:
             self.facing_left, self.facing_right = False, True
 
-    def update(self, platform_speed: int):
+    def update(self):
         """
         Update the player image and movement
         """
         if not self.dying:
             self.update_facing()
-        self.update_movement(platform_speed)
+        self.update_movement()
         self.update_animation()

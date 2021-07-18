@@ -14,10 +14,8 @@ class Platform(Sprite):
         self,
         x_y: tuple,
         w_h: tuple = None,
-        images: list=None,
-        image_key: str=None,
-        connect_left: bool = False,
-        connect_right: bool = False,
+        images: list = None,
+        image_key: str = None,
         moving: bool = False,
     ):
         """
@@ -26,12 +24,10 @@ class Platform(Sprite):
         """
         super().__init__()
         self.colors = ScreenColors()
-        # These bools will be used to check if the platform is connected to another platform
-        # on either side
-        self.connected_left = connect_left
-        self.connected_right = connect_right
 
         self.moving = moving
+        self.connected_left, self.connected_right = False, False
+        self.frozen = False
 
         if image_key:
             img_key = image_key
@@ -72,20 +68,44 @@ class Platform(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = dims
         self.image.fill(self.colors.platform_color)
-    
+
+    def connect_left(self, platform: Sprite):
+        """
+        Connect a platform to this platforms left if not already connected
+        """
+        if not self.connected_left:
+            self.connected_left = True
+            self.connected_left_platform = platform
+            platform.connect_right(self)
+
+    def connect_right(self, platform: Sprite):
+        """
+        Connect a platform to this platforms right if not already connected
+        """
+        if not self.connected_right:
+            self.connected_right = True
+            self.connected_right_platform = platform
+            platform.connect_left(self)
+
     def freeze(self):
         """
         Switch the platform image and stop it's movement
         """
-        self.image = self.images["frozen"]
-        #self.moving = False
+        if not self.frozen:
+            self.image = self.images["frozen"]
+            self.frozen = True
+            self.moving = False
+            if self.connected_right:
+                self.connected_right_platform.freeze()
+            if self.connected_left:
+                self.connected_left_platform.freeze()
 
     def unfreeze(self):
         """
         Switch platform image and start movement
         """
         self.image = self.images["normal"]
-        #self.moving = True
+        # self.moving = True
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
@@ -105,17 +125,22 @@ class Platform(Sprite):
         update the platforms position if it should be moving
         """
         if self.moving:
-            self.x -= float(movement_speed)
+            self.movement_speed = float(movement_speed)
+            self.x -= self.movement_speed
             self.rect.x = self.x
+
 
 class Wave(Platform):
     """
     Child platform with class variables used to track their position in a queue
     """
+
     first: Platform = None
     last: Platform = None
 
-    def __init__(self, x_y: tuple, images, w_h: tuple=None):
-        super().__init__(x_y, w_h=w_h, images=images, image_key="wave_image", moving=True)
+    def __init__(self, x_y: tuple, images, w_h: tuple = None):
+        super().__init__(
+            x_y, w_h=w_h, images=images, image_key="wave_image", moving=True
+        )
         # Each wave will point to the next wave in the queue
         self.next: Platform = None

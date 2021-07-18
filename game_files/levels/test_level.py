@@ -23,7 +23,6 @@ class TestLevel(LevelBase):
 
         self.colors = ScreenColors()
         self.__load_env()
-        self.player.set_position((25, self.height - 26))
         self.__load_turret()
         self.__load_custom_events()
 
@@ -32,7 +31,7 @@ class TestLevel(LevelBase):
             (self.settings.screen_width, self.settings.screen_height),
             self.game_stats,
             self.settings,
-            self.unpause
+            self.unpause,
         )
 
         self.turret.firing = True
@@ -46,7 +45,7 @@ class TestLevel(LevelBase):
             (2200, 3.5),
             (1800, 4.5),
             (1700, 5.5),
-            (1700, 6.5)
+            (1700, 6.5),
         ]
 
         self.difficulty_mode: int = 0
@@ -95,30 +94,34 @@ class TestLevel(LevelBase):
 
         if not self.player.can_fire:
             self.pfc_timeleft = 1000 - (current_time - self.pfc_capture)
-            if self.pfc_timeleft <= 0: 
+            if self.pfc_timeleft <= 0:
                 self.pfc_timeleft = 1
 
         if self.player.dying:
             self.pd_timeleft = 2000 - (current_time - self.pd_capture)
-            if self.pd_timeleft <= 0: 
+            if self.pd_timeleft <= 0:
                 self.pd_timeleft = 1
 
         if self.turret.is_alive:
-            self.sta_timeleft = self.turret.firing_speed - (current_time - self.sta_capture)
-            if self.sta_timeleft <= 0: 
+            self.sta_timeleft = self.turret.firing_speed - (
+                current_time - self.sta_capture
+            )
+            if self.sta_timeleft <= 0:
                 self.sta_timeleft = 1
 
         if self.difficulty_mode == 0:
             self.s_timeleft = self.level_start_delay - (current_time - self.s_capture)
-            if self.s_timeleft <= 0: 
+            if self.s_timeleft <= 0:
                 self.s_timeleft = 1
         else:
-            self.sp_timeleft = self.difficulty[self.difficulty_mode][0] - (current_time - self.sp_capture)
-            if self.sp_timeleft <= 0: 
+            self.sp_timeleft = self.difficulty[self.difficulty_mode][0] - (
+                current_time - self.sp_capture
+            )
+            if self.sp_timeleft <= 0:
                 self.sp_timeleft = 1
 
         self.di_timeleft = 10000 - (current_time - self.di_capture)
-        if self.di_timeleft < -1: 
+        if self.di_timeleft < -1:
             self.di_timeleft = 1
 
     def __load_turret(self):
@@ -145,7 +148,9 @@ class TestLevel(LevelBase):
 
         for pos in platform_positions:
             self.platforms.add(
-                Platform(pos, images=self.platform_assets["platform_images"], w_h=(96, 36))
+                Platform(
+                    pos, images=self.platform_assets["platform_images"], w_h=(96, 36)
+                )
             )
 
     def __load_floor(self):
@@ -157,18 +162,25 @@ class TestLevel(LevelBase):
 
         # make the floor cover the entire width of the screen
         floor_tile_number = round(self.width / floor_width) - 4
+        previous_platform = None
         for i in range(0, floor_tile_number):
-            if i == floor_tile_number - 1:
-                connected_right = False
+            if previous_platform:
+                floor_tile = Platform(
+                    (floor_width * i, self.height - 25), images=platform_images
+                )
+                floor_tile.connect_left(previous_platform)
             else:
-                connected_right = True
+                floor_tile = Platform(
+                    (floor_width * i, self.height - 25), images=platform_images
+                )
 
-            floor_tile = Platform(
-                (floor_width * i, self.height - 25),
-                images=platform_images,
-                connect_left=True,
-                connect_right=connected_right,
-            )
+            previous_platform = floor_tile
+
+            if i == 0:
+                self.player.set_position(
+                    (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1] - 2)
+                )
+                self.player.on_ground(floor_tile)
             self.platforms.add(floor_tile)
 
     def __load_env(self):
@@ -231,7 +243,7 @@ class TestLevel(LevelBase):
                     <= platform.rect.top + 20
                     and self.player.falling
                 ):
-                    self.player.on_ground()
+                    self.player.on_ground(platform)
                     self.player.rect.bottom = platform.rect.top - 2
                 elif (
                     platform.rect.left + 20
@@ -353,15 +365,13 @@ class TestLevel(LevelBase):
         new_platforms: list = [
             Platform(
                 (self.width, platform_y),
-                images=self.platform_assets["platform_images"], # TEST FROZEN IMG
+                images=self.platform_assets["platform_images"],
                 moving=True,
             )
         ]
         platform_width = new_platforms[0].width
 
         if random.choice((0, 1)) == 1:  # add a connecting platform
-            new_platforms[len(new_platforms) - 1].connected_right = True
-
             x_y: tuple = (
                 (self.width + (platform_width * len(new_platforms))),
                 platform_y,
@@ -373,10 +383,10 @@ class TestLevel(LevelBase):
                 Platform(
                     x_y,
                     images=self.platform_assets["platform_images"],
-                    connect_left=True,
                     moving=True,
                 )
             )
+            new_platforms[0].connect_right(new_platforms[1])
 
         for newPlatform in new_platforms:
             self.platforms.add(newPlatform)
@@ -391,9 +401,9 @@ class TestLevel(LevelBase):
 
         for i in range(num_of_waves, -1, -1):
             new_wave = Wave(
-                    (wave_width*i, self.height-20),
-                    images=self.platform_assets,
-                )
+                (wave_width * i, self.height - 20),
+                images=self.platform_assets,
+            )
 
             if i == 0:
                 Wave.first = new_wave
@@ -405,9 +415,7 @@ class TestLevel(LevelBase):
 
             previous_wave = new_wave
 
-            self.waves.add(
-                new_wave
-            )
+            self.waves.add(new_wave)
 
     def __run_water(self):
         """
@@ -415,14 +423,13 @@ class TestLevel(LevelBase):
         """
         if Wave.first.rect.x < -Wave.first.rect.width:
             # set first waves new position
-            Wave.first.set_position(x_pos=(Wave.last.rect.x+Wave.last.rect.width))
+            Wave.first.set_position(x_pos=(Wave.last.rect.x + Wave.last.rect.width))
             # Set the old lasts next to the new last
             Wave.last.next = Wave.first
             # make the old first the new last
             Wave.last = Wave.first
             # make the new first the old firsts next
             Wave.first = Wave.first.next
-
 
     def __check_collisions(self):
         # Need impact sounds
@@ -438,7 +445,7 @@ class TestLevel(LevelBase):
         Blit and update sprites
         """
         self.blit(self.player.image, self.player.rect)
-        self.player.update(self.difficulty[self.difficulty_mode][1])
+        self.player.update()
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
@@ -500,7 +507,11 @@ class TestLevel(LevelBase):
         if self.sp_timeleft >= 1:
             pygame.time.set_timer(self.spawn_platform, self.sp_timeleft, True)
 
-        self.player.moving_left, self.player.moving_right, self.player.moving = False, False, False
+        self.player.moving_left, self.player.moving_right, self.player.moving = (
+            False,
+            False,
+            False,
+        )
         self.game_stats.game_active = True
         self.game_stats.game_paused = False
 
@@ -587,8 +598,8 @@ class TestLevel(LevelBase):
             self.__check_collisions()
             self.blit(self.bg_image, self.bg_image_rect)
             self.platforms.update(self.difficulty[self.difficulty_mode][1])
-            self.__run_water() # Loop the waves
-            self.waves.update(4.5) # wave speed
+            self.__run_water()  # Loop the waves
+            self.waves.update(4.5)  # wave speed
             self.__blit__sprites()
             self.__blit_environment()
             self.__blit_ui()

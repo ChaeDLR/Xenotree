@@ -62,8 +62,8 @@ class LevelBase(pygame.Surface, ABC):
         )
 
     def __load_base_custom_events(self):
-        """ 
-        custom events that are the same in every level 
+        """
+        custom events that are the same in every level
         and their capture variables
         """
         self.player_hit = pygame.USEREVENT + 5
@@ -134,7 +134,7 @@ class LevelBase(pygame.Surface, ABC):
         """ Method call to set a timer that sets off the unpause_game custom event """
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
-    def player_collide_hit(self, angle:float=200.0):
+    def player_collide_hit(self, angle: float = 200.0):
         """
         If the player collides with something that hurts it
         """
