@@ -1,6 +1,7 @@
 import pygame
 import random
 
+from itertools import chain
 from .level_base import LevelBase
 from .environment.platform import Platform, Wave
 from ..screens.screen_colors import ScreenColors
@@ -189,6 +190,7 @@ class TestLevel(LevelBase):
         and platform lists
         """
         self.platforms = pygame.sprite.Group()
+        self.frozen_platforms = pygame.sprite.Group()
         self.waves = pygame.sprite.Group()
         self.__load_floor()
         self.__load_platforms()
@@ -227,7 +229,7 @@ class TestLevel(LevelBase):
         ):
             self.game_over()
 
-        for platform in self.platforms:
+        for platform in chain(self.platforms, self.frozen_platforms):
             if (platform.rect.x + platform.rect.width) < 0:
                 self.platforms.remove(platform)
                 continue
@@ -279,6 +281,19 @@ class TestLevel(LevelBase):
                 )
             ):
                 self.player.falling = True
+            if collided_froze_platform := pygame.sprite.spritecollide(
+                platform,
+                self.frozen_platforms,
+                False,
+                collided=pygame.sprite.collide_mask,
+            ):
+                self.platforms.remove(platform)
+                self.frozen_platforms.add(platform)
+                platform.moving = False
+                collided_froze_platform[0].left = platform.rect.right
+                # TODO: Add fireball collision to frozen platforms
+                # TODO: Add unfreeze timer
+                # TODO: Make red fireballs unfreeze platforms early
 
     def __turret_laser_collisions(self):
         """
@@ -331,6 +346,14 @@ class TestLevel(LevelBase):
                 coll_platform = collide_items[0]
             if coll_fb.type == "blue":
                 coll_platform.freeze()
+                self.platforms.remove(coll_platform)
+                self.frozen_platforms.add(coll_platform)
+                if coll_platform.connected_right:
+                    self.platforms.remove(coll_platform.connected_right_platform)
+                    self.frozen_platforms.add(coll_platform.connected_right_platform)
+                if coll_platform.connected_left:
+                    self.platforms.remove(coll_platform.connected_left_platform)
+                    self.frozen_platforms.add(coll_platform.connected_left_platform)
 
         if pygame.sprite.spritecollide(
             self.turret,
@@ -470,6 +493,8 @@ class TestLevel(LevelBase):
             self.blit(wave.image, wave.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
+        for frozen_platform in self.frozen_platforms:
+            self.blit(frozen_platform.image, frozen_platform.rect)
 
     def __blit_ui(self):
         """
@@ -598,6 +623,7 @@ class TestLevel(LevelBase):
             self.__check_collisions()
             self.blit(self.bg_image, self.bg_image_rect)
             self.platforms.update(self.difficulty[self.difficulty_mode][1])
+            self.frozen_platforms.update(self.difficulty[self.difficulty_mode][1])
             self.__run_water()  # Loop the waves
             self.waves.update(4.5)  # wave speed
             self.__blit__sprites()

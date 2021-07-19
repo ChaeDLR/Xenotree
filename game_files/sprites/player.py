@@ -296,7 +296,7 @@ class Player(Sprite):
         """
         Update player position
         """
-        if self.current_platform.moving:
+        if self.current_platform.moving and not (self.jumping or self.falling):
             self.x -= self.current_platform.movement_speed
             self.rect.x = self.x
         if not self.dying:

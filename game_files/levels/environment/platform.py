@@ -105,7 +105,7 @@ class Platform(Sprite):
         Switch platform image and start movement
         """
         self.image = self.images["normal"]
-        # self.moving = True
+        self.moving = True
 
     def set_position(self, x_pos=None, y_pos=None):
         """ Set the position of the wall """
