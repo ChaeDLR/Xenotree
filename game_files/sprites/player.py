@@ -5,6 +5,8 @@ from pygame.sprite import Sprite
 from ..utils.game_math import GameMath
 from .fireball import Fireball
 
+# TODO: Fix mask offset
+
 
 class Player(Sprite):
     """ player sprite class """

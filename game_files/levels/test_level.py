@@ -36,38 +36,8 @@ class TestLevel(LevelBase):
         )
 
         self.turret.firing = True
-
-        # spawnspeed_movementspeed
-        self.difficulty = [
-            (0, 0),
-            (3000, 2.0),
-            (2800, 2.5),
-            (2500, 3.0),
-            (2200, 3.5),
-            (1800, 4.5),
-            (1700, 5.5),
-            (1700, 6.5),
-        ]
-
-        self.difficulty_mode: int = 0
         self.turret_spawn_speed: int = 2500
-        self.level_start_delay: int = 3000
-
         self.__set_timers()
-        pygame.time.set_timer(self.start, self.level_start_delay, True)
-        self.s_capture = pygame.time.get_ticks()
-
-    def __start_movement(self):
-        """
-        start platform movement and timers
-        """
-        for platform in self.platforms:
-            platform.moving = True
-        # start platform spawning loop
-        pygame.time.set_timer(
-            self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
-        )
-        self.sp_capture = pygame.time.get_ticks()
 
     def __set_timers(self):
         """ Set levels timers """
@@ -80,11 +50,8 @@ class TestLevel(LevelBase):
         disable the levels custom timers
         """
         pygame.time.set_timer(self.start_turret_attack, 0)
-        pygame.time.set_timer(self.difficulty_increase, 0)
         pygame.time.set_timer(self.player_fire_cooldown, 0)
         pygame.time.set_timer(self.player_dead, 0)
-        pygame.time.set_timer(self.start, 0)
-        pygame.time.set_timer(self.spawn_platform, 0)
 
     def __capture_timers(self):
         """
@@ -109,17 +76,6 @@ class TestLevel(LevelBase):
             )
             if self.sta_timeleft <= 0:
                 self.sta_timeleft = 1
-
-        if self.difficulty_mode == 0:
-            self.s_timeleft = self.level_start_delay - (current_time - self.s_capture)
-            if self.s_timeleft <= 0:
-                self.s_timeleft = 1
-        else:
-            self.sp_timeleft = self.difficulty[self.difficulty_mode][0] - (
-                current_time - self.sp_capture
-            )
-            if self.sp_timeleft <= 0:
-                self.sp_timeleft = 1
 
         self.di_timeleft = 10000 - (current_time - self.di_capture)
         if self.di_timeleft < -1:
@@ -203,8 +159,6 @@ class TestLevel(LevelBase):
         self.start_turret_attack = pygame.USEREVENT + 9
         self.spawn_turret = pygame.USEREVENT + 10
         self.spawn_platform = pygame.USEREVENT + 11
-        self.start = pygame.USEREVENT + 12
-        self.difficulty_increase = pygame.USEREVENT + 13
 
         self.sta_capture: int = 0
         self.sp_capture: int = 0
@@ -230,12 +184,9 @@ class TestLevel(LevelBase):
             self.game_over()
 
         for platform in chain(self.platforms, self.frozen_platforms):
-            if (platform.rect.x + platform.rect.width) < 0:
-                self.platforms.remove(platform)
-                continue
 
             if pygame.sprite.collide_mask(self.player, platform):
-                self.player.dashing = False
+                # check if plater ht a platform jumping or falling (y-axis)
                 if self.player.dying:
                     self.player.falling = False
                     self.player.rect.bottom = platform.rect.top + 20
@@ -248,6 +199,12 @@ class TestLevel(LevelBase):
                     self.player.on_ground(platform)
                     self.player.rect.bottom = platform.rect.top - 2
                 elif (
+                    self.player.rect.top <= platform.rect.bottom and self.player.jumping
+                ):
+                    self.player.jumping = False
+                    self.player.falling = True
+                # check if player hit a platform moving left or moving right (x-axis)
+                if (
                     platform.rect.left + 20
                     > self.player.rect.right
                     >= platform.rect.left - 1
@@ -265,11 +222,7 @@ class TestLevel(LevelBase):
                     self.player.x = platform.rect.right + 2
                     self.player.rect.x = self.player.x
                     self.player.stop_movement(False, self.player.moving_right)
-                elif (
-                    self.player.rect.top <= platform.rect.bottom and self.player.jumping
-                ):
-                    self.player.jumping = False
-                    self.player.falling = True
+            # check if player is moving off of a platform
             elif self.player.rect.bottom == platform.rect.top - 2 and (
                 (
                     self.player.rect.left >= platform.rect.right
@@ -281,19 +234,6 @@ class TestLevel(LevelBase):
                 )
             ):
                 self.player.falling = True
-            if collided_froze_platform := pygame.sprite.spritecollide(
-                platform,
-                self.frozen_platforms,
-                False,
-                collided=pygame.sprite.collide_mask,
-            ):
-                self.platforms.remove(platform)
-                self.frozen_platforms.add(platform)
-                platform.moving = False
-                collided_froze_platform[0].left = platform.rect.right
-                # TODO: Add fireball collision to frozen platforms
-                # TODO: Add unfreeze timer
-                # TODO: Make red fireballs unfreeze platforms early
 
     def __turret_laser_collisions(self):
         """
@@ -525,12 +465,6 @@ class TestLevel(LevelBase):
             pygame.time.set_timer(self.player_dead, self.pd_timeleft, True)
         if self.sta_timeleft >= 1:
             pygame.time.set_timer(self.start_turret_attack, self.sta_timeleft, True)
-        if self.difficulty_mode < 1 and self.s_timeleft >= 1:
-            pygame.time.set_timer(self.start, self.s_timeleft, True)
-        else:
-            pygame.time.set_timer(self.difficulty_increase, self.di_timeleft, True)
-        if self.sp_timeleft >= 1:
-            pygame.time.set_timer(self.spawn_platform, self.sp_timeleft, True)
 
         self.player.moving_left, self.player.moving_right, self.player.moving = (
             False,
@@ -579,24 +513,6 @@ class TestLevel(LevelBase):
         if event.type == self.player_dead:
             self.game_over()
 
-        # create new platform and set the reset the timer
-        if event.type == self.spawn_platform:
-            self.__create_new_platform()
-            pygame.time.set_timer(
-                self.spawn_platform, self.difficulty[self.difficulty_mode][0], True
-            )
-            self.sp_capture = pygame.time.get_ticks()
-
-        if event.type == self.start:
-            pygame.time.set_timer(self.difficulty_increase, 10000)
-            self.di_capture = pygame.time.get_ticks()
-            self.difficulty_mode += 1
-            self.__start_movement()
-
-        if event.type == self.difficulty_increase:
-            if self.difficulty_mode < len(self.difficulty) - 1:
-                self.difficulty_mode += 1
-
     def check_keydown_events(self, event):
         """ check for and respond to player keydown input """
         if not self.player.dying:
@@ -622,8 +538,8 @@ class TestLevel(LevelBase):
             self.check_levelbase_events(self.check_level_events)
             self.__check_collisions()
             self.blit(self.bg_image, self.bg_image_rect)
-            self.platforms.update(self.difficulty[self.difficulty_mode][1])
-            self.frozen_platforms.update(self.difficulty[self.difficulty_mode][1])
+            self.platforms.update()
+            self.frozen_platforms.update()
             self.__run_water()  # Loop the waves
             self.waves.update(4.5)  # wave speed
             self.__blit__sprites()
