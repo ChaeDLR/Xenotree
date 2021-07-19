@@ -178,8 +178,6 @@ class TestLevel(LevelBase):
         ):
             self.game_over()
 
-        # for platform in chain(self.platforms, self.frozen_platforms):
-
         if platform := pygame.sprite.spritecollideany(self.player, platform_group):
             # check if plater ht a platform jumping or falling (y-axis)
             if self.player.dying:

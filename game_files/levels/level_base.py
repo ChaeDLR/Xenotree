@@ -139,8 +139,6 @@ class LevelBase(pygame.Surface, ABC):
         If the player collides with something that hurts it
         """
         # TODO: Need player sound
-        # if self.player.player_hit == False:
-        #   self.game_sound.player_impact_sound.play()
         self.player.damaged(angle)
         self.game_ui.update(self.player.health_points)
         if self.player.dying:
@@ -149,9 +147,6 @@ class LevelBase(pygame.Surface, ABC):
 
     def game_over(self):
         """ Reset the current level """
-        self.game_stats.set_high_score()
-        self.game_stats.reset_stats()
-        self.game_stats.active_level = 0
         self.game_stats.set_active_screen(game_over=True)
         pygame.mixer.music.stop()
         pygame.mouse.set_cursor(pygame.cursors.arrow)
