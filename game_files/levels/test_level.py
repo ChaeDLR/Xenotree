@@ -40,7 +40,7 @@ class TestLevel(LevelBase):
         self.__set_timers()
 
     def __set_timers(self):
-        """ Set levels timers """
+        """Set levels timers"""
         # To activate turret
         pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
         self.sta_capture = pygame.time.get_ticks()
@@ -135,7 +135,7 @@ class TestLevel(LevelBase):
 
             if i == 0:
                 self.player.set_position(
-                    (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1] - 2)
+                    (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1])
                 )
                 self.player.on_ground(floor_tile)
             self.platforms.add(floor_tile)
@@ -158,21 +158,16 @@ class TestLevel(LevelBase):
         """
         self.start_turret_attack = pygame.USEREVENT + 9
         self.spawn_turret = pygame.USEREVENT + 10
-        self.spawn_platform = pygame.USEREVENT + 11
 
         self.sta_capture: int = 0
-        self.sp_capture: int = 0
-        self.s_capture: int = 0
         self.di_capture: int = 0
 
         self.sta_timeleft: int = 0
-        self.sp_timeleft: int = 0
-        self.s_timeleft: int = 0
         self.di_timeleft: int = 0
         self.pfc_timeleft: int = 0
         self.pd_timeleft: int = 0
 
-    def __check_platforms(self):
+    def __check_platforms(self, platform_group):
         """
         this method will use logic needed to make the
         climbable platforms work
@@ -183,56 +178,51 @@ class TestLevel(LevelBase):
         ):
             self.game_over()
 
-        for platform in chain(self.platforms, self.frozen_platforms):
+        # for platform in chain(self.platforms, self.frozen_platforms):
 
-            if pygame.sprite.collide_mask(self.player, platform):
-                # check if plater ht a platform jumping or falling (y-axis)
-                if self.player.dying:
-                    self.player.falling = False
-                    self.player.rect.bottom = platform.rect.top + 20
-                elif (
-                    platform.rect.top
-                    <= self.player.rect.bottom
-                    <= platform.rect.top + 20
-                    and self.player.falling
-                ):
-                    self.player.on_ground(platform)
-                    self.player.rect.bottom = platform.rect.top - 2
-                elif (
-                    self.player.rect.top <= platform.rect.bottom and self.player.jumping
-                ):
-                    self.player.jumping = False
-                    self.player.falling = True
-                # check if player hit a platform moving left or moving right (x-axis)
-                if (
-                    platform.rect.left + 20
-                    > self.player.rect.right
-                    >= platform.rect.left - 1
-                    and self.player.moving_right
-                ):
-                    self.player.x = platform.rect.left - (self.player.rect.width + 2)
-                    self.player.rect.x = self.player.x
-                    self.player.stop_movement(self.player.moving_left, False)
-                elif (
-                    platform.rect.right - 20
-                    < self.player.rect.left
-                    <= platform.rect.right + 1
-                    and self.player.moving_left
-                ):
-                    self.player.x = platform.rect.right + 2
-                    self.player.rect.x = self.player.x
-                    self.player.stop_movement(False, self.player.moving_right)
-            # check if player is moving off of a platform
-            elif self.player.rect.bottom == platform.rect.top - 2 and (
-                (
-                    self.player.rect.left >= platform.rect.right
-                    and not platform.connected_right
-                )
-                or (
-                    self.player.rect.right <= platform.rect.left
-                    and not platform.connected_left
-                )
+        if platform := pygame.sprite.spritecollideany(self.player, platform_group):
+            # check if plater ht a platform jumping or falling (y-axis)
+            if self.player.dying:
+                self.player.falling = False
+                self.player.rect.bottom = platform.rect.top + 20
+            elif (
+                platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
+                and self.player.falling
             ):
+                self.player.on_ground(platform)
+                self.player.rect.bottom = platform.rect.top
+            elif self.player.rect.top <= platform.rect.bottom and self.player.jumping:
+                self.player.jumping = False
+                self.player.falling = True
+            # check if player hit a platform moving left or moving right (x-axis)
+            if (
+                platform.rect.left + 20
+                > self.player.rect.right
+                >= platform.rect.left - 1
+                and self.player.moving_right
+            ):
+                self.player.x = platform.rect.left - (self.player.rect.width + 2)
+                self.player.rect.x = self.player.x
+                self.player.stop_movement(self.player.moving_left, False)
+            elif (
+                platform.rect.right - 20
+                < self.player.rect.left
+                <= platform.rect.right + 1
+                and self.player.moving_left
+            ):
+                self.player.x = platform.rect.right + 2
+                self.player.rect.x = self.player.x
+                self.player.stop_movement(False, self.player.moving_right)
+        # check if player is moving off of a platform
+        if self.player.rect.left >= self.player.current_platform.rect.right:# going off the right side
+            if self.player.current_platform.connected_right:
+                self.player.current_platform = self.player.current_platform.connected_right_platform
+            else:
+                self.player.falling = True
+        elif self.player.rect.right <= self.player.current_platform.rect.left:# going off the left side
+            if self.player.current_platform.connected_left:
+                self.player.current_platform = self.player.current_platform.connected_left_platform
+            else:
                 self.player.falling = True
 
     def __turret_laser_collisions(self):
@@ -396,7 +386,8 @@ class TestLevel(LevelBase):
 
     def __check_collisions(self):
         # Need impact sounds
-        self.__check_platforms()
+        self.__check_platforms(self.platforms)
+        self.__check_platforms(self.frozen_platforms)
         # only check for laser collisions if a laser exists
         if len(self.turret.lasers.sprites()) > 0:
             self.__turret_laser_collisions()
@@ -445,7 +436,7 @@ class TestLevel(LevelBase):
         self.game_ui.update(self.player.health_points)
 
     def game_over(self):
-        """ When the player loses """
+        """When the player loses"""
         super().game_over()
         self.__disable_timers()
 
@@ -495,7 +486,7 @@ class TestLevel(LevelBase):
             self.check_user_events(event)
 
     def check_user_events(self, event):
-        """ Custom events """
+        """Custom events"""
         if event.type == self.start_turret_attack and self.turret.is_alive:
             self.turret.firing = True
             self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
@@ -514,7 +505,7 @@ class TestLevel(LevelBase):
             self.game_over()
 
     def check_keydown_events(self, event):
-        """ check for and respond to player keydown input """
+        """check for and respond to player keydown input"""
         if not self.player.dying:
             if event.key == pygame.K_ESCAPE:
                 self.pause_events()
@@ -523,7 +514,7 @@ class TestLevel(LevelBase):
                 self.player_keydown_controller(event)
 
     def check_keyup_events(self, event):
-        """ Check for and respond to player keyup events """
+        """Check for and respond to player keyup events"""
         if not self.player.dying:
             self.player_keyup_controller(event)
 

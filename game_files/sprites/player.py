@@ -178,8 +178,8 @@ class Player(Sprite):
         set player position using midbottom
         the players feet
         """
-        self.rect.midbottom = x_y
-        self.x, self.y = self.rect.x, self.rect.y
+        self.x, self.y = x_y
+        self.rect.midbottom = self.x, self.y
 
     def create_fireball(self, mouse_pos, type: str):
         """
