@@ -120,11 +120,13 @@ class Platform(Sprite):
         """ Resize the wall width, height """
         self.rect = Rect(0, 0, width, height)
 
-    def update(self):
+    def update(self, scroll_x: float = 0.0, scroll_y: float = 0.0):
         """
         update the platforms position if it should be moving
         """
-        pass
+        self.x += scroll_x
+        self.y += scroll_y
+        self.rect.x, self.rect.y = int(self.x), int(self.y)
 
 
 class Wave(Platform):
@@ -142,6 +144,7 @@ class Wave(Platform):
         # Each wave will point to the next wave in the queue
         self.next: Platform = None
 
-    def update(self, cycle_speed: float):
-        self.x -= cycle_speed
+    def update(self, scroll_y: float):
+        super().update(scroll_y=scroll_y)
+        self.x -= 4.5
         self.rect.x = self.x

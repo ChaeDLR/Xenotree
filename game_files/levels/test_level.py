@@ -1,7 +1,6 @@
 import pygame
 import random
 
-from itertools import chain
 from .level_base import LevelBase
 from .environment.platform import Platform, Wave
 from ..screens.screen_colors import ScreenColors
@@ -212,14 +211,22 @@ class TestLevel(LevelBase):
                 self.player.rect.x = self.player.x
                 self.player.stop_movement(False, self.player.moving_right)
         # check if player is moving off of a platform
-        if self.player.rect.left >= self.player.current_platform.rect.right:# going off the right side
+        if (
+            self.player.rect.left >= self.player.current_platform.rect.right
+        ):  # going off the right side
             if self.player.current_platform.connected_right:
-                self.player.current_platform = self.player.current_platform.connected_right_platform
+                self.player.current_platform = (
+                    self.player.current_platform.connected_right_platform
+                )
             else:
                 self.player.falling = True
-        elif self.player.rect.right <= self.player.current_platform.rect.left:# going off the left side
+        elif (
+            self.player.rect.right <= self.player.current_platform.rect.left
+        ):  # going off the left side
             if self.player.current_platform.connected_left:
-                self.player.current_platform = self.player.current_platform.connected_left_platform
+                self.player.current_platform = (
+                    self.player.current_platform.connected_left_platform
+                )
             else:
                 self.player.falling = True
 
@@ -433,6 +440,24 @@ class TestLevel(LevelBase):
             self.blit(img, rect)
         self.game_ui.update(self.player.health_points)
 
+    def __update_environment(self):
+        """Update level's bg, fg, and platforms"""
+        scroll_x, scroll_y = 0, 0
+        if self.player.moving_left:
+            scroll_x = self.player.movement_speed
+        elif self.player.moving_right:
+            scroll_x = self.player.movement_speed * -1
+
+        if self.player.jumping:
+            scroll_y = self.player.jumping_velocity * -1
+        elif self.player.falling:
+            scroll_y = (self.player.falling_velocity * -1) * 0.75
+
+        self.platforms.update(scroll_x, scroll_y)
+        self.frozen_platforms.update()
+        self.__run_water()  # Loop the waves
+        self.waves.update(scroll_y)
+
     def game_over(self):
         """When the player loses"""
         super().game_over()
@@ -527,10 +552,7 @@ class TestLevel(LevelBase):
             self.check_levelbase_events(self.check_level_events)
             self.__check_collisions()
             self.blit(self.bg_image, self.bg_image_rect)
-            self.platforms.update()
-            self.frozen_platforms.update()
-            self.__run_water()  # Loop the waves
-            self.waves.update(4.5)  # wave speed
+            self.__update_environment()
             self.__blit__sprites()
             self.__blit_environment()
             self.__blit_ui()

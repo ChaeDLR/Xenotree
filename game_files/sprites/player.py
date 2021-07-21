@@ -157,7 +157,7 @@ class Player(Sprite):
         elif int(self.hit_angle) in range(270, 360) or range(0, 90):
             self.x += 3.0
         self.y -= 1.5
-        self.rect.x, self.rect.y = self.x, self.y
+        # self.rect.x, self.rect.y = self.x, self.y
 
         if self.stagger_counter >= 8:
             self.hit = False
@@ -308,9 +308,9 @@ class Player(Sprite):
                 if self.dashing:
                     self.__dash()
                 elif self.moving_right:
-                    self.__move_right()
+                    pass  # self.__move_right()
                 elif self.moving_left:
-                    self.__move_left()
+                    pass  # self.__move_left()
                 if self.jumping:
                     self.__jump()
         if self.falling:
