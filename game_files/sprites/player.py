@@ -133,7 +133,7 @@ class Player(Sprite):
         """
         self.falling = False
         self.grounded = False
-        self.rect.y += self.jumping_velocity
+        #self.rect.y += self.jumping_velocity
         self.jumping_velocity += 0.5
         if self.jumping_velocity >= 0:
             self.jumping = False
@@ -152,13 +152,12 @@ class Player(Sprite):
         Staggered movement
         """
         self.stagger_counter += 1
-        if int(self.hit_angle) in range(90, 270):
-            self.x -= 3.0
-        elif int(self.hit_angle) in range(270, 360) or range(0, 90):
-            self.x += 3.0
-        self.y -= 1.5
+        #if int(self.hit_angle) in range(90, 270):
+        #    self.x -= 3.0
+        #elif int(self.hit_angle) in range(270, 360) or range(0, 90):
+        #    self.x += 3.0
+        #self.y -= 1.5
         # self.rect.x, self.rect.y = self.x, self.y
-
         if self.stagger_counter >= 8:
             self.hit = False
             self.falling = True
@@ -178,8 +177,8 @@ class Player(Sprite):
         set player position using midbottom
         the players feet
         """
-        self.x, self.y = x_y
-        self.rect.midbottom = self.x, self.y
+        self.rect.midbottom = x_y
+        self.x, self.y = self.rect.x, self.rect.y
 
     def create_fireball(self, mouse_pos, type: str):
         """
@@ -298,9 +297,6 @@ class Player(Sprite):
         """
         Update player position
         """
-        if self.current_platform.moving and not (self.jumping or self.falling):
-            self.x -= self.current_platform.movement_speed
-            self.rect.x = self.x
         if not self.dying:
             if self.hit:
                 self.__stagger()

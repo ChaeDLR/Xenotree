@@ -177,11 +177,12 @@ class TestLevel(LevelBase):
         ):
             self.game_over()
 
-        if platform := pygame.sprite.spritecollideany(self.player, platform_group):
-            # check if plater ht a platform jumping or falling (y-axis)
+        if platform := pygame.sprite.spritecollideany(self.player, platform_group, collided=pygame.sprite.collide_mask):
+            # check if plater hit a platform jumping or falling (y-axis)
             if self.player.dying:
                 self.player.falling = False
-                self.player.rect.bottom = platform.rect.top + 20
+                self.player.rect.bottom = platform.rect.centery
+                self.player.y = self.player.rect.y
             elif (
                 platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
                 and self.player.falling
@@ -441,17 +442,32 @@ class TestLevel(LevelBase):
         self.game_ui.update(self.player.health_points)
 
     def __update_environment(self):
-        """Update level's bg, fg, and platforms"""
+        """Update level's env and scroll"""
         scroll_x, scroll_y = 0, 0
-        if self.player.moving_left:
-            scroll_x = self.player.movement_speed
-        elif self.player.moving_right:
-            scroll_x = self.player.movement_speed * -1
+        if not self.player.dying:
+            if self.player.moving_left:
+                scroll_x = self.player.movement_speed
+            elif self.player.moving_right:
+                scroll_x = self.player.movement_speed * -1
 
         if self.player.jumping:
             scroll_y = self.player.jumping_velocity * -1
         elif self.player.falling:
-            scroll_y = (self.player.falling_velocity * -1) * 0.75
+            scroll_y = (self.player.falling_velocity * -1)
+
+        player_scroll_values: list = [0, 0]
+        # adjust game objects x values
+        if not self.player.rect.centerx in range(self.rect.centerx-5, self.rect.centerx+5):
+            player_scroll_values[0] = (self.rect.centerx - self.player.rect.centerx)/20
+            self.player.x += player_scroll_values[0]
+            self.player.rect.x = self.player.x
+        scroll_x += player_scroll_values[0]
+        # adjust game objects y values
+        if not self.player.rect.centery in range(self.rect.centery+199, self.rect.centery+201):
+            player_scroll_values[1] = (self.rect.centery+200 - self.player.rect.centery)/20
+            self.player.y += player_scroll_values[1]
+            self.player.rect.y = self.player.y
+        scroll_y += player_scroll_values[1]
 
         self.platforms.update(scroll_x, scroll_y)
         self.frozen_platforms.update()
