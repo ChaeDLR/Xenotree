@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
 from ..game_assets import AssetManager
+from .environment.platform import Platform
 
 
 class LevelBase(pygame.Surface, ABC):
@@ -49,7 +50,7 @@ class LevelBase(pygame.Surface, ABC):
         """
         path = os.path.dirname(__file__)
         # 256px by 300px
-        bg_path = os.path.join(path, "environment/env_assets/exterior-parallaxBG1.png")
+        bg_path = os.path.join(path, "environment/env_assets/background/Background.png")
         self.bg_image = pygame.image.load(bg_path).convert()
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         self.bg_image_rect = self.bg_image.get_rect()
@@ -133,6 +134,65 @@ class LevelBase(pygame.Surface, ABC):
     def unpause(self):
         """ Method call to set a timer that sets off the unpause_game custom event """
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
+
+    def tile_block(self, rows_col: tuple, x_y: tuple):
+        """
+        Create a tile block of dirt/grass
+        rows_col: tuple -> (width, height)
+        """
+        platform_images = self.platform_assets["platform_images"]
+        tile_height = platform_images["tile-1"].get_height()
+
+        tile_group: list = []
+        for i in range(1, rows_col[0] + 1):  # row
+            previous_platform = None
+            for j in range(1, rows_col[1] + 1):  # column
+
+                if j == rows_col[1]:  # last tile
+                    if i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-3"]
+                        image = pygame.transform.rotate(image, -90)
+                    elif i == 1:  # first row of the block
+                        image = platform_images["tile-3"]  # corner tile top-left
+                    else:  # all the rows inbetween
+                        image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, -90)
+                    floor_tile = Platform(
+                        previous_platform.rect.topright,
+                        img=image,
+                    )
+
+                elif previous_platform:  # middle tiles
+                    if i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, 180)
+                    elif i == 1:  # first row of the block
+                        image = platform_images["tile-2"]
+                    else:
+                        image = platform_images["tile-12"]
+                    floor_tile = Platform(
+                        previous_platform.rect.topright,
+                        img=image,
+                    )
+                    floor_tile.connect_left(previous_platform)
+
+                else:  # first tile in row
+                    if i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-1"]
+                        image = pygame.transform.rotate(image, 90)
+                    elif i == 1:  # first row of the block
+                        image = platform_images["tile-1"]
+                    else:
+                        image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, 90)
+                    floor_tile = Platform(
+                        (x_y[0], x_y[1] + (tile_height*(i-1))),
+                        img=image,  # corner tile top-left
+                    )
+
+                tile_group.append(floor_tile)
+                previous_platform = floor_tile
+        return tile_group
 
     def player_collide_hit(self, angle: float = 200.0):
         """

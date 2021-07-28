@@ -41,31 +41,60 @@ class AssetManager:
     }
 
     @classmethod
+    def __get_image(self, path: str, resize: tuple = None) -> pygame.Surface:
+        """
+        Return an image and a rect from a given path
+        resize: tuple -> (width, height)
+        """
+        image = pygame.image.load(path).convert()
+        if resize:
+            image = pygame.transform.scale(image, resize)
+        return image
+
+    @classmethod
+    def background_assets(cls, w_h: tuple) -> dict:
+        """
+        Load all background images
+        w_h: tuple -> (screen_wdith, screen_height)
+        """
+        background_image_path = os.path.join(
+            cls.current_path, "levels/environment/env_assets/background"
+        )
+        # move background loading from level base to here
+        # load background layers
+        background_image = cls.__get_image(
+            os.path.join(background_image_path, "Background.png", resize=w_h)
+        )
+
+        layers: dict = {}
+        for i in range(1, 6):
+            layers[f"layer-{i}"] = cls.__get_image(
+                os.path.join(background_image_path, f"Layers/{i}.png"), resize=w_h
+            )
+
+        return {"background": background_image, **layers}
+
+    @classmethod
     def platform_assets(cls) -> dict:
         """
         Load platform images
         """
         platform_image_path = os.path.join(
-            cls.current_path, "levels/environment/env_assets/FloorFirst.png"
+            cls.current_path, "levels/environment/env_assets/tiles"
         )
-        # 96, 48
-        platform_image = pygame.image.load(platform_image_path).convert()
-        frozen_platform_image = pygame.image.load(platform_image_path).convert()
-        frozen_img_array = pygame.surfarray.pixels3d(frozen_platform_image)
-        for pixl_list in frozen_img_array:
-            for rgb in pixl_list:
-                rgb[2] += 55
 
-        del frozen_img_array
-
-        water_image_path = os.path.join(
-            cls.current_path, "levels/environment/env_assets/water.png"
-        )
+        tiles: dict = {}
+        for i in range(1, 61):
+            tiles[f"tile-{i}"] = cls.__get_image(
+                os.path.join(platform_image_path, f"Tile_{i}.png")
+            )
 
         # 128, 128
-        water_image = pygame.image.load(water_image_path).convert()
+        water_image = pygame.image.load(
+            os.path.join(cls.current_path, "levels/environment/env_assets/water.png")
+        ).convert()
         water_image_rect = water_image.get_rect()
-        #water back ground image and rect
+        # water back ground image and rect
         wbg_rect = pygame.Rect((0, 0, water_image_rect.width, water_image_rect.height))
         wbg_image = pygame.Surface(wbg_rect.size).convert()
         wbg_image.blit(water_image, (0, 0), wbg_rect)
@@ -73,9 +102,9 @@ class AssetManager:
         wbg_image.set_colorkey(colorkey, pygame.RLEACCEL)
 
         return {
-            "platform_images": {"normal": platform_image, "frozen": frozen_platform_image}, 
+            "platform_images": {**tiles},
             "wave_image": wbg_image,
-            }
+        }
 
     @classmethod
     def enemy_projectile_assets(cls) -> dict:
@@ -156,7 +185,9 @@ class AssetManager:
             right_images = []
             for coord in coords_list:
                 image = ss_tool.image_at(coord, cls.p_colorkey)
-                image = pygame.transform.scale(image, (int(image.get_width()*1.8), int(image.get_height()*1.8)))
+                image = pygame.transform.scale(
+                    image, (int(image.get_width() * 1.8), int(image.get_height() * 1.8))
+                )
                 mask = pygame.mask.from_surface(image)
                 right_images.append((image, mask))
 
