@@ -143,7 +143,7 @@ class LevelBase(pygame.Surface, ABC):
         platform_images = self.platform_assets["platform_images"]
         floor_width = platform_images["tile-1"].get_width()
         tile_height = platform_images["tile-1"].get_height()
-
+        # TODO: work on placement and double check logic
         previous_platform = None
         for i in range(1, rows_col[0] + 1):  # row
             for j in range(1, rows_col[1] + 1):  # column
@@ -161,9 +161,16 @@ class LevelBase(pygame.Surface, ABC):
                         img=image,
                     )
                 elif previous_platform:  # middle tiles
+                    if i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-2"]
+                    elif i == 1:  # first row of the block
+                        image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, 180)
+                    else:
+                        image = platform_images["tile-12"]
                     floor_tile = Platform(
                         (floor_width * j, self.height - 25),
-                        img=platform_images["tile-2"],
+                        img=image,
                     )
                     floor_tile.connect_left(previous_platform)
                 else:  # first tile in row
@@ -177,7 +184,7 @@ class LevelBase(pygame.Surface, ABC):
                         image = pygame.transform.rotate(image, 90)
                     floor_tile = Platform(
                         (floor_width * j, (self.height - 25) + (i * tile_height)),
-                        img=platform_images["tile-1"],  # corner tile top-left
+                        img=image,  # corner tile top-left
                     )
 
             previous_platform = floor_tile
