@@ -34,14 +34,12 @@ class TestLevel(LevelBase):
             self.unpause,
         )
 
-        self.turret.firing = True
-        self.turret_spawn_speed: int = 2500
         self.__set_timers()
 
     def __set_timers(self):
         """Set levels timers"""
         # To activate turret
-        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
+        # pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
         self.sta_capture = pygame.time.get_ticks()
 
     def __disable_timers(self):
@@ -102,37 +100,41 @@ class TestLevel(LevelBase):
             (300, 375),
         ]
 
+        platforms: dict = self.platform_assets["platform_images"]
         for pos in platform_positions:
-            self.platforms.add(
-                Platform(
-                    pos, images=self.platform_assets["platform_images"], w_h=(96, 36)
-                )
-            )
+            self.platforms.add(Platform(pos, img=platforms["tile-1"]))
 
     def __load_floor(self):
         """
         Load base floor
         """
         platform_images = self.platform_assets["platform_images"]
-        floor_width = platform_images["normal"].get_width()
+        floor_width = platform_images["tile-1"][0].get_width()
 
         # make the floor cover the entire width of the screen
-        floor_tile_number = round(self.width / floor_width) - 4
+        floor_tile_number = round(self.width / floor_width)
         previous_platform = None
-        for i in range(0, floor_tile_number):
-            if previous_platform:
+        for i in range(1, floor_tile_number):
+            if i == floor_tile_number - 1:
                 floor_tile = Platform(
-                    (floor_width * i, self.height - 25), images=platform_images
+                    (floor_width * i, self.height - 25),
+                    img=platform_images[f"tile-{3}"],
+                )
+            elif previous_platform:
+                floor_tile = Platform(
+                    (floor_width * i, self.height - 25),
+                    img=platform_images[f"tile-{2}"],
                 )
                 floor_tile.connect_left(previous_platform)
             else:
                 floor_tile = Platform(
-                    (floor_width * i, self.height - 25), images=platform_images
+                    (floor_width * i, self.height - 25),
+                    img=platform_images[f"tile-{1}"],
                 )
 
             previous_platform = floor_tile
 
-            if i == 0:
+            if i == 3:
                 self.player.set_position(
                     (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1])
                 )
@@ -177,7 +179,9 @@ class TestLevel(LevelBase):
         ):
             self.game_over()
 
-        if platform := pygame.sprite.spritecollideany(self.player, platform_group, collided=pygame.sprite.collide_mask):
+        if platform := pygame.sprite.spritecollideany(
+            self.player, platform_group, collided=pygame.sprite.collide_mask
+        ):
             # check if plater hit a platform jumping or falling (y-axis)
             if self.player.dying:
                 self.player.falling = False
@@ -453,18 +457,26 @@ class TestLevel(LevelBase):
         if self.player.jumping:
             scroll_y = self.player.jumping_velocity * -1
         elif self.player.falling:
-            scroll_y = (self.player.falling_velocity * -1)
+            scroll_y = self.player.falling_velocity * -1
 
         player_scroll_values: list = [0, 0]
         # adjust game objects x values
-        if not self.player.rect.centerx in range(self.rect.centerx-5, self.rect.centerx+5):
-            player_scroll_values[0] = (self.rect.centerx - self.player.rect.centerx)/20
+        if not self.player.rect.centerx in range(
+            self.rect.centerx - 5, self.rect.centerx + 5
+        ):
+            player_scroll_values[0] = (
+                self.rect.centerx - self.player.rect.centerx
+            ) / 20
             self.player.x += player_scroll_values[0]
             self.player.rect.x = self.player.x
         scroll_x += player_scroll_values[0]
         # adjust game objects y values
-        if not self.player.rect.centery in range(self.rect.centery+199, self.rect.centery+201):
-            player_scroll_values[1] = (self.rect.centery+200 - self.player.rect.centery)/20
+        if not self.player.rect.centery in range(
+            self.rect.centery + 199, self.rect.centery + 201
+        ):
+            player_scroll_values[1] = (
+                self.rect.centery + 200 - self.player.rect.centery
+            ) / 20
             self.player.y += player_scroll_values[1]
             self.player.rect.y = self.player.y
         scroll_y += player_scroll_values[1]
