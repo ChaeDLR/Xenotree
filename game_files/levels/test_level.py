@@ -108,38 +108,15 @@ class TestLevel(LevelBase):
         """
         Load base floor
         """
-        platform_images = self.platform_assets["platform_images"]
-        floor_width = platform_images["tile-1"][0].get_width()
 
-        # make the floor cover the entire width of the screen
-        floor_tile_number = round(self.width / floor_width)
-        previous_platform = None
-        for i in range(1, floor_tile_number):
-            if i == floor_tile_number - 1:
-                floor_tile = Platform(
-                    (floor_width * i, self.height - 25),
-                    img=platform_images[f"tile-{3}"],
-                )
-            elif previous_platform:
-                floor_tile = Platform(
-                    (floor_width * i, self.height - 25),
-                    img=platform_images[f"tile-{2}"],
-                )
-                floor_tile.connect_left(previous_platform)
-            else:
-                floor_tile = Platform(
-                    (floor_width * i, self.height - 25),
-                    img=platform_images[f"tile-{1}"],
-                )
-
-            previous_platform = floor_tile
-
-            if i == 3:
-                self.player.set_position(
-                    (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1])
-                )
-                self.player.on_ground(floor_tile)
-            self.platforms.add(floor_tile)
+        floor_tiles: list = self.tile_block(
+            (5, 20), (0, self.height-25)
+        )
+        self.player.set_position(
+            (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
+        )
+        self.player.on_ground(floor_tiles[3])
+        self.platforms.add(floor_tiles)
 
     def __load_env(self):
         """
@@ -447,7 +424,7 @@ class TestLevel(LevelBase):
 
     def __update_environment(self):
         """Update level's env and scroll"""
-        scroll_x, scroll_y = 0, 0
+        scroll_x, scroll_y = 0.0, 0.0
         if not self.player.dying:
             if self.player.moving_left:
                 scroll_x = self.player.movement_speed
@@ -459,26 +436,26 @@ class TestLevel(LevelBase):
         elif self.player.falling:
             scroll_y = self.player.falling_velocity * -1
 
-        player_scroll_values: list = [0, 0]
+        player_scroll_values: list = [0.0, 0.0]
         # adjust game objects x values
         if not self.player.rect.centerx in range(
             self.rect.centerx - 5, self.rect.centerx + 5
         ):
-            player_scroll_values[0] = (
+            player_scroll_values[0] = float((
                 self.rect.centerx - self.player.rect.centerx
-            ) / 20
+            ) / 20)
             self.player.x += player_scroll_values[0]
-            self.player.rect.x = self.player.x
+            self.player.rect.x = int(self.player.x)
         scroll_x += player_scroll_values[0]
         # adjust game objects y values
         if not self.player.rect.centery in range(
             self.rect.centery + 199, self.rect.centery + 201
         ):
-            player_scroll_values[1] = (
+            player_scroll_values[1] = float((
                 self.rect.centery + 200 - self.player.rect.centery
-            ) / 20
+            ) / 20)
             self.player.y += player_scroll_values[1]
-            self.player.rect.y = self.player.y
+            self.player.rect.y = int(self.player.y)
         scroll_y += player_scroll_values[1]
 
         self.platforms.update(scroll_x, scroll_y)

@@ -141,13 +141,14 @@ class LevelBase(pygame.Surface, ABC):
         rows_col: tuple -> (width, height)
         """
         platform_images = self.platform_assets["platform_images"]
-        floor_width = platform_images["tile-1"].get_width()
         tile_height = platform_images["tile-1"].get_height()
-        # TODO: work on placement and double check logic
-        previous_platform = None
+
+        tile_group: list = []
         for i in range(1, rows_col[0] + 1):  # row
+            previous_platform = None
             for j in range(1, rows_col[1] + 1):  # column
-                if j == rows_col[1] - 1:  # last tile
+
+                if j == rows_col[1]:  # last tile
                     if i == rows_col[0]:  # last row of the block
                         image = platform_images["tile-3"]
                         image = pygame.transform.rotate(image, -90)
@@ -157,22 +158,24 @@ class LevelBase(pygame.Surface, ABC):
                         image = platform_images["tile-2"]
                         image = pygame.transform.rotate(image, -90)
                     floor_tile = Platform(
-                        (floor_width * j, (self.height - 25) + (i * tile_height)),
+                        previous_platform.rect.topright,
                         img=image,
                     )
+
                 elif previous_platform:  # middle tiles
                     if i == rows_col[0]:  # last row of the block
                         image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, 180)
                     elif i == 1:  # first row of the block
                         image = platform_images["tile-2"]
-                        image = pygame.transform.rotate(image, 180)
                     else:
                         image = platform_images["tile-12"]
                     floor_tile = Platform(
-                        (floor_width * j, self.height - 25),
+                        previous_platform.rect.topright,
                         img=image,
                     )
                     floor_tile.connect_left(previous_platform)
+
                 else:  # first tile in row
                     if i == rows_col[0]:  # last row of the block
                         image = platform_images["tile-1"]
@@ -183,18 +186,13 @@ class LevelBase(pygame.Surface, ABC):
                         image = platform_images["tile-2"]
                         image = pygame.transform.rotate(image, 90)
                     floor_tile = Platform(
-                        (floor_width * j, (self.height - 25) + (i * tile_height)),
+                        (x_y[0], x_y[1] + (tile_height*(i-1))),
                         img=image,  # corner tile top-left
                     )
 
-            previous_platform = floor_tile
-
-            if i == 3:
-                self.player.set_position(
-                    (floor_tile.rect.midtop[0], floor_tile.rect.midtop[1])
-                )
-                self.player.on_ground(floor_tile)
-            self.platforms.add(floor_tile)
+                tile_group.append(floor_tile)
+                previous_platform = floor_tile
+        return tile_group
 
     def player_collide_hit(self, angle: float = 200.0):
         """

@@ -36,6 +36,8 @@ class Platform(Sprite):
         if not self.connected_left:
             self.connected_left = True
             self.connected_left_platform = platform
+            self.rect.midleft = platform.rect.midright
+            self.x, self.y = float(self.rect.x), float(self.rect.y)
             platform.connect_right(self)
 
     def connect_right(self, platform: Sprite):
@@ -45,6 +47,8 @@ class Platform(Sprite):
         if not self.connected_right:
             self.connected_right = True
             self.connected_right_platform = platform
+            self.rect.midright = platform.rect.midleft
+            self.x, self.y = float(self.rect.x), float(self.rect.y)
             platform.connect_left(self)
 
     def set_position(self, x_pos=None, y_pos=None):
@@ -64,9 +68,13 @@ class Platform(Sprite):
         """
         update the platforms position if it should be moving
         """
-        self.x += scroll_x
-        self.y += scroll_y
-        self.rect.x, self.rect.y = int(self.x), int(self.y)
+        if self.connected_left: # Current fix for the pixel gaps in platform blocks
+            self.rect.midleft = self.connected_left_platform.rect.midright
+            self.x, self.y = float(self.rect.x), float(self.rect.y)
+        else:
+            self.x += scroll_x
+            self.y += scroll_y
+            self.rect.x, self.rect.y = int(self.x), int(self.y)
 
 
 class Wave(Platform):
@@ -80,7 +88,7 @@ class Wave(Platform):
     def __init__(self, x_y: tuple, images):
         super().__init__(
             x_y=x_y,
-            img_rect=(images["wave_image"], images["wave_image"].get_rect()),
+            img=images["wave_image"],
             moving=True,
         )
         # Each wave will point to the next wave in the queue
