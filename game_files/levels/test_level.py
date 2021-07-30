@@ -1,8 +1,12 @@
+from game_files.game_assets import AssetManager
 import pygame
 import random
 
+from pygame.transform import average_surfaces
+
 from .level_base import LevelBase
 from .environment.platform import Platform, Wave
+from .environment.env import Environment
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
@@ -93,24 +97,17 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        platform_positions = [
-            (self.width - 50, 175),
-            (self.width / 2, 250),
-            (200, 450),
-            (300, 375),
-        ]
-
-        platforms: dict = self.platform_assets["platform_images"]
-        for pos in platform_positions:
-            self.platforms.add(Platform(pos, img=platforms["tile-1"]))
+        platform_block: list = self.tile_block(
+            (3, 5), (self.width, 470)
+        )
+        self.platforms.add(platform_block)
 
     def __load_floor(self):
         """
         Load base floor
         """
-
         floor_tiles: list = self.tile_block(
-            (5, 20), (0, self.height-25)
+            (5, 25), (0, self.height-100)
         )
         self.player.set_position(
             (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
@@ -123,12 +120,23 @@ class TestLevel(LevelBase):
         Load initial environment
         and platform lists
         """
+        self.background_images = AssetManager.background_assets(
+            (self.width, self.height)
+            )
+        self.environment = Environment(
+            background=self.background_images["background_layers"],
+            foreground=self.background_images["foreground_layers"],
+            w_h=(self.width, self.height)
+            )
         self.platforms = pygame.sprite.Group()
         self.frozen_platforms = pygame.sprite.Group()
         self.waves = pygame.sprite.Group()
         self.__load_floor()
         self.__load_platforms()
         self.__load_waves()
+        #for fg in self.environment.fg_layers:
+         #   self.environment.fg_layers[fg].rect.midbottom = self.rect.midbottom
+          #  self.environment.fg_layers[fg].rect.y += 80
 
     def __load_custom_events(self):
         """
@@ -341,7 +349,7 @@ class TestLevel(LevelBase):
 
         for i in range(num_of_waves, -1, -1):
             new_wave = Wave(
-                (wave_width * i, self.height - 20),
+                (wave_width * i, self.height - 95),
                 images=self.platform_assets,
             )
 
@@ -385,8 +393,6 @@ class TestLevel(LevelBase):
         """
         Blit and update sprites
         """
-        self.blit(self.player.image, self.player.rect)
-        self.player.update()
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
@@ -407,12 +413,20 @@ class TestLevel(LevelBase):
         """
         blit test level env
         """
+        for bg_key in self.environment.bg_layers:
+            self.blits(
+                self.environment.bg_layers[bg_key].images
+        )
+        self.blit(self.player.image, self.player.rect)
+        self.player.update()
         for wave in self.waves:
             self.blit(wave.image, wave.rect)
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
-        for frozen_platform in self.frozen_platforms:
-            self.blit(frozen_platform.image, frozen_platform.rect)
+        for fg_key in self.environment.fg_layers:
+            self.blits(
+                self.environment.fg_layers[fg_key].images
+                )
 
     def __blit_ui(self):
         """
@@ -449,17 +463,17 @@ class TestLevel(LevelBase):
         scroll_x += player_scroll_values[0]
         # adjust game objects y values
         if not self.player.rect.centery in range(
-            self.rect.centery + 199, self.rect.centery + 201
+            self.rect.centery + 125, self.rect.centery + 126
         ):
             player_scroll_values[1] = float((
-                self.rect.centery + 200 - self.player.rect.centery
+                self.rect.centery + 126 - self.player.rect.centery
             ) / 20)
             self.player.y += player_scroll_values[1]
             self.player.rect.y = int(self.player.y)
         scroll_y += player_scroll_values[1]
 
         self.platforms.update(scroll_x, scroll_y)
-        self.frozen_platforms.update()
+        self.environment.scroll(scroll_x, scroll_y)
         self.__run_water()  # Loop the waves
         self.waves.update(scroll_y)
 
@@ -556,8 +570,7 @@ class TestLevel(LevelBase):
         else:
             self.check_levelbase_events(self.check_level_events)
             self.__check_collisions()
-            self.blit(self.bg_image, self.bg_image_rect)
             self.__update_environment()
-            self.__blit__sprites()
             self.__blit_environment()
+            self.__blit__sprites()
             self.__blit_ui()

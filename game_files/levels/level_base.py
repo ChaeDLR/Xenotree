@@ -42,19 +42,6 @@ class LevelBase(pygame.Surface, ABC):
 
         self.__load_base_custom_events()
         self.__load_player()
-        self.__load_background()
-
-    def __load_background(self):
-        """
-        Load levels background image
-        """
-        path = os.path.dirname(__file__)
-        # 256px by 300px
-        bg_path = os.path.join(path, "environment/env_assets/background/Background.png")
-        self.bg_image = pygame.image.load(bg_path).convert()
-        self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
-        self.bg_image_rect = self.bg_image.get_rect()
-        self.bg_image_rect.center = self.rect.center
 
     def __load_player(self):
         """ load the sprites needed for the level """
@@ -148,12 +135,26 @@ class LevelBase(pygame.Surface, ABC):
             previous_platform = None
             for j in range(1, rows_col[1] + 1):  # column
 
-                if j == rows_col[1]:  # last tile
-                    if i == rows_col[0]:  # last row of the block
+                if j == 1:  # first tile in row
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-1"]
+                    elif i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-1"]
+                        image = pygame.transform.rotate(image, 90)
+                    else:
+                        image = platform_images["tile-2"]
+                        image = pygame.transform.rotate(image, 90)
+                    floor_tile = Platform(
+                        (x_y[0], x_y[1] + (tile_height*(i-1))),
+                        img=image,
+                    )
+
+                elif j == rows_col[1]:  # last tile
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-3"]  # corner tile top-left
+                    elif i == rows_col[0]:  # last row of the block
                         image = platform_images["tile-3"]
                         image = pygame.transform.rotate(image, -90)
-                    elif i == 1:  # first row of the block
-                        image = platform_images["tile-3"]  # corner tile top-left
                     else:  # all the rows inbetween
                         image = platform_images["tile-2"]
                         image = pygame.transform.rotate(image, -90)
@@ -162,12 +163,12 @@ class LevelBase(pygame.Surface, ABC):
                         img=image,
                     )
 
-                elif previous_platform:  # middle tiles
-                    if i == rows_col[0]:  # last row of the block
+                else:  # middle tiles
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-2"]
+                    elif i == rows_col[0]:  # last row of the block
                         image = platform_images["tile-2"]
                         image = pygame.transform.rotate(image, 180)
-                    elif i == 1:  # first row of the block
-                        image = platform_images["tile-2"]
                     else:
                         image = platform_images["tile-12"]
                     floor_tile = Platform(
@@ -175,20 +176,6 @@ class LevelBase(pygame.Surface, ABC):
                         img=image,
                     )
                     floor_tile.connect_left(previous_platform)
-
-                else:  # first tile in row
-                    if i == rows_col[0]:  # last row of the block
-                        image = platform_images["tile-1"]
-                        image = pygame.transform.rotate(image, 90)
-                    elif i == 1:  # first row of the block
-                        image = platform_images["tile-1"]
-                    else:
-                        image = platform_images["tile-2"]
-                        image = pygame.transform.rotate(image, 90)
-                    floor_tile = Platform(
-                        (x_y[0], x_y[1] + (tile_height*(i-1))),
-                        img=image,  # corner tile top-left
-                    )
 
                 tile_group.append(floor_tile)
                 previous_platform = floor_tile

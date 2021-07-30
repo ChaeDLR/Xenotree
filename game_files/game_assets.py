@@ -49,6 +49,7 @@ class AssetManager:
         image = pygame.image.load(path).convert()
         if resize:
             image = pygame.transform.scale(image, resize)
+        image.set_colorkey((0,0,0), pygame.RLEACCEL)
         return image
 
     @classmethod
@@ -63,16 +64,27 @@ class AssetManager:
         # move background loading from level base to here
         # load background layers
         background_image = cls.__get_image(
-            os.path.join(background_image_path, "Background.png", resize=w_h)
-        )
+            os.path.join(background_image_path, "Background.png"), resize=w_h
+            )
 
-        layers: dict = {}
-        for i in range(1, 6):
-            layers[f"layer-{i}"] = cls.__get_image(
+        # background layers
+        bg_layers: dict = {}
+        for i in range(1, 4):
+            bg_layers[i] = cls.__get_image(
+                os.path.join(background_image_path, f"Layers/{i}.png"), resize=w_h
+            )
+        # foreground layers
+        fg_layers: dict = {}
+        for i in range(5, 6):
+            fg_layers[i-3] = cls.__get_image(
                 os.path.join(background_image_path, f"Layers/{i}.png"), resize=w_h
             )
 
-        return {"background": background_image, **layers}
+        return {
+            "background": background_image, 
+            "background_layers": {**bg_layers}, 
+            "foreground_layers": {**fg_layers}
+            }
 
     @classmethod
     def platform_assets(cls) -> dict:
