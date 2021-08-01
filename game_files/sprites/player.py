@@ -5,8 +5,6 @@ from pygame.sprite import Sprite
 from ..utils.game_math import GameMath
 from .fireball import Fireball
 
-# TODO: Fix mask offset
-
 
 class Player(Sprite):
     """ player sprite class """
@@ -133,7 +131,7 @@ class Player(Sprite):
         """
         self.falling = False
         self.grounded = False
-        #self.rect.y += self.jumping_velocity
+        # self.rect.y += self.jumping_velocity
         self.jumping_velocity += 0.5
         if self.jumping_velocity >= 0:
             self.jumping = False
@@ -152,11 +150,11 @@ class Player(Sprite):
         Staggered movement
         """
         self.stagger_counter += 1
-        #if int(self.hit_angle) in range(90, 270):
+        # if int(self.hit_angle) in range(90, 270):
         #    self.x -= 3.0
-        #elif int(self.hit_angle) in range(270, 360) or range(0, 90):
+        # elif int(self.hit_angle) in range(270, 360) or range(0, 90):
         #    self.x += 3.0
-        #self.y -= 1.5
+        # self.y -= 1.5
         # self.rect.x, self.rect.y = self.x, self.y
         if self.stagger_counter >= 8:
             self.hit = False
@@ -172,12 +170,19 @@ class Player(Sprite):
         self.falling = False
         self.dash_counter = 0
 
-    def set_position(self, x_y: tuple):
+    def set_position(self, x_y: tuple = None, x: int = None, y: int = None):
         """
-        set player position using midbottom
-        the players feet
+        x_y: tuple -> (x, y) Sets player position using midbottom
+        x: int -> sets players x
+        y: int -> sets players y
         """
-        self.rect.midbottom = x_y
+        if x_y:
+            self.rect.midbottom = x_y
+        else:
+            if x:
+                self.rect.x = x
+            elif y:
+                self.rect.y = y
         self.x, self.y = self.rect.x, self.rect.y
 
     def create_fireball(self, mouse_pos, type: str):
@@ -211,6 +216,10 @@ class Player(Sprite):
         """
         self.moving_right = right
         self.moving_left = left
+        if self.dashing:
+            self.dashing = False
+            if not self.current_platform.y - (self.rect.height + 3) == self.y:
+                self.falling = True
 
     def reset_player(self):
         """ reset player position """
@@ -257,10 +266,11 @@ class Player(Sprite):
     def on_ground(self, platform: Platform):
         """
         Call if the player is on the ground to reset the variables
-        If the ground the player is on is moving switch bool
+        Adjust the players position so that they are on top of the platform
         """
         # store the platform that the playe is on so we can check the platform status
         self.current_platform = platform
+        self.set_position(y=self.current_platform.y - (self.rect.height + 3))
         self.falling = False
         self.jumping = False
         self.jumping_velocity = -7.5

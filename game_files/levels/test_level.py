@@ -1,15 +1,13 @@
-from game_files.game_assets import AssetManager
 import pygame
 import random
 
-from pygame.transform import average_surfaces
-
 from .level_base import LevelBase
-from .environment.platform import Platform, Wave
+from .environment.platform import Platform
 from .environment.env import Environment
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
+from game_files.game_assets import AssetManager
 
 
 class TestLevel(LevelBase):
@@ -97,18 +95,23 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        platform_block: list = self.tile_block(
-            (3, 5), (self.width, 470)
-        )
-        self.platforms.add(platform_block)
+        previous_platform_width = None
+        for i in range(4):
+            if previous_platform_width:
+                width = previous_platform_width
+            else:
+                width = self.width
+            platform_block: list = self.tile_block(
+                (2 * i, 4 * i), (width, 470 - (45 * i))
+            )
+            previous_platform_width: int = ((4 * i) * 32) + self.width
+            self.platforms.add(platform_block)
 
     def __load_floor(self):
         """
         Load base floor
         """
-        floor_tiles: list = self.tile_block(
-            (5, 25), (0, self.height-100)
-        )
+        floor_tiles: list = self.tile_block((5, 25), (0, self.height - 100))
         self.player.set_position(
             (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
         )
@@ -122,21 +125,17 @@ class TestLevel(LevelBase):
         """
         self.background_images = AssetManager.background_assets(
             (self.width, self.height)
-            )
+        )
         self.environment = Environment(
             background=self.background_images["background_layers"],
             foreground=self.background_images["foreground_layers"],
-            w_h=(self.width, self.height)
-            )
+            w_h=(self.width, self.height),
+            wave_img=self.platform_assets["wave_image"],
+        )
         self.platforms = pygame.sprite.Group()
         self.frozen_platforms = pygame.sprite.Group()
-        self.waves = pygame.sprite.Group()
         self.__load_floor()
         self.__load_platforms()
-        self.__load_waves()
-        #for fg in self.environment.fg_layers:
-         #   self.environment.fg_layers[fg].rect.midbottom = self.rect.midbottom
-          #  self.environment.fg_layers[fg].rect.y += 80
 
     def __load_custom_events(self):
         """
@@ -158,48 +157,43 @@ class TestLevel(LevelBase):
         this method will use logic needed to make the
         climbable platforms work
         """
-        if (
-            self.player.rect.top > self.rect.bottom
-            or (self.player.rect.x + self.player.rect.width) < 0
-        ):
+        if self.player.rect.top > self.environment.get_bottom():
             self.game_over()
 
-        if platform := pygame.sprite.spritecollideany(
-            self.player, platform_group, collided=pygame.sprite.collide_mask
-        ):
-            # check if plater hit a platform jumping or falling (y-axis)
+        if platform := pygame.sprite.spritecollideany(self.player, platform_group):
+
+            # if the player is dying position them low on the platform
+            # while they finish their animation
             if self.player.dying:
                 self.player.falling = False
                 self.player.rect.bottom = platform.rect.centery
                 self.player.y = self.player.rect.y
-            elif (
-                platform.rect.top <= self.player.rect.bottom <= platform.rect.top + 20
-                and self.player.falling
-            ):
+
+            # check if plater hit a platform jumping or falling (y-axis)
+            if platform.rect.top <= self.player.rect.bottom and self.player.falling:
                 self.player.on_ground(platform)
-                self.player.rect.bottom = platform.rect.top
             elif self.player.rect.top <= platform.rect.bottom and self.player.jumping:
                 self.player.jumping = False
                 self.player.falling = True
-            # check if player hit a platform moving left or moving right (x-axis)
-            if (
-                platform.rect.left + 20
-                > self.player.rect.right
-                >= platform.rect.left - 1
-                and self.player.moving_right
+
+            # check if the player has hit the side of a platform moving across the x axis
+            if (  # check if the top or the bottom of the platform are in range of the players top or bottom
+                self.player.rect.bottom
+                > (platform.rect.bottom or platform.rect.top)
+                > self.player.rect.top
             ):
-                self.player.x = platform.rect.left - (self.player.rect.width + 2)
-                self.player.rect.x = self.player.x
-                self.player.stop_movement(self.player.moving_left, False)
-            elif (
-                platform.rect.right - 20
-                < self.player.rect.left
-                <= platform.rect.right + 1
-                and self.player.moving_left
-            ):
-                self.player.x = platform.rect.right + 2
-                self.player.rect.x = self.player.x
-                self.player.stop_movement(False, self.player.moving_right)
+                if (  # check if the player hit a platform while moving right
+                    self.player.moving_right
+                ) or (self.player.dashing and self.player.facing_right):
+                    self.player.set_position(
+                        x=(platform.rect.left - (self.player.rect.width + 2))
+                    )
+                    self.player.stop_movement(self.player.moving_left, False)
+                elif (  # check if the player hit a platform while moving left
+                    self.player.moving_left
+                ) or (self.player.dashing and self.player.facing_left):
+                    self.player.set_position(x=platform.rect.right + 2)
+                    self.player.stop_movement(False, self.player.moving_right)
         # check if player is moving off of a platform
         if (
             self.player.rect.left >= self.player.current_platform.rect.right
@@ -339,46 +333,6 @@ class TestLevel(LevelBase):
         for newPlatform in new_platforms:
             self.platforms.add(newPlatform)
 
-    def __load_waves(self):
-        """
-        run the water at the bottom of the screen
-        """
-        water_rect = self.platform_assets["wave_image"].get_rect()
-        wave_width = water_rect.width
-        num_of_waves: int = int(self.width / water_rect.width) + 2
-
-        for i in range(num_of_waves, -1, -1):
-            new_wave = Wave(
-                (wave_width * i, self.height - 95),
-                images=self.platform_assets,
-            )
-
-            if i == 0:
-                Wave.first = new_wave
-                new_wave.next = previous_wave
-            elif i == num_of_waves:
-                Wave.last = new_wave
-            else:
-                new_wave.next = previous_wave
-
-            previous_wave = new_wave
-
-            self.waves.add(new_wave)
-
-    def __run_water(self):
-        """
-        Move the waves
-        """
-        if Wave.first.rect.x < -Wave.first.rect.width:
-            # set first waves new position
-            Wave.first.set_position(x_pos=(Wave.last.rect.x + Wave.last.rect.width))
-            # Set the old lasts next to the new last
-            Wave.last.next = Wave.first
-            # make the old first the new last
-            Wave.last = Wave.first
-            # make the new first the old firsts next
-            Wave.first = Wave.first.next
-
     def __check_collisions(self):
         # Need impact sounds
         self.__check_platforms(self.platforms)
@@ -392,12 +346,16 @@ class TestLevel(LevelBase):
     def __blit__sprites(self):
         """
         Blit and update sprites
+        player, enemies, & projectiles
         """
+        self.player.fireballs.update()
+        self.player.update()
+        self.blit(self.player.image, self.player.rect)
+
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
             self.turret.update()
         self.turret.lasers.update()
-        self.player.fireballs.update()
 
         for laser in self.turret.lasers:
             self.blit(laser.image, laser.rect)
@@ -411,22 +369,16 @@ class TestLevel(LevelBase):
 
     def __blit_environment(self):
         """
-        blit test level env
+        blit test level environment
+        place sprites bliting inbetween the background and foreground
         """
-        for bg_key in self.environment.bg_layers:
-            self.blits(
-                self.environment.bg_layers[bg_key].images
-        )
-        self.blit(self.player.image, self.player.rect)
-        self.player.update()
-        for wave in self.waves:
-            self.blit(wave.image, wave.rect)
+        for layerGroup in self.environment.bg_layers:
+            self.blits(layerGroup.images)
+        self.__blit__sprites()
         for platform in self.platforms:
             self.blit(platform.image, platform.rect)
-        for fg_key in self.environment.fg_layers:
-            self.blits(
-                self.environment.fg_layers[fg_key].images
-                )
+        for layerGroup in self.environment.fg_layers:
+            self.blits(layerGroup.images)
 
     def __blit_ui(self):
         """
@@ -455,9 +407,9 @@ class TestLevel(LevelBase):
         if not self.player.rect.centerx in range(
             self.rect.centerx - 5, self.rect.centerx + 5
         ):
-            player_scroll_values[0] = float((
-                self.rect.centerx - self.player.rect.centerx
-            ) / 20)
+            player_scroll_values[0] = float(
+                (self.rect.centerx - self.player.rect.centerx) / 20
+            )
             self.player.x += player_scroll_values[0]
             self.player.rect.x = int(self.player.x)
         scroll_x += player_scroll_values[0]
@@ -465,17 +417,14 @@ class TestLevel(LevelBase):
         if not self.player.rect.centery in range(
             self.rect.centery + 125, self.rect.centery + 126
         ):
-            player_scroll_values[1] = float((
-                self.rect.centery + 126 - self.player.rect.centery
-            ) / 20)
+            player_scroll_values[1] = float(
+                (self.rect.centery + 126 - self.player.rect.centery) / 20
+            )
             self.player.y += player_scroll_values[1]
             self.player.rect.y = int(self.player.y)
         scroll_y += player_scroll_values[1]
-
         self.platforms.update(scroll_x, scroll_y)
         self.environment.scroll(scroll_x, scroll_y)
-        self.__run_water()  # Loop the waves
-        self.waves.update(scroll_y)
 
     def game_over(self):
         """When the player loses"""
@@ -565,12 +514,12 @@ class TestLevel(LevelBase):
         Update level elements
         """
         if self.game_stats.game_paused:
+            # checks its own pygame event loop
             self.pause_menu.update()
             self.blit(self.pause_menu, self.pause_menu.rect)
         else:
             self.check_levelbase_events(self.check_level_events)
-            self.__check_collisions()
             self.__update_environment()
+            self.__check_collisions()
             self.__blit_environment()
-            self.__blit__sprites()
             self.__blit_ui()

@@ -1,5 +1,4 @@
-from pygame import Surface, Rect, transform, mask
-import pygame
+from pygame import Rect
 from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
 
@@ -68,33 +67,13 @@ class Platform(Sprite):
         """
         update the platforms position if it should be moving
         """
-        if self.connected_left: # Current fix for the pixel gaps in platform blocks
+        if self.connected_left:  # Current fix for the pixel gaps in platform blocks
             self.rect.midleft = self.connected_left_platform.rect.midright
             self.x, self.y = float(self.rect.x), float(self.rect.y)
         else:
-            self.x += scroll_x
-            self.y += scroll_y
-            self.rect.x, self.rect.y = int(self.x), int(self.y)
-
-
-class Wave(Platform):
-    """
-    Child platform with class variables used to track their position in a queue
-    """
-
-    first: Platform = None
-    last: Platform = None
-
-    def __init__(self, x_y: tuple, images):
-        super().__init__(
-            x_y=x_y,
-            img=images["wave_image"],
-            moving=True,
-        )
-        # Each wave will point to the next wave in the queue
-        self.next: Platform = None
-
-    def update(self, scroll_y: float):
-        super().update(scroll_y=scroll_y)
-        self.x -= 4.5
-        self.rect.x = self.x
+            if not scroll_x == 0.0:
+                self.x += scroll_x
+                self.rect.x = int(self.x)
+            if not scroll_y == 0.0:
+                self.y += scroll_y
+                self.rect.y = int(self.y)

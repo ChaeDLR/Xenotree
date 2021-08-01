@@ -145,7 +145,7 @@ class LevelBase(pygame.Surface, ABC):
                         image = platform_images["tile-2"]
                         image = pygame.transform.rotate(image, 90)
                     floor_tile = Platform(
-                        (x_y[0], x_y[1] + (tile_height*(i-1))),
+                        (x_y[0], x_y[1] + (tile_height * (i - 1))),
                         img=image,
                     )
 

@@ -12,7 +12,8 @@ class Xenotree:
         pygame.init()
         self.settings = game_files.Settings()
         self.screen = pygame.display.set_mode(
-            (self.settings.screen_width, self.settings.screen_height)
+            (self.settings.screen_width, self.settings.screen_height),
+            flags=pygame.HWSURFACE | pygame.DOUBLEBUF,
         )
         pygame.display.set_caption("Xenotree")
         self.clock = pygame.time.Clock()
@@ -22,8 +23,8 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             self.settings,
             self.stats,
-            self.game_sound
-            )
+            self.game_sound,
+        )
 
         self.__load_game_screens()
 
@@ -35,7 +36,7 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             self.stats,
             self.settings,
-            self.level_manager
+            self.level_manager,
         )
 
         self.game_over = game_files.Game_Over(

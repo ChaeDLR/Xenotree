@@ -41,15 +41,27 @@ class AssetManager:
     }
 
     @classmethod
-    def __get_image(self, path: str, resize: tuple = None) -> pygame.Surface:
+    def __get_image(
+        self,
+        path: str,
+        resize: tuple = None,
+        colorKey: tuple = (0, 0, 0),
+        colorkey_at: tuple = None,
+    ) -> pygame.Surface:
         """
         Return an image and a rect from a given path
         resize: tuple -> (width, height)
+        colorkey: tuple -> (0, 0, 0)
+        colokey_at: tuple -> (x, y)
         """
         image = pygame.image.load(path).convert()
         if resize:
             image = pygame.transform.scale(image, resize)
-        image.set_colorkey((0,0,0), pygame.RLEACCEL)
+
+        img_colorkey = colorKey
+        if colorkey_at:
+            img_colorkey = image.get_at(colorkey_at)
+        image.set_colorkey(img_colorkey, pygame.RLEACCEL)
         return image
 
     @classmethod
@@ -65,26 +77,30 @@ class AssetManager:
         # load background layers
         background_image = cls.__get_image(
             os.path.join(background_image_path, "Background.png"), resize=w_h
-            )
+        )
 
         # background layers
+        bg_layer_size = int(w_h[0] * 1.2), int(w_h[1] * 1.2)
         bg_layers: dict = {}
         for i in range(1, 4):
             bg_layers[i] = cls.__get_image(
-                os.path.join(background_image_path, f"Layers/{i}.png"), resize=w_h
+                os.path.join(background_image_path, f"Layers/{i}.png"),
+                resize=bg_layer_size,
             )
         # foreground layers
+        fg_layer_size = int(w_h[0]), int(w_h[1] * 0.5)
         fg_layers: dict = {}
         for i in range(5, 6):
-            fg_layers[i-3] = cls.__get_image(
-                os.path.join(background_image_path, f"Layers/{i}.png"), resize=w_h
+            fg_layers[i - 3] = cls.__get_image(
+                os.path.join(background_image_path, f"Layers/{i}.png"),
+                resize=fg_layer_size,
             )
 
         return {
-            "background": background_image, 
-            "background_layers": {**bg_layers}, 
-            "foreground_layers": {**fg_layers}
-            }
+            "background": background_image,
+            "background_layers": {**bg_layers},
+            "foreground_layers": {**fg_layers},
+        }
 
     @classmethod
     def platform_assets(cls) -> dict:

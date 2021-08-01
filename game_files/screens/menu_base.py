@@ -25,20 +25,20 @@ class MenuBase(Surface, ABC):
         self.rect = Rect(0, 0, w_h[0], w_h[1])
 
         self.width, self.height = w_h[0], w_h[1]
-    
+
     def start_game(self):
         """ Reset the game """
         self.stats.set_active_screen(game_active=True)
         self.stats.active_level = 1
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
-        #pygame.mouse.set_visible(False)
+        # pygame.mouse.set_visible(False)
         # No game music added yet
         # TODO: Add game music
         # pygame.mixer.music.play()
 
     def check_base_events(self, menu_check_md_event, menu_check_mu_event):
-        """ 
-        check for exit event 
+        """
+        check for exit event
         or Mouse Down/Mouse Up events on the menu screens
         """
         for event in pygame.event.get():
@@ -53,14 +53,14 @@ class MenuBase(Surface, ABC):
                 elif event.type == pygame.KEYDOWN:
                     return event
 
-    def create_text(self, x_y: tuple, text: str, textsize: int=56, boldtext: bool=True) -> tuple:
+    def create_text(
+        self, x_y: tuple, text: str, textsize: int = 56, boldtext: bool = True
+    ) -> tuple:
         """
         Tuple -> (text_img, text_rect)
         """
         text_font = pygame.font.SysFont(None, textsize, bold=boldtext)
-        text_img = text_font.render(
-            text, True, self.text_color, self.background_color
-        )
+        text_img = text_font.render(text, True, self.text_color, self.background_color)
         text_rect = text_img.get_rect()
         text_rect.center = x_y
         return (text_img, text_rect)
