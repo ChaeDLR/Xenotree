@@ -1,6 +1,5 @@
 # Chae DeLaRosa
 import pygame
-import sys
 import game_files
 
 

@@ -1,4 +1,3 @@
-from game_files.levels.environment.platform import Platform
 import pygame
 
 from pygame.sprite import Sprite
@@ -263,7 +262,7 @@ class Player(Sprite):
         self.stagger_counter = 0
         self.x, self.y = self.rect.x, self.rect.y
 
-    def on_ground(self, platform: Platform):
+    def on_ground(self, platform):
         """
         Call if the player is on the ground to reset the variables
         Adjust the players position so that they are on top of the platform

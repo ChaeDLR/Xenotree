@@ -1,9 +1,82 @@
-from pygame import Rect
+from pygame import transform
 from pygame.sprite import Sprite
 from ...screens.screen_colors import ScreenColors
+from ...game_assets import AssetManager
 
+class Platforms:
+    """Uses the _Platform class to generate platforms"""
+    # use keys
+    # "platform_images" for tiles
+    # "wave_image" for waves
+    # holds the platform images 
+    # but needs to be assigned after the display is init
+    platform_assets: dict = None
 
-class Platform(Sprite):
+    @classmethod
+    def tile_block(cls, rows_col: tuple, x_y: tuple) -> list:
+        """
+        Create a tile block of dirt/grass using _Platform
+        return the new objects in a list
+        rows_col: tuple -> (width, height)
+        """
+        if not cls.platform_assets:
+            Platforms.platform_assets = AssetManager.platform_assets()
+
+        platform_images = cls.platform_assets["platform_images"]
+        tile_height = platform_images["tile-1"].get_height()
+
+        tile_group: list = []
+        for i in range(1, rows_col[0] + 1):  # row
+            previous_platform = None
+            for j in range(1, rows_col[1] + 1):  # column
+
+                if j == 1:  # first tile in row
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-1"]
+                    elif i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-1"]
+                        image = transform.rotate(image, 90)
+                    else:
+                        image = platform_images["tile-2"]
+                        image = transform.rotate(image, 90)
+                    floor_tile = _Platform(
+                        (x_y[0], x_y[1] + (tile_height * (i - 1))),
+                        img=image,
+                    )
+
+                elif j == rows_col[1]:  # last tile
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-3"]  # corner tile top-left
+                    elif i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-3"]
+                        image = transform.rotate(image, -90)
+                    else:  # all the rows inbetween
+                        image = platform_images["tile-2"]
+                        image = transform.rotate(image, -90)
+                    floor_tile = _Platform(
+                        previous_platform.rect.topright,
+                        img=image,
+                    )
+
+                else:  # middle tiles
+                    if i == 1:  # first row of the block
+                        image = platform_images["tile-2"]
+                    elif i == rows_col[0]:  # last row of the block
+                        image = platform_images["tile-2"]
+                        image = transform.rotate(image, 180)
+                    else:
+                        image = platform_images["tile-12"]
+                    floor_tile = _Platform(
+                        previous_platform.rect.topright,
+                        img=image,
+                    )
+                    floor_tile.connect_left(previous_platform)
+
+                tile_group.append(floor_tile)
+                previous_platform = floor_tile
+        return tile_group
+
+class _Platform(Sprite):
     """
     platform size of width, height args
     Stops player from moving
@@ -58,10 +131,6 @@ class Platform(Sprite):
         if y_pos:
             self.y = float(y_pos)
             self.rect.y = int(self.y)
-
-    def resize_wall(self, width: int, height: int):
-        """ Resize the wall width, height """
-        self.rect = Rect(self.rect.x, self.rect.y, width, height)
 
     def update(self, scroll_x: float = 0.0, scroll_y: float = 0.0):
         """

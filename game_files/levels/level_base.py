@@ -1,12 +1,10 @@
 import pygame
 import sys
-import os
 
 from abc import ABC, abstractmethod
 from ..game_ui import Game_Ui
 from ..sprites.player import Player
 from ..game_assets import AssetManager
-from .environment.platform import Platform
 
 
 class LevelBase(pygame.Surface, ABC):
@@ -32,7 +30,6 @@ class LevelBase(pygame.Surface, ABC):
         self.game_sound = game_sound
         self.game_stats = stats
         self.projectile_assets: dict = AssetManager.projectile_assets()
-        self.platform_assets: dict = AssetManager.platform_assets()
         self.turret_assets: dict = AssetManager.turret_assets()
         self.turret_assets["laser_img"] = self.projectile_assets["laser_img"]
         self.game_ui = Game_Ui(settings, stats, self.projectile_assets)
@@ -122,65 +119,6 @@ class LevelBase(pygame.Surface, ABC):
         """ Method call to set a timer that sets off the unpause_game custom event """
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
-    def tile_block(self, rows_col: tuple, x_y: tuple):
-        """
-        Create a tile block of dirt/grass
-        rows_col: tuple -> (width, height)
-        """
-        platform_images = self.platform_assets["platform_images"]
-        tile_height = platform_images["tile-1"].get_height()
-
-        tile_group: list = []
-        for i in range(1, rows_col[0] + 1):  # row
-            previous_platform = None
-            for j in range(1, rows_col[1] + 1):  # column
-
-                if j == 1:  # first tile in row
-                    if i == 1:  # first row of the block
-                        image = platform_images["tile-1"]
-                    elif i == rows_col[0]:  # last row of the block
-                        image = platform_images["tile-1"]
-                        image = pygame.transform.rotate(image, 90)
-                    else:
-                        image = platform_images["tile-2"]
-                        image = pygame.transform.rotate(image, 90)
-                    floor_tile = Platform(
-                        (x_y[0], x_y[1] + (tile_height * (i - 1))),
-                        img=image,
-                    )
-
-                elif j == rows_col[1]:  # last tile
-                    if i == 1:  # first row of the block
-                        image = platform_images["tile-3"]  # corner tile top-left
-                    elif i == rows_col[0]:  # last row of the block
-                        image = platform_images["tile-3"]
-                        image = pygame.transform.rotate(image, -90)
-                    else:  # all the rows inbetween
-                        image = platform_images["tile-2"]
-                        image = pygame.transform.rotate(image, -90)
-                    floor_tile = Platform(
-                        previous_platform.rect.topright,
-                        img=image,
-                    )
-
-                else:  # middle tiles
-                    if i == 1:  # first row of the block
-                        image = platform_images["tile-2"]
-                    elif i == rows_col[0]:  # last row of the block
-                        image = platform_images["tile-2"]
-                        image = pygame.transform.rotate(image, 180)
-                    else:
-                        image = platform_images["tile-12"]
-                    floor_tile = Platform(
-                        previous_platform.rect.topright,
-                        img=image,
-                    )
-                    floor_tile.connect_left(previous_platform)
-
-                tile_group.append(floor_tile)
-                previous_platform = floor_tile
-        return tile_group
-
     def player_collide_hit(self, angle: float = 200.0):
         """
         If the player collides with something that hurts it
@@ -197,12 +135,6 @@ class LevelBase(pygame.Surface, ABC):
         self.game_stats.set_active_screen(game_over=True)
         pygame.mixer.music.stop()
         pygame.mouse.set_cursor(pygame.cursors.arrow)
-
-    def update_background(self):
-        """
-        Update the levela background image
-        """
-        pass
 
     @abstractmethod
     def update(self):

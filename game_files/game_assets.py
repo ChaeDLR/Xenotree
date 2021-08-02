@@ -117,6 +117,13 @@ class AssetManager:
                 os.path.join(platform_image_path, f"Tile_{i}.png")
             )
 
+        return {"platform_images": {**tiles}}
+
+    @classmethod
+    def level_env_assets(cls) -> dict:
+        """
+        Get images for the level environment
+        """
         # 128, 128
         water_image = pygame.image.load(
             os.path.join(cls.current_path, "levels/environment/env_assets/water.png")
@@ -128,11 +135,8 @@ class AssetManager:
         wbg_image.blit(water_image, (0, 0), wbg_rect)
         colorkey = wbg_image.get_at((1, 1))
         wbg_image.set_colorkey(colorkey, pygame.RLEACCEL)
-
-        return {
-            "platform_images": {**tiles},
-            "wave_image": wbg_image,
-        }
+        
+        return {"wave_image": wbg_image}
 
     @classmethod
     def enemy_projectile_assets(cls) -> dict:

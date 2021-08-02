@@ -1,14 +1,12 @@
 import pygame
-import random
 
 from .level_base import LevelBase
-from .environment.platform import Platform
 from .environment.env import Environment
+from .environment.platform import Platforms
 from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
 from game_files.game_assets import AssetManager
-
 
 class TestLevel(LevelBase):
     def __init__(
@@ -101,7 +99,7 @@ class TestLevel(LevelBase):
                 width = previous_platform_width
             else:
                 width = self.width
-            platform_block: list = self.tile_block(
+            platform_block: list = Platforms.tile_block(
                 (2 * i, 4 * i), (width, 470 - (45 * i))
             )
             previous_platform_width: int = ((4 * i) * 32) + self.width
@@ -111,7 +109,7 @@ class TestLevel(LevelBase):
         """
         Load base floor
         """
-        floor_tiles: list = self.tile_block((5, 25), (0, self.height - 100))
+        floor_tiles: list = Platforms.tile_block((5, 25), (0, self.height - 100))
         self.player.set_position(
             (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
         )
@@ -126,11 +124,12 @@ class TestLevel(LevelBase):
         self.background_images = AssetManager.background_assets(
             (self.width, self.height)
         )
+        self.env_assets = AssetManager.level_env_assets()
         self.environment = Environment(
             background=self.background_images["background_layers"],
             foreground=self.background_images["foreground_layers"],
             w_h=(self.width, self.height),
-            wave_img=self.platform_assets["wave_image"],
+            wave_img=self.env_assets["wave_image"],
         )
         self.platforms = pygame.sprite.Group()
         self.frozen_platforms = pygame.sprite.Group()
@@ -285,54 +284,6 @@ class TestLevel(LevelBase):
             else:
                 self.turret.health_points -= 1
 
-    def __create_new_platform(self):
-        """
-        Create a new platform starting on the right side of the screen
-        """
-        random.seed()
-        screen_height_section: int = self.height / 6
-
-        try:
-            platform_y = random.randint(
-                self.platform_min_limit, self.height - screen_height_section
-            )
-        except:
-            platform_y = random.randint(
-                screen_height_section, self.height - screen_height_section
-            )
-
-        self.platform_min_limit = platform_y - screen_height_section
-
-        # randomly determine how many platforms to connect
-        new_platforms: list = [
-            Platform(
-                (self.width, platform_y),
-                images=self.platform_assets["platform_images"],
-                moving=True,
-            )
-        ]
-        platform_width = new_platforms[0].width
-
-        if random.choice((0, 1)) == 1:  # add a connecting platform
-            x_y: tuple = (
-                (self.width + (platform_width * len(new_platforms))),
-                platform_y,
-            )
-
-            self.platform_min_limit = x_y[1] - screen_height_section
-
-            new_platforms.append(
-                Platform(
-                    x_y,
-                    images=self.platform_assets["platform_images"],
-                    moving=True,
-                )
-            )
-            new_platforms[0].connect_right(new_platforms[1])
-
-        for newPlatform in new_platforms:
-            self.platforms.add(newPlatform)
-
     def __check_collisions(self):
         # Need impact sounds
         self.__check_platforms(self.platforms)
@@ -408,7 +359,7 @@ class TestLevel(LevelBase):
             self.rect.centerx - 5, self.rect.centerx + 5
         ):
             player_scroll_values[0] = float(
-                (self.rect.centerx - self.player.rect.centerx) / 20
+                (self.rect.centerx - self.player.rect.centerx) / 5
             )
             self.player.x += player_scroll_values[0]
             self.player.rect.x = int(self.player.x)
@@ -418,7 +369,7 @@ class TestLevel(LevelBase):
             self.rect.centery + 125, self.rect.centery + 126
         ):
             player_scroll_values[1] = float(
-                (self.rect.centery + 126 - self.player.rect.centery) / 20
+                (self.rect.centery + 126 - self.player.rect.centery) / 5
             )
             self.player.y += player_scroll_values[1]
             self.player.rect.y = int(self.player.y)

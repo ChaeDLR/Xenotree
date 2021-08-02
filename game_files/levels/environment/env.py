@@ -43,7 +43,7 @@ class Environment:
         for num, key in enumerate(background):
             gap = None
             if key == 3:  # place a gap between the front tree layers
-                gap = Environment.width / 4
+                gap = int(Environment.width / 4)
             # find the y_bounds we should be using
             bg_wiggle_room: int = background[key].get_height() - Environment.height
             new_layer: _LayerGroup = _LayerGroup(
@@ -102,7 +102,7 @@ class Environment:
             y=self.height - 92,
             img=image,
             wave_speed=6.0,
-            wave_count=num_of_waves,
+            wave_count=num_of_waves
         )
         fg_waves = WaveGroup(
             y=self.height - 78,
@@ -183,6 +183,14 @@ class _LayerGroup:
             self.left = old_middle
             self.middle = old_right
             self.right = old_left
+    
+    def __update_layers_coords(self):
+        """
+        update the x and y floats for each layer in the class
+        """
+        self.left.x, self.left.y = float(self.left.rect.x), float(self.left.rect.y)
+        self.middle.x, self.middle.y = float(self.middle.rect.x), float(self.middle.rect.y)
+        self.right.x, self.right.y = float(self.right.rect.x), float(self.right.rect.y)
 
     def update(self, x: float, y: float):
         # control x-axis movement
@@ -201,9 +209,10 @@ class _LayerGroup:
 
         # check if we need to change a layer's position
         if self.gap:
-            if self.middle.rect.x - self.gap > Environment.width:
+            half_gap: int = int(self.gap/2)
+            if self.middle.rect.x - half_gap > Environment.width:
                 self.__cycle_positions(True)
-            elif self.middle.rect.right + self.gap < 0:
+            elif self.middle.rect.right + half_gap < 0:
                 self.__cycle_positions(False)
             # realign the left and right layers with mid after being cycled
             # including the gap value
@@ -225,6 +234,7 @@ class _LayerGroup:
             # realign left and right layers with mid
             self.left.rect.midright = self.middle.rect.midleft
             self.right.rect.midleft = self.middle.rect.midright
+        self.__update_layers_coords()
 
 
 class _Layer:
