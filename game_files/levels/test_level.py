@@ -157,7 +157,7 @@ class TestLevel(LevelBase):
         this method will use logic needed to make the
         climbable platforms work
         """
-        if self.player.rect.top > self.environment.get_bottom():
+        if self.player.rect.centery > self.environment.get_bottom():
             self.game_over()
 
         if platform := pygame.sprite.spritecollideany(self.player, platform_group):

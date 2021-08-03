@@ -9,12 +9,14 @@ class MainMenu(MenuBase):
     Play the game, Enter settings menu, or Quit the game
     """
 
-    def __init__(self, w_h: tuple, stats: object, settings: object, level_manager: object):
+    def __init__(
+        self, w_h: tuple, stats: object, settings: object, level_manager: object
+    ):
         super().__init__((w_h[0], w_h[1]), stats, settings)
 
         self.level_manager = level_manager
         self.__load_title()
-        self.__load_buttons()
+        self.buttons: list = self.__load_buttons()
 
     def __load_buttons(self):
         button_row = self.height / 6
@@ -25,6 +27,7 @@ class MainMenu(MenuBase):
         self.play_button.set_position(y_pos=button_row * 2)
         self.settings_button.set_position(y_pos=button_row * 3)
         self.quit_button.set_position(y_pos=button_row * 4)
+        return [self.play_button, self.quit_button, self.settings_button]
 
     def __load_title(self):
         """ load game title """
@@ -42,7 +45,7 @@ class MainMenu(MenuBase):
         self.play_button.check_button(mouse_pos)
         self.quit_button.check_button(mouse_pos)
         self.settings_button.check_button(mouse_pos)
-    
+
     def check_button_up(self, mouse_pos):
         """
         Respond to button clicks mouse ip events
@@ -54,6 +57,9 @@ class MainMenu(MenuBase):
             sys.exit()
         elif self.settings_button.check_button(mouse_pos, True):
             self.stats.set_active_screen(settings_menu=True)
+        else:
+            for button in self.buttons:
+                button.reset_alpha()
 
     def update(self):
         self.fill(self.background_color, self.rect)

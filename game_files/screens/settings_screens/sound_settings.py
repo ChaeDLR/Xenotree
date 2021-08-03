@@ -4,9 +4,17 @@ from pygame import Surface, image, transform, font
 from ..menu_base import MenuBase
 from ..button import Button
 
-class SoundSettings(MenuBase):
 
-    def __init__(self, w_h: tuple, stats: object, settings: object, game_sound: object, back: any, screen):
+class SoundSettings(MenuBase):
+    def __init__(
+        self,
+        w_h: tuple,
+        stats: object,
+        settings: object,
+        game_sound: object,
+        back: any,
+        screen,
+    ):
         super().__init__(w_h, stats, settings)
 
         self.main_screen = screen
@@ -20,13 +28,12 @@ class SoundSettings(MenuBase):
         self.effects_plus_pressed, self.effects_minus_pressed = False, False
 
         self.sound_menu_img, self.sound_menu_img_rect = self.create_text(
-            (self.rect.centerx, 60),
-            "SOUND"
+            (self.rect.centerx, 60), "SOUND"
         )
 
         self.__load_images()
         self.__load_options_text()
-        self.__load_buttons()
+        self.buttons: list = self.__load_buttons()
 
     def __load_images(self):
         """
@@ -55,15 +62,11 @@ class SoundSettings(MenuBase):
             os.path.join(path, "../menu_assets/minus_filled.png")
         )
 
-        self.effects_plus_image = transform.scale(
-            self.effects_plus_image, (16, 16)
-        )
+        self.effects_plus_image = transform.scale(self.effects_plus_image, (16, 16))
         self.effects_plus_filled_image = transform.scale(
             self.effects_plus_filled_image, (16, 16)
         )
-        self.effects_minus_image = transform.scale(
-            self.effects_minus_image, (16, 16)
-        )
+        self.effects_minus_image = transform.scale(self.effects_minus_image, (16, 16))
         self.effects_minus_filled_image = transform.scale(
             self.effects_minus_filled_image, (16, 16)
         )
@@ -92,9 +95,7 @@ class SoundSettings(MenuBase):
         self.music_plus_filled_image = transform.scale(
             self.music_plus_filled_image, (16, 16)
         )
-        self.music_minus_image = transform.scale(
-            self.music_minus_image, (16, 16)
-        )
+        self.music_minus_image = transform.scale(self.music_minus_image, (16, 16))
         self.music_minus_filled_image = transform.scale(
             self.music_minus_filled_image, (16, 16)
         )
@@ -116,7 +117,7 @@ class SoundSettings(MenuBase):
         self.effects_plus_image_rect.x = self.screen_columns * 3.4
         self.effects_minus_image_rect.x = self.screen_columns * 3.4
 
-    def __load_buttons(self):
+    def __load_buttons(self) -> list:
         """
         Create apply and back buttons
         """
@@ -124,6 +125,7 @@ class SoundSettings(MenuBase):
         self.back_button.set_position(self.screen_columns, self.screen_rows * 5)
         self.save_button = Button(self.main_screen, "Save")
         self.save_button.set_position(self.screen_columns * 4, self.screen_rows * 5)
+        return [self.back_button, self.save_button]
 
     def __load_options_text(self):
         """
@@ -152,26 +154,36 @@ class SoundSettings(MenuBase):
             self.main_screen.blit(self.effects_plus_image, self.effects_plus_image_rect)
             self.effects_plus_pressed = False
         else:
-            self.main_screen.blit(self.effects_plus_filled_image, self.effects_plus_image_rect)
+            self.main_screen.blit(
+                self.effects_plus_filled_image, self.effects_plus_image_rect
+            )
 
         if self.effects_minus_pressed:
-            self.main_screen.blit(self.effects_minus_image, self.effects_minus_image_rect)
+            self.main_screen.blit(
+                self.effects_minus_image, self.effects_minus_image_rect
+            )
             self.effects_minus_pressed = False
         else:
-            self.main_screen.blit(self.effects_minus_filled_image, self.effects_minus_image_rect)
+            self.main_screen.blit(
+                self.effects_minus_filled_image, self.effects_minus_image_rect
+            )
 
     def __update_music_signs(self):
         if self.music_plus_pressed:
             self.main_screen.blit(self.music_plus_image, self.music_plus_image_rect)
             self.music_plus_pressed = False
         else:
-            self.main_screen.blit(self.music_plus_filled_image, self.music_plus_image_rect)
+            self.main_screen.blit(
+                self.music_plus_filled_image, self.music_plus_image_rect
+            )
 
         if self.music_minus_pressed:
             self.main_screen.blit(self.music_minus_image, self.music_minus_image_rect)
             self.music_minus_pressed = False
         else:
-            self.main_screen.blit(self.music_minus_filled_image, self.music_minus_image_rect)
+            self.main_screen.blit(
+                self.music_minus_filled_image, self.music_minus_image_rect
+            )
 
     def check_button_down(self, mouse_pos):
         """
@@ -210,6 +222,9 @@ class SoundSettings(MenuBase):
         # If save button is pressed call save_volumes() to save the volume settings
         elif self.save_button.check_button(mouse_pos, True):
             self.game_sound.save_volumes()
+        else:
+            for button in self.buttons:
+                button.reset_alpha()
 
     def update_music_volume_string(self):
         music_volume_string = f"Music volume: {str(self.game_sound.music_volume)[2:]}"

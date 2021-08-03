@@ -120,19 +120,13 @@ class AssetManager:
         """
         Get images for the level environment
         """
-        # 128, 128
-        water_image = pygame.image.load(
-            os.path.join(cls.current_path, "levels/environment/env_assets/water.png")
-        ).convert()
-        water_image_rect = water_image.get_rect()
-        # water back ground image and rect
-        wbg_rect = pygame.Rect((0, 0, water_image_rect.width, water_image_rect.height))
-        wbg_image = pygame.Surface(wbg_rect.size).convert()
-        wbg_image.blit(water_image, (0, 0), wbg_rect)
-        colorkey = wbg_image.get_at((1, 1))
-        wbg_image.set_colorkey(colorkey, pygame.RLEACCEL)
 
-        return {"wave_image": wbg_image}
+        wave_image = cls.__get_image(
+            os.path.join(cls.current_path, "levels/environment/env_assets/water.png"),
+            colorkey_at=(0, 0),
+        )  # default size (128, 128)
+
+        return {"wave_image": wave_image}
 
     @classmethod
     def enemy_projectile_assets(cls) -> dict:

@@ -108,6 +108,7 @@ class Environment:
             wave_speed=8.5,
             wave_count=num_of_waves,
         )
+        fg_waves.resize_waves(128, 175)
         return (bg_waves, fg_waves)
 
     def get_bottom(self) -> int:

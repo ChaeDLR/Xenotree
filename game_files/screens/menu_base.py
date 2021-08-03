@@ -9,6 +9,12 @@ class MenuBase(Surface, ABC):
     """ Parent class for the game menus """
 
     def __init__(self, w_h: tuple, stats: object, settings: object):
+        """
+        w_h: tuple -> (width, height)
+        stats: object -> GameStats
+        settings: object -> Settings
+        buttons: list -> [*Button]
+        """
         super().__init__((w_h[0], w_h[1]))
 
         self.screen_rows = w_h[1] / 6

@@ -23,7 +23,7 @@ class KeybindSettings(MenuBase):
         )
 
         self.__load_keybind_labels_buttons()
-        self.__load_buttons()
+        self.buttons: list = self.__load_buttons()
 
     def __load_buttons(self):
         """
@@ -33,6 +33,7 @@ class KeybindSettings(MenuBase):
         self.back_button.set_position(self.screen_columns, self.screen_rows * 5)
         self.reset_button = Button(self.main_screen, "Reset")
         self.reset_button.set_position(self.screen_columns * 4, self.screen_rows * 5)
+        return [self.back_button, self.reset_button]
 
     def __load_keybind_labels_buttons(self):
         """ Labels displaying the different keybindings available to change """
@@ -107,6 +108,10 @@ class KeybindSettings(MenuBase):
             self.back_func()
         elif self.reset_button.check_button(mouse_pos, True):
             self.__reset_keybinds()
+        else:
+            for button in self.buttons:
+                button.reset_alpha()
+
         for button in self.keybind_button_dict:
             if self.keybind_button_dict[button].check_button(mouse_pos, True):
                 self.listening = True

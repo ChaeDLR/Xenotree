@@ -1,4 +1,4 @@
-from pygame import Surface
+from pygame import Surface, transform
 
 
 class WaveGroup:
@@ -21,13 +21,14 @@ class WaveGroup:
         self.wave_speed: float = wave_speed
         self.first: Surface = None
         self.last: Surface = None
+
+        self.__create_waves_group(wave_count, y, img=img)
+
+    def __create_waves_group(self, count: int, y: float, img: Surface):
         # all the waves (image, rect) tuples
         self.images: list = []
         # group of all the wave objects
         self.group: list = []
-        self.__create_waves_group(wave_count, y, img=img)
-
-    def __create_waves_group(self, count: int, y: float, img: Surface):
         wave_rect = img.get_rect()
         wave_width = wave_rect.width
 
@@ -44,6 +45,18 @@ class WaveGroup:
             self.images.append((new_wave.image, new_wave.rect))
             self.group.append(new_wave)
             previous_wave = new_wave
+
+    def resize_waves(self, width: int = None, height: int = None):
+        """
+        Resize all of the waves in the wave group
+        """
+        self.images.clear()
+        for wave in self.group:
+            wave.resize(
+                width=width,
+                height=height,
+            )
+            self.images.append((wave.image, wave.rect))
 
     def update(self, scroll_x: float, scroll_y: float):
         """
@@ -73,6 +86,19 @@ class Wave:
         # Each wave will point to the next wave in the queue
         self.next = None
         self.wave_speed = wave_speed
+
+    def resize(self, width: int = None, height: int = None):
+        """
+        update image and rect to a new size
+        """
+        new_width, new_height = self.rect.width, self.rect.height
+        if width:
+            new_width = width
+        if height:
+            new_height = height
+        self.image = transform.scale(self.image, (new_width, new_height))
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = int(self.x), int(self.y)
 
     def set_position(self, x_pos: int = None, y_pos: int = None):
         if x_pos:
