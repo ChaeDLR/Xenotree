@@ -8,6 +8,7 @@ from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
 from game_files.game_assets import AssetManager
 
+
 class TestLevel(LevelBase):
     def __init__(
         self,
@@ -323,6 +324,7 @@ class TestLevel(LevelBase):
         blit test level environment
         place sprites bliting inbetween the background and foreground
         """
+        # a layer groups images instance variable is a tuple containing (image, rect)
         for layerGroup in self.environment.bg_layers:
             self.blits(layerGroup.images)
         self.__blit__sprites()

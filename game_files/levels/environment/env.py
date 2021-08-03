@@ -40,6 +40,7 @@ class Environment:
         layer_groups: list = []
         if frontload:
             layer_groups.append(frontload)
+        # key starts at 1 because thats how the file is labeled
         for num, key in enumerate(background):
             gap = None
             if key == 3:  # place a gap between the front tree layers
@@ -48,7 +49,7 @@ class Environment:
             bg_wiggle_room: int = background[key].get_height() - Environment.height
             new_layer: _LayerGroup = _LayerGroup(
                 background[key],
-                speed_mod=(1.0 - (num + 1 * 0.15)),
+                speed_mod=-1.0 + ((len(background) - num) * 0.30),
                 gap=gap,
                 y_bound=(-bg_wiggle_room, Environment.height + bg_wiggle_room),
             )
@@ -99,10 +100,7 @@ class Environment:
         """
         num_of_waves: int = int(self.width / image.get_width()) + 2
         bg_waves = WaveGroup(
-            y=self.height - 92,
-            img=image,
-            wave_speed=6.0,
-            wave_count=num_of_waves
+            y=self.height - 92, img=image, wave_speed=6.0, wave_count=num_of_waves
         )
         fg_waves = WaveGroup(
             y=self.height - 78,
@@ -120,11 +118,11 @@ class Environment:
         return self.fg_layers[0].first.rect.y
 
     def scroll(self, x_scroll: float, y_scroll: float):
-        for num, layer in enumerate(self.bg_layers):
-            if not num == 0:  # dont scroll the base background
-                layer.update(-x_scroll, y_scroll)
-        for layer in self.fg_layers:
-            layer.update(x_scroll, y_scroll)
+        for num, bg_lg in enumerate(self.bg_layers):
+            if not num == 0:  # dont bother scrolling the base background
+                bg_lg.update(-x_scroll, y_scroll)
+        for fg_lg in self.fg_layers:
+            fg_lg.update(x_scroll, y_scroll)
 
 
 class _LayerGroup:
@@ -183,13 +181,15 @@ class _LayerGroup:
             self.left = old_middle
             self.middle = old_right
             self.right = old_left
-    
+
     def __update_layers_coords(self):
         """
         update the x and y floats for each layer in the class
         """
         self.left.x, self.left.y = float(self.left.rect.x), float(self.left.rect.y)
-        self.middle.x, self.middle.y = float(self.middle.rect.x), float(self.middle.rect.y)
+        self.middle.x, self.middle.y = float(self.middle.rect.x), float(
+            self.middle.rect.y
+        )
         self.right.x, self.right.y = float(self.right.rect.x), float(self.right.rect.y)
 
     def update(self, x: float, y: float):
@@ -209,7 +209,7 @@ class _LayerGroup:
 
         # check if we need to change a layer's position
         if self.gap:
-            half_gap: int = int(self.gap/2)
+            half_gap: int = int(self.gap / 2)
             if self.middle.rect.x - half_gap > Environment.width:
                 self.__cycle_positions(True)
             elif self.middle.rect.right + half_gap < 0:

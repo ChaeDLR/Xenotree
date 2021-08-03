@@ -58,9 +58,10 @@ class AssetManager:
         if resize:
             image = pygame.transform.scale(image, resize)
 
-        img_colorkey = colorKey
         if colorkey_at:
             img_colorkey = image.get_at(colorkey_at)
+        else:
+            img_colorkey = colorKey
         image.set_colorkey(img_colorkey, pygame.RLEACCEL)
         return image
 
@@ -71,20 +72,16 @@ class AssetManager:
         w_h: tuple -> (screen_wdith, screen_height)
         """
         background_image_path = os.path.join(
-            cls.current_path, "levels/environment/env_assets/background"
-        )
-        # move background loading from level base to here
-        # load background layers
-        background_image = cls.__get_image(
-            os.path.join(background_image_path, "Background.png"), resize=w_h
+            cls.current_path, "levels/environment/env_assets/background/Layers"
         )
 
+        # layers staring dims (576, 324)
         # background layers
         bg_layer_size = int(w_h[0] * 1.2), int(w_h[1] * 1.2)
         bg_layers: dict = {}
         for i in range(1, 4):
             bg_layers[i] = cls.__get_image(
-                os.path.join(background_image_path, f"Layers/{i}.png"),
+                os.path.join(background_image_path, f"{i}.png"),
                 resize=bg_layer_size,
             )
         # foreground layers
@@ -92,12 +89,11 @@ class AssetManager:
         fg_layers: dict = {}
         for i in range(5, 6):
             fg_layers[i - 3] = cls.__get_image(
-                os.path.join(background_image_path, f"Layers/{i}.png"),
+                os.path.join(background_image_path, f"{i}.png"),
                 resize=fg_layer_size,
             )
 
         return {
-            "background": background_image,
             "background_layers": {**bg_layers},
             "foreground_layers": {**fg_layers},
         }
@@ -135,7 +131,7 @@ class AssetManager:
         wbg_image.blit(water_image, (0, 0), wbg_rect)
         colorkey = wbg_image.get_at((1, 1))
         wbg_image.set_colorkey(colorkey, pygame.RLEACCEL)
-        
+
         return {"wave_image": wbg_image}
 
     @classmethod
