@@ -3,8 +3,8 @@ from .test_level import TestLevel
 
 class LevelManager:
     """
-    This class will manage the levels of the game.
-    Creating and destorying the level objects.
+    This class will manage the
+    loading, destorying, and returning of the level objects.
     """
 
     def __init__(

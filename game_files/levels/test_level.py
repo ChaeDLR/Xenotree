@@ -94,16 +94,14 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        previous_platform_width = None
+        width = None
         for i in range(4):
-            if previous_platform_width:
-                width = previous_platform_width
-            else:
-                width = self.width
+            if not width:
+                width: int = self.width
             platform_block: list = Platforms.tile_block(
                 (2 * i, 4 * i), (width, 470 - (45 * i))
             )
-            previous_platform_width: int = ((4 * i) * 32) + self.width
+            width = ((5 * i) * 32) + self.width
             self.platforms.add(platform_block)
 
     def __load_floor(self):
@@ -469,7 +467,11 @@ class TestLevel(LevelBase):
         if self.game_stats.game_paused:
             # checks its own pygame event loop
             self.pause_menu.update()
-            self.blit(self.pause_menu, self.pause_menu.rect)
+            self.blit(
+                self.pause_menu,
+                self.pause_menu.rect,
+                special_flags=pygame.BLEND_RGBA_MAX,
+            )
         else:
             self.check_levelbase_events(self.check_level_events)
             self.__update_environment()

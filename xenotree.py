@@ -4,7 +4,7 @@ import game_files
 
 
 class Xenotree:
-    """ Wizard puzzle game """
+    """ My first platformer project """
 
     def __init__(self):
         """ Init game screens, clock, settings, and stats """
@@ -14,6 +14,7 @@ class Xenotree:
             (self.settings.screen_width, self.settings.screen_height),
             flags=pygame.HWSURFACE | pygame.DOUBLEBUF,
         )
+        self.screen.fill(self.settings.bg_color)
         pygame.display.set_caption("Xenotree")
         self.clock = pygame.time.Clock()
         self.stats = game_files.GameStats()
@@ -84,7 +85,6 @@ class Xenotree:
         if self.stats.change_screen:
             self.__set_active_screen()
 
-        self.screen.fill(self.settings.bg_color)
         self.active_screen.update()
         self.screen.blit(self.active_screen, self.active_screen.rect)
 

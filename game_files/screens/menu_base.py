@@ -8,14 +8,16 @@ from .screen_colors import ScreenColors
 class MenuBase(Surface, ABC):
     """ Parent class for the game menus """
 
-    def __init__(self, w_h: tuple, stats: object, settings: object):
+    def __init__(
+        self, w_h: tuple, stats: object, settings: object, special_flags: int = 0
+    ):
         """
         w_h: tuple -> (width, height)
         stats: object -> GameStats
         settings: object -> Settings
         buttons: list -> [*Button]
         """
-        super().__init__((w_h[0], w_h[1]))
+        super().__init__((w_h[0], w_h[1]), special_flags)
 
         self.screen_rows = w_h[1] / 6
         self.screen_columns = w_h[0] / 6

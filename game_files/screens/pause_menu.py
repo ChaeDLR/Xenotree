@@ -1,13 +1,12 @@
+from pygame import SRCALPHA
 from .menu_base import MenuBase
 from .button import Button
 
 
 class PauseMenu(MenuBase):
     def __init__(self, w_h: tuple, stats: object, settings: object, unpause_func):
-        super().__init__(w_h, stats, settings)
-
+        super().__init__(w_h, stats, settings, special_flags=SRCALPHA)
         self.unpause_function = unpause_func
-
         self.buttons = self.__load_buttons()
         self.text_image, self.text_image_rect = self.create_text(
             (self.rect.centerx, 60), "PAUSED", boldtext=False
@@ -34,7 +33,6 @@ class PauseMenu(MenuBase):
 
     def update(self):
         self.check_base_events(self.check_button_down, self.check_button_up)
-        self.fill(self.background_color, self.rect)
         self.blit(self.text_image, self.text_image_rect)
         self.quit_button.blitme()
         self.resume_button.blitme()
