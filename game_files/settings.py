@@ -18,7 +18,7 @@ class Settings:
 
         self.direction_list = [1, -1]
 
-        self.bg_color = (113, 143, 30)
+        self.bg_color = (113, 143, 30, 255)
 
         self.screen_rows = self.screen_height / 12
 

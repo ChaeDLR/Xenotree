@@ -6,15 +6,20 @@ from .button import Button
 class PauseMenu(MenuBase):
     def __init__(self, w_h: tuple, stats: object, settings: object, unpause_func):
         super().__init__(w_h, stats, settings, special_flags=SRCALPHA)
+        self.background_color = (self.background_color[0], self.background_color[1], self.background_color[2], 175)
+        self.fill(self.background_color)
         self.unpause_function = unpause_func
         self.buttons = self.__load_buttons()
+
         self.text_image, self.text_image_rect = self.create_text(
             (self.rect.centerx, 60), "PAUSED", boldtext=False
         )
 
     def __load_buttons(self) -> list:
         self.resume_button = Button(self, "Resume")
+        self.resume_button.convert_alpha()
         self.quit_button = Button(self, "Quit")
+        self.quit_button.convert_alpha()
         self.resume_button.set_position(y_pos=(self.height / 2))
         return [self.resume_button, self.quit_button]
 

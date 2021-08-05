@@ -17,7 +17,7 @@ class MenuBase(Surface, ABC):
         settings: object -> Settings
         buttons: list -> [*Button]
         """
-        super().__init__((w_h[0], w_h[1]), special_flags)
+        super().__init__((w_h[0], w_h[1]), flags=special_flags)
 
         self.screen_rows = w_h[1] / 6
         self.screen_columns = w_h[0] / 6
@@ -62,13 +62,14 @@ class MenuBase(Surface, ABC):
                     return event
 
     def create_text(
-        self, x_y: tuple, text: str, textsize: int = 56, boldtext: bool = True
+        self, x_y: tuple, text: str, textsize: int = 56, boldtext: bool = True, 
     ) -> tuple:
         """
         Tuple -> (text_img, text_rect)
         """
         text_font = pygame.font.SysFont(None, textsize, bold=boldtext)
         text_img = text_font.render(text, True, self.text_color, self.background_color)
+        text_img.set_colorkey(self.background_color)
         text_rect = text_img.get_rect()
         text_rect.center = x_y
         return (text_img, text_rect)

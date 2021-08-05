@@ -292,20 +292,27 @@ class TestLevel(LevelBase):
             self.__turret_laser_collisions()
         if len(self.player.fireballs.sprites()):
             self.__fireballs_collisions()
+    
+    def __update_sprites(self):
+        """
+        Call update on all of the levels sprites
+        """
+        self.player.fireballs.update()
+        self.turret.lasers.update()
+        if not self.player.dead:
+            self.player.update()
+        if self.turret.is_alive:
+            self.turret.update()
 
     def __blit__sprites(self):
         """
         Blit and update sprites
         player, enemies, & projectiles
         """
-        self.player.fireballs.update()
-        self.player.update()
         self.blit(self.player.image, self.player.rect)
 
         if self.turret.is_alive:
             self.blit(self.turret.image, self.turret.rect)
-            self.turret.update()
-        self.turret.lasers.update()
 
         for laser in self.turret.lasers:
             self.blit(laser.image, laser.rect)
@@ -337,7 +344,6 @@ class TestLevel(LevelBase):
         """
         for img, rect in self.game_ui.get_ui_components():
             self.blit(img, rect)
-        self.game_ui.update(self.player.health_points)
 
     def __update_environment(self):
         """Update level's env and scroll"""
@@ -464,17 +470,18 @@ class TestLevel(LevelBase):
         """
         Update level elements
         """
+        self.__blit_environment()
+        self.__blit_ui()
         if self.game_stats.game_paused:
             # checks its own pygame event loop
             self.pause_menu.update()
             self.blit(
                 self.pause_menu,
                 self.pause_menu.rect,
-                special_flags=pygame.BLEND_RGBA_MAX,
             )
         else:
             self.check_levelbase_events(self.check_level_events)
             self.__update_environment()
+            self.__update_sprites()
+            self.game_ui.update(self.player.health_points)
             self.__check_collisions()
-            self.__blit_environment()
-            self.__blit_ui()
