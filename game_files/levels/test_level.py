@@ -94,21 +94,22 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        width = None
-        for i in range(4):
-            if not width:
-                width: int = self.width
+        #(5, 25) -> width=800
+        x: int = 800 + 100
+        y: int = self.height - 100
+        for i in range(2, 5):
             platform_block: list = Platforms.tile_block(
-                (2 * i, 4 * i), (width, 470 - (45 * i))
+                ((2+i), 25), (x, y)
             )
-            width = ((5 * i) * 32) + self.width
+            x += 800 + (i*110)
+            y -= 50
             self.platforms.add(platform_block)
 
     def __load_floor(self):
         """
         Load base floor
         """
-        floor_tiles: list = Platforms.tile_block((5, 25), (0, self.height - 100))
+        floor_tiles: list = Platforms.tile_block((2, 25), (0, self.height - 100))
         self.player.set_position(
             (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
         )
@@ -292,7 +293,7 @@ class TestLevel(LevelBase):
             self.__turret_laser_collisions()
         if len(self.player.fireballs.sprites()):
             self.__fireballs_collisions()
-    
+
     def __update_sprites(self):
         """
         Call update on all of the levels sprites
@@ -311,8 +312,8 @@ class TestLevel(LevelBase):
         """
         self.blit(self.player.image, self.player.rect)
 
-        if self.turret.is_alive:
-            self.blit(self.turret.image, self.turret.rect)
+        #if self.turret.is_alive:
+        #    self.blit(self.turret.image, self.turret.rect)
 
         for laser in self.turret.lasers:
             self.blit(laser.image, laser.rect)
@@ -436,12 +437,13 @@ class TestLevel(LevelBase):
     def check_user_events(self, event):
         """Custom events"""
         if event.type == self.start_turret_attack and self.turret.is_alive:
-            self.turret.firing = True
-            self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
-            pygame.time.set_timer(
-                self.start_turret_attack, self.turret.firing_speed, True
-            )
-            self.sta_capture = pygame.time.get_ticks()
+            #self.turret.firing = True
+            #self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
+            #pygame.time.set_timer(
+            #    self.start_turret_attack, self.turret.firing_speed, True
+            #)
+            #self.sta_capture = pygame.time.get_ticks()
+            pass
 
         if event.type == self.player_fire_cooldown:
             self.player.can_fire = True
