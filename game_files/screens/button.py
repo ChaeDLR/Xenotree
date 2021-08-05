@@ -21,6 +21,8 @@ class Button(Surface):
         super(Button, self).__init__((self.width, self.height))
         colors = ScreenColors()
         self.surface = surface
+        self.text = button_text
+        self.font_size = font_size
         self.button_color = colors.button_color
         self.text_color = colors.text_color
         # coords to set button to middle of screen
@@ -72,11 +74,20 @@ class Button(Surface):
     def clear_text(self):
         self.msg_image.fill(self.button_color)
 
-    def set_text(self, txt: str, fontsize: int = 40):
-        txt_font = pygame.font.SysFont(None, fontsize, bold=True)
-        self.msg_image = txt_font.render(txt, True, self.text_color, self.button_color)
+    def set_text(self, txt: str, fontsize: int =None):
+        self.text = txt
+        if fontsize:
+            self.font_size = fontsize
+            self.text_font = pygame.font.SysFont(None, self.font_size, bold=True)
+        self.msg_image = self.text_font.render(self.text, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
+    
+    def restore_text(self):
+        """
+        Display stored text value to the button surface
+        """
+        self.msg_image = self.text_font.render(self.text, True, self.text_color, self.button_color)
 
     def blitme(self):
         self.surface.blit(self, self.rect)
