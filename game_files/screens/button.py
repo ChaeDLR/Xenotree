@@ -1,5 +1,4 @@
-import pygame
-from pygame import Surface
+from pygame import Surface, Rect, font, RLEACCEL
 from .screen_colors import ScreenColors
 
 
@@ -8,35 +7,25 @@ class Button(Surface):
         self,
         surface: object,
         button_text: str,
-        size: tuple = None,
+        size: tuple = (150, 50),
         font_size: int = 40,
         name: str = None,
     ):
         """ initialize button settings """
-        if size != None:
-            self.width, self.height = size
-        else:
-            self.width, self.height = 150, 50
-
-        super(Button, self).__init__((self.width, self.height))
-        colors = ScreenColors()
+        super(Button, self).__init__(size)
+        self.width, self.height = size
         self.surface = surface
         self.text = button_text
         self.font_size = font_size
-        self.button_color = colors.button_color
-        self.text_color = colors.text_color
+        self.button_color = ScreenColors.button_color()
+        self.text_color = ScreenColors.text_color()
+        self.name = name
         # coords to set button to middle of screen
         self.button_mid_pos_x = (surface.width / 2) - (self.width / 2)
         self.button_mid_pos_y = (surface.height / 3) * 2
 
-        if font_size:
-            self.resize((self.width, self.height))
-        else:
-            # build the button rect and text. Set it's position
-            self.resize((self.width, self.height))
+        self.resize((self.width, self.height))
         self.set_text(button_text, font_size)
-        if name:
-            self.name = name
 
         self.fill(self.button_color)
 
@@ -44,7 +33,7 @@ class Button(Surface):
         """
         Resize the buttone given the width, height tuple
         """
-        self.rect = pygame.Rect(0, 0, w_h[0], w_h[1])
+        self.rect = Rect(0, 0, w_h[0], w_h[1])
         self.fill(self.button_color)
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
 
@@ -54,12 +43,12 @@ class Button(Surface):
             if mouse_up:
                 self.reset_alpha()
                 return True
-            self.set_alpha(25, pygame.RLEACCEL)
-            self.msg_image.set_alpha(25, pygame.RLEACCEL)
+            self.set_alpha(25, RLEACCEL)
+            self.msg_image.set_alpha(25, RLEACCEL)
 
     def reset_alpha(self):
-        self.set_alpha(255, pygame.RLEACCEL)
-        self.msg_image.set_alpha(255, pygame.RLEACCEL)
+        self.set_alpha(255, RLEACCEL)
+        self.msg_image.set_alpha(255, RLEACCEL)
         self.fill(self.button_color)
 
     def set_position(self, x_pos=None, y_pos=None):
@@ -78,7 +67,7 @@ class Button(Surface):
         self.text = txt
         if fontsize:
             self.font_size = fontsize
-            self.text_font = pygame.font.SysFont(None, self.font_size, bold=True)
+            self.text_font = font.SysFont(None, self.font_size, bold=True)
         self.msg_image = self.text_font.render(self.text, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center

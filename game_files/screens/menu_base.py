@@ -24,10 +24,8 @@ class MenuBase(Surface, ABC):
 
         self.stats = stats
         self.settings = settings
-        # Set menu colors
-        colors = ScreenColors()
-        self.background_color = colors.bg_color
-        self.text_color = colors.text_color
+        self.background_color: tuple = ScreenColors.bg_color()
+        self.text_color: tuple = ScreenColors.text_color()
         # set menu font and rect
         self.font = pygame.font.SysFont(None, 56, bold=True)
         self.rect = Rect(0, 0, w_h[0], w_h[1])
@@ -68,8 +66,7 @@ class MenuBase(Surface, ABC):
         Tuple -> (text_img, text_rect)
         """
         text_font = pygame.font.SysFont(None, textsize, bold=boldtext)
-        text_img = text_font.render(text, True, self.text_color, self.background_color)
-        text_img.set_colorkey(self.background_color)
+        text_img = text_font.render(text, True, self.text_color)
         text_rect = text_img.get_rect()
         text_rect.center = x_y
         return (text_img, text_rect)

@@ -2,15 +2,11 @@ import pygame.font
 import sys
 from .menu_base import MenuBase
 from .button import Button
-from .screen_colors import ScreenColors
 
 
 class Game_Over(MenuBase):
     def __init__(self, w_h: tuple, stats, settings):
         super().__init__(w_h, stats, settings)
-        colors = ScreenColors()
-        self.background_color = colors.bg_color
-        self.text_color = colors.text_color
         self.rect = pygame.Rect(0, 0, w_h[0], w_h[1])
 
         self.width, self.height = w_h[0], w_h[1]

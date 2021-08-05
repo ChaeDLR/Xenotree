@@ -1,6 +1,5 @@
 from pygame import transform
 from pygame.sprite import Sprite
-from ...screens.screen_colors import ScreenColors
 from ...game_assets import AssetManager
 
 class Platforms:
@@ -92,7 +91,6 @@ class _Platform(Sprite):
         img_rect: tuple (image, rect)
         """
         super().__init__()
-        self.colors = ScreenColors()
         self.image = img
         self.rect = self.image.get_rect()
         self.x, self.y = float(x_y[0]), float(x_y[1])

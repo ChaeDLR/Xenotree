@@ -3,7 +3,6 @@ import pygame
 from .level_base import LevelBase
 from .environment.env import Environment
 from .environment.platform import Platforms
-from ..screens.screen_colors import ScreenColors
 from ..sprites.turret import Turret
 from ..screens.pause_menu import PauseMenu
 from game_files.game_assets import AssetManager
@@ -22,7 +21,6 @@ class TestLevel(LevelBase):
 
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
-        self.colors = ScreenColors()
         self.__load_env()
         self.__load_turret()
         self.__load_custom_events()
@@ -475,7 +473,6 @@ class TestLevel(LevelBase):
         self.__blit_environment()
         self.__blit_ui()
         if self.game_stats.game_paused:
-            # checks its own pygame event loop
             self.pause_menu.update()
             self.blit(
                 self.pause_menu,

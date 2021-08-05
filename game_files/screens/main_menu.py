@@ -16,6 +16,9 @@ class MainMenu(MenuBase):
 
         self.level_manager = level_manager
         self.__load_title()
+        self.fill(self.background_color, self.rect)
+        self.blit(self.main_menu_img, self.main_menu_img_rect)
+
         self.buttons: list = self.__load_buttons()
 
     def __load_buttons(self):
@@ -62,9 +65,7 @@ class MainMenu(MenuBase):
                 button.reset_alpha()
 
     def update(self):
-        self.fill(self.background_color, self.rect)
         self.check_base_events(self.check_button_down, self.check_button_up)
-        self.blit(self.main_menu_img, self.main_menu_img_rect)
         self.play_button.blitme()
         self.settings_button.blitme()
         self.quit_button.blitme()

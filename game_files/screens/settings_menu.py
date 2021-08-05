@@ -31,6 +31,7 @@ class SettingsMenu(MenuBase):
         self.settings_menu_img, self.settings_menu_img_rect = self.create_text(
             (self.rect.centerx, 60), "SETTINGS"
         )
+
         self.buttons: list = self.__load_buttons()
 
     def __load_buttons(self):
