@@ -1,14 +1,11 @@
 from .ui_components import *
 
 
-class Game_Ui:
-    """ Game ui """
+class GameUi:
+    """Game ui"""
 
-    def __init__(self, settings: object, stats: object, assets: dict):
-        """ initialize scoring attributes """
-        self.settings = settings
-        self.stats = stats
-
+    def __init__(self, assets: dict):
+        """initialize  ui components"""
         self.health_bar = HealthBar((10, 10))
         self.active_weapon_bar = WeaponBar((120, 10), assets)
 

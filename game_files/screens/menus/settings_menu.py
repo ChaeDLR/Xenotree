@@ -1,32 +1,26 @@
+from pygame.constants import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+from game_files import ScreenBase
 from .button import Button
-from .menu_base import MenuBase
 from .settings_screens.sound_settings import SoundSettings
 from .settings_screens.keybindings_settings import KeybindSettings
 
 
-class SettingsMenu(MenuBase):
+class SettingsMenu(ScreenBase):
     """
     Settings menu
     Allow user to adjust sound volume
     """
 
-    def __init__(self, w_h: tuple, stats: object, settings: object, game_sound: object):
-        super().__init__(w_h, stats, settings)
+    def __init__(self):
+        super().__init__()
 
-        self.screen_rows = w_h[1] / 6
-        self.screen_columns = w_h[0] / 6
-
-        self.game_sound = game_sound
-        self.settings = settings
+        self.screen_rows = self.rect.height / 6
+        self.screen_columns = self.rect.width / 6
 
         self.active_settings_screen = "settings"
 
-        self.sound_screen = SoundSettings(
-            w_h, stats, settings, game_sound, self.set_main_screen, self
-        )
-        self.keybind_screen = KeybindSettings(
-            w_h, stats, settings, self.set_main_screen, self
-        )
+        self.sound_screen = SoundSettings(self.set_main_screen, self.image)
+        self.keybind_screen = KeybindSettings(self.set_main_screen, self.image)
 
         self.settings_menu_img, self.settings_menu_img_rect = self.create_text(
             (self.rect.centerx, 60), "SETTINGS"
@@ -38,13 +32,13 @@ class SettingsMenu(MenuBase):
         """
         Create buttons that will take the user to the selected settings screen
         """
-        self.sound_button = Button(self, "Sound")
+        self.sound_button = Button(self.image, "Sound")
         self.sound_button.set_position(
             self.rect.centerx - (self.sound_button.width / 2),
             self.settings_menu_img_rect.y + 100,
         )
 
-        self.keybindings_button = Button(self, "Key bindings", font_size=29)
+        self.keybindings_button = Button(self.image, "Key bindings", font_size=29)
         self.keybindings_button.resize(
             (self.keybindings_button.width, self.keybindings_button.height)
         )
@@ -53,14 +47,14 @@ class SettingsMenu(MenuBase):
             self.sound_button.rect.y + 100,
         )
 
-        self.back_button = Button(self, "Back")
+        self.back_button = Button(self.image, "Back")
         self.back_button.set_position(
             self.rect.centerx - (self.back_button.width / 2),
             self.keybindings_button.rect.y + 100,
         )
         return [self.sound_button, self.keybindings_button, self.back_button]
 
-    def check_button_down(self, mouse_pos):
+    def __check_button_down(self, mouse_pos):
         """
         Respond to mouse down events
         """
@@ -68,7 +62,7 @@ class SettingsMenu(MenuBase):
         self.keybindings_button.check_button(mouse_pos)
         self.back_button.check_button(mouse_pos)
 
-    def check_button_up(self, mouse_pos):
+    def __check_button_up(self, mouse_pos):
         """
         respond to mouse up events
         """
@@ -77,7 +71,8 @@ class SettingsMenu(MenuBase):
         elif self.keybindings_button.check_button(mouse_pos, True):
             self.active_settings_screen = "key_bindings"
         elif self.back_button.check_button(mouse_pos, True):
-            self.stats.set_active_screen(main_menu=True)
+            ScreenBase.change_screen = True
+            ScreenBase.current_screen_key = "main_menu"
         else:
             for button in self.buttons:
                 button.reset_alpha()
@@ -88,25 +83,26 @@ class SettingsMenu(MenuBase):
         """
         self.active_settings_screen = "settings"
 
+    def check_events(self, event):
+        if self.active_settings_screen == "sound":
+            self.sound_screen.check_events(event)
+        elif self.active_settings_screen == "key_bindings":
+            self.keybind_screen.check_events(event)
+        elif event.type == MOUSEBUTTONDOWN:
+            self.__check_button_down(event.pos)
+        elif event.type == MOUSEBUTTONUP:
+            self.__check_button_up(event.pos)
+
     def update(self):
-        self.fill(self.background_color, self.rect)
+        self.image.fill(self.background_color, self.rect)
         if self.active_settings_screen == "settings":
-            self.check_base_events(self.check_button_down, self.check_button_up)
-            self.blit(self.settings_menu_img, self.settings_menu_img_rect)
+            self.image.blit(self.settings_menu_img, self.settings_menu_img_rect)
             self.sound_button.blitme()
             self.keybindings_button.blitme()
             self.back_button.blitme()
 
         elif self.active_settings_screen == "sound":
-            self.check_base_events(
-                self.sound_screen.check_button_down, self.sound_screen.check_button_up
-            )
             self.sound_screen.update()
 
         elif self.active_settings_screen == "key_bindings":
-            self.keybind_screen.update(
-                self.check_base_events(
-                    self.keybind_screen.check_button_down,
-                    self.keybind_screen.check_button_up,
-                )
-            )
+            self.keybind_screen.update()

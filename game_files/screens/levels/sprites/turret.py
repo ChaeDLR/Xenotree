@@ -1,16 +1,16 @@
 import pygame
 import os
 from pygame.sprite import Sprite, Group
-from ..utils.game_math import GameMath
+from game_files import GameMath
 from .laser import Laser
 
 
 class Turret(Sprite):
-    """ Turret enemy class """
+    """Turret enemy class"""
 
     def __init__(self, images: dict):
         """
-        image assets with keys 
+        image assets with keys
         "laser_img": surface, "turret_images": list
         """
         super().__init__()
@@ -28,34 +28,27 @@ class Turret(Sprite):
         self.firing_speed = 1700
         self.is_alive: bool = True
         self.lasers = Group()
-    
+
     def create_laser(self, target: tuple):
         """
         Create the laser and do the math to set starting position
         + angle + directions
         target: tuple -> (x, y)
         """
-        directions = GameMath.get_directions(
-            (self.rect.x, self.rect.y),
-            target
-        )
+        directions = GameMath.get_directions((self.rect.x, self.rect.y), target)
 
         laser = Laser(self.laser_image)
         laser.set_start(self.rect.center, directions)
 
-        angle = GameMath.get_angle_to(
-            (self.rect.x, self.rect.y),
-            target
-        )
+        angle = GameMath.get_angle_to((self.rect.x, self.rect.y), target)
 
         laser.rotate_image(angle)
         laser.update_rect()
         laser.angle_fired = angle
         self.lasers.add(laser)
 
-
     def set_position(self, x_y: tuple):
-        """ Set the turret position """
+        """Set the turret position"""
         self.rect.x, self.rect.y = x_y[0], x_y[1]
 
     # TODO: Get the turrets to take and image from asset manager and spawn lasers
@@ -75,7 +68,7 @@ class Turret(Sprite):
         for img in images_list:
             img_path = os.path.join(turret_imgs_path, img)
             loaded_images.append(pygame.image.load(img_path).convert())
-            
+
         return loaded_images
 
     def __reset_animation(self):

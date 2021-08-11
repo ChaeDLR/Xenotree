@@ -1,13 +1,15 @@
 from pygame import transform
 from pygame.sprite import Sprite
-from ...game_assets import AssetManager
+from ....asset_manager import AssetManager
+
 
 class Platforms:
     """Uses the _Platform class to generate platforms"""
+
     # use keys
     # "platform_images" for tiles
     # "wave_image" for waves
-    # holds the platform images 
+    # holds the platform images
     # but needs to be assigned after the display is init
     platform_assets: dict = None
 
@@ -19,7 +21,7 @@ class Platforms:
         rows_col: tuple -> (width, height)
         """
         if not cls.platform_assets:
-            Platforms.platform_assets = AssetManager.platform_assets()
+            Platforms.platform_assets = AssetManager.get_platform_assets()
 
         platform_images = cls.platform_assets["platform_images"]
         tile_height = platform_images["tile-1"].get_height()
@@ -75,6 +77,7 @@ class Platforms:
                 previous_platform = floor_tile
         return tile_group
 
+
 class _Platform(Sprite):
     """
     platform size of width, height args
@@ -122,7 +125,7 @@ class _Platform(Sprite):
             platform.connect_left(self)
 
     def set_position(self, x_pos=None, y_pos=None):
-        """ Set the position of the wall """
+        """Set the position of the wall"""
         if x_pos:
             self.x = float(x_pos)
             self.rect.x = int(self.x)

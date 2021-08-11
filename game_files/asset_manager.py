@@ -19,6 +19,7 @@ class AssetManager:
         "fire_blue": [(8, 14, 7, 4), (18, 15, 5, 3)],
         "fire_red": [(8, 24, 7, 4), (18, 25, 5, 3)],
     }
+    fireball_assets: dict = None
 
     player_coords: dict = {
         "idle": [
@@ -39,6 +40,21 @@ class AssetManager:
             (130, 141, 30, 19),
         ],
     }
+    player_assets: dict = None
+
+    background_assets: dict = None
+
+    platform_assets: dict = None
+
+    env_assets: dict = None
+
+    enemy_projectile_assets: dict = None
+
+    fireball_assets: dict = None
+
+    turret_assets: dict = None
+
+    projectile_assets: dict = None
 
     @classmethod
     def __get_image(
@@ -66,13 +82,16 @@ class AssetManager:
         return image
 
     @classmethod
-    def background_assets(cls, w_h: tuple) -> dict:
+    def get_background_assets(cls, w_h: tuple) -> dict:
         """
         Load all background images
         w_h: tuple -> (screen_wdith, screen_height)
         """
+        if cls.background_assets:
+            return cls.background_assets
+
         background_image_path = os.path.join(
-            cls.current_path, "levels/environment/env_assets/background/Layers"
+            cls.current_path, "screens/levels/environment/env_assets/background/Layers"
         )
 
         # layers staring dims (576, 324)
@@ -93,18 +112,21 @@ class AssetManager:
                 resize=fg_layer_size,
             )
 
-        return {
+        cls.background_assets = {
             "background_layers": {**bg_layers},
             "foreground_layers": {**fg_layers},
         }
+        return cls.background_assets
 
     @classmethod
-    def platform_assets(cls) -> dict:
+    def get_platform_assets(cls) -> dict:
         """
         Load platform images
         """
+        if cls.platform_assets:
+            return cls.platform_assets
         platform_image_path = os.path.join(
-            cls.current_path, "levels/environment/env_assets/tiles"
+            cls.current_path, "screens/levels/environment/env_assets/tiles"
         )
 
         tiles: dict = {}
@@ -113,43 +135,53 @@ class AssetManager:
                 os.path.join(platform_image_path, f"Tile_{i}.png")
             )
 
-        return {"platform_images": {**tiles}}
+        cls.platform_assets = {"platform_images": {**tiles}}
+        return cls.platform_assets
 
     @classmethod
-    def level_env_assets(cls) -> dict:
+    def get_env_assets(cls) -> dict:
         """
         Get images for the level environment
         """
-
+        if cls.env_assets:
+            return cls.env_assets
         wave_image = cls.__get_image(
-            os.path.join(cls.current_path, "levels/environment/env_assets/water.png"),
+            os.path.join(
+                cls.current_path, "screens/levels/environment/env_assets/water.png"
+            ),
             colorkey_at=(0, 0),
         )  # default size (128, 128)
-
-        return {"wave_image": wave_image}
+        cls.env_assets = {"wave_image": wave_image}
+        return cls.env_assets
 
     @classmethod
-    def enemy_projectile_assets(cls) -> dict:
+    def get_enemy_projectile_assets(cls) -> dict:
         """
         load enemy projectile images
         """
+        if cls.enemy_projectile_assets:
+            return cls.enemy_projectile_assets
         # load lasers
         laser_img_path = os.path.join(
-            cls.current_path, "sprites/sprite_assets/laser.png"
+            cls.current_path, "screens/levels/sprites/sprite_assets/laser.png"
         )
         laser_img = pygame.image.load(laser_img_path)
 
-        return {"laser_img": laser_img}
+        cls.enemy_projectile_assets = {"laser_img": laser_img}
+        return cls.enemy_projectile_assets
 
     @classmethod
-    def fireball_assets(cls) -> dict:
+    def get_fireball_assets(cls) -> dict:
         """
         Load the level one assets that are created and destroyed
         durring gameplay and return them in a dict
         """
+        if cls.fireball_assets:
+            return cls.fireball_assets
         # load fireballs
         fireballs_path = os.path.join(
-            cls.current_path, "sprites/sprite_assets/player_assets/fireballs.png"
+            cls.current_path,
+            "screens/levels/sprites/sprite_assets/player_assets/fireballs.png",
         )
 
         ss_tool = SpriteSheet(fireballs_path)
@@ -193,13 +225,17 @@ class AssetManager:
                 pygame.transform.scale(x, (16, 13)) for x in fireball_imgs_dict[key]
             ]
 
-        return fireball_imgs_dict
+        cls.fireball_assets = fireball_imgs_dict
+        return cls.fireball_assets
 
     @classmethod
-    def load_player_images(cls) -> dict:
-        """ Load player images and masks from assets folder """
+    def get_player_images(cls) -> dict:
+        """Load player images and masks from assets folder"""
+        if cls.player_assets:
+            return cls.player_assets
         player_ss_path = os.path.join(
-            cls.current_path, "sprites/sprite_assets/player_assets/MageSpriteSheet.png"
+            cls.current_path,
+            "screens/levels/sprites/sprite_assets/player_assets/MageSpriteSheet.png",
         )
         ss_tool = SpriteSheet(player_ss_path)
 
@@ -225,21 +261,24 @@ class AssetManager:
 
             return {f"{key}_right": right_images, f"{key}_left": left_images}
 
-        return {
+        cls.player_assets = {
             **get_animations(cls.player_coords["idle"], "idle"),
             **get_animations(cls.player_coords["walk"], "walk"),
             **get_animations(cls.player_coords["jump"], "jump"),
             **get_animations(cls.player_coords["hit"], "hit"),
             **get_animations(cls.player_coords["death"], "death"),
         }
+        return cls.player_assets
 
     @classmethod
-    def turret_assets(cls) -> dict:
+    def get_turret_assets(cls) -> dict:
         """
         Get turret images for animation and projectile
         """
+        if cls.turret_assets:
+            return cls.turret_assets
         turret_imgs_path = os.path.join(
-            cls.current_path, "sprites/sprite_assets/turret"
+            cls.current_path, "screens/levels/sprites/sprite_assets/turret"
         )
         images_list: list = os.listdir(turret_imgs_path)
         # Sort the images by the number value in the file name string
@@ -250,13 +289,17 @@ class AssetManager:
             img_path = os.path.join(turret_imgs_path, img)
             loaded_images.append(pygame.image.load(img_path).convert())
 
-        return {"turret_images": loaded_images}
+        cls.turret_assets = {"turret_images": loaded_images}
+        return cls.turret_assets
 
     @classmethod
-    def projectile_assets(cls) -> dict:
+    def get_projectile_assets(cls) -> dict:
         """
         Get all of the level one assets in one dict
         """
-        fireballs = cls.fireball_assets()
-        enemy_projectiles = cls.enemy_projectile_assets()
-        return {**fireballs, **enemy_projectiles}
+        if cls.projectile_assets:
+            return cls.projectile_assets
+        fireballs = cls.get_fireball_assets()
+        enemy_projectiles = cls.get_enemy_projectile_assets()
+        cls.projectile_assets = {**fireballs, **enemy_projectiles}
+        return cls.projectile_assets

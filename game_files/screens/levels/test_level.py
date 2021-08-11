@@ -1,37 +1,35 @@
 import pygame
 
-from .level_base import LevelBase
+from game_files import ScreenBase
+from game_files import PauseMenu
+
+from .game_ui import GameUi
 from .environment.env import Environment
 from .environment.platform import Platforms
-from ..sprites.turret import Turret
-from ..screens.pause_menu import PauseMenu
-from game_files.game_assets import AssetManager
+from .sprites.turret import Turret
+from .sprites.player import Player
 
 
-class TestLevel(LevelBase):
-    def __init__(
-        self,
-        width: int,
-        height: int,
-        settings: object,
-        stats: object,
-        game_sound: object,
-    ):
-        super().__init__(width, height, settings, stats, game_sound)
-
+class TestLevel(ScreenBase):
+    def __init__(self):
+        super().__init__()
         pygame.event.set_blocked(pygame.MOUSEMOTION)
 
+        self.turret_assets["laser_img"] = self.projectile_assets["laser_img"]
+        self.game_ui = GameUi(self.projectile_assets)
+
+        self.player = Player(
+            {**self.player_assets, **self.projectile_assets}, self.width
+        )
         self.__load_env()
         self.__load_turret()
         self.__load_custom_events()
 
         # has check events in update
         self.pause_menu = PauseMenu(
-            (self.settings.screen_width, self.settings.screen_height),
-            self.game_stats,
-            self.settings,
             self.unpause,
         )
+        self.game_paused: bool = False
 
         self.__set_timers()
 
@@ -92,14 +90,12 @@ class TestLevel(LevelBase):
         """
         Load base platforms for testing
         """
-        #(5, 25) -> width=800
+        # (5, 25) -> width=800
         x: int = 800 + 100
         y: int = self.height - 100
         for i in range(2, 5):
-            platform_block: list = Platforms.tile_block(
-                ((2+i), 25), (x, y)
-            )
-            x += 800 + (i*110)
+            platform_block: list = Platforms.tile_block(((2 + i), 25), (x, y))
+            x += 800 + (i * 110)
             y -= 50
             self.platforms.add(platform_block)
 
@@ -119,13 +115,9 @@ class TestLevel(LevelBase):
         Load initial environment
         and platform lists
         """
-        self.background_images = AssetManager.background_assets(
-            (self.width, self.height)
-        )
-        self.env_assets = AssetManager.level_env_assets()
         self.environment = Environment(
-            background=self.background_images["background_layers"],
-            foreground=self.background_images["foreground_layers"],
+            background=self.background_assets["background_layers"],
+            foreground=self.background_assets["foreground_layers"],
             w_h=(self.width, self.height),
             wave_img=self.env_assets["wave_image"],
         )
@@ -138,9 +130,14 @@ class TestLevel(LevelBase):
         """
         Load custom events and their capture variable if they need one
         """
+        self.player_hit = pygame.USEREVENT + 5
+        self.player_dead = pygame.USEREVENT + 6
+        self.player_fire_cooldown = pygame.USEREVENT + 7
         self.start_turret_attack = pygame.USEREVENT + 9
         self.spawn_turret = pygame.USEREVENT + 10
 
+        self.pd_capture: int = 0
+        self.pfc_capture: int = 0
         self.sta_capture: int = 0
         self.di_capture: int = 0
 
@@ -308,19 +305,22 @@ class TestLevel(LevelBase):
         Blit and update sprites
         player, enemies, & projectiles
         """
-        self.blit(self.player.image, self.player.rect)
+        self.image.blit(self.player.image, self.player.rect)
 
-        #if self.turret.is_alive:
+        # if self.turret.is_alive:
         #    self.blit(self.turret.image, self.turret.rect)
 
         for laser in self.turret.lasers:
-            self.blit(laser.image, laser.rect)
+            self.image.blit(laser.image, laser.rect)
             if laser.rect.x < -250 or laser.rect.y > self.rect.height:
                 self.turret.lasers.remove(laser)
 
         for fireball in self.player.fireballs:
-            self.blit(fireball.image, fireball.rect)
-            if fireball.rect.x < -250 or fireball.rect.y > self.rect.height:
+            # TODO: ensure fireballs get deleted when off screen. Or Cycle them
+            self.image.blit(fireball.image, fireball.rect)
+            if (0 > fireball.rect.right or fireball.rect.left > self.rect.width) or (
+                0 > fireball.rect.bottom or fireball.rect.y > self.rect.height
+            ):
                 self.player.fireballs.remove(fireball)
 
     def __blit_environment(self):
@@ -330,19 +330,19 @@ class TestLevel(LevelBase):
         """
         # a layer groups images instance variable is a tuple containing (image, rect)
         for layerGroup in self.environment.bg_layers:
-            self.blits(layerGroup.images)
+            self.image.blits(layerGroup.images)
         self.__blit__sprites()
         for platform in self.platforms:
-            self.blit(platform.image, platform.rect)
+            self.image.blit(platform.image, platform.rect)
         for layerGroup in self.environment.fg_layers:
-            self.blits(layerGroup.images)
+            self.image.blits(layerGroup.images)
 
     def __blit_ui(self):
         """
         blit user interface
         """
         for img, rect in self.game_ui.get_ui_components():
-            self.blit(img, rect)
+            self.image.blit(img, rect)
 
     def __update_environment(self):
         """Update level's env and scroll"""
@@ -382,21 +382,75 @@ class TestLevel(LevelBase):
         self.platforms.update(scroll_x, scroll_y)
         self.environment.scroll(scroll_x, scroll_y)
 
+    def player_keydown_controller(self, event):
+        """Take event to control the player"""
+        if event.key == self.settings.key_bindings["move_left"]:
+            self.player.switch_move_left(True)
+        elif event.key == self.settings.key_bindings["move_right"]:
+            self.player.switch_move_right(True)
+        # check for player jump input
+        if (
+            event.key == self.settings.key_bindings["jump"]
+            and self.player.rect.top >= 0
+        ):  # and not self.player.jumping:
+            self.player.start_jump()
+        # cycle weapons bar
+        if event.key == self.settings.key_bindings["cycle_fireball"]:
+            self.game_ui.active_weapon_bar.set_positions()
+        # player dashing
+        if event.key == self.settings.key_bindings["dash"]:
+            self.player.start_dash()
+
+    def player_keyup_controller(self, event):
+        """Take event to control the player"""
+        if event.key == self.settings.key_bindings["move_left"]:
+            self.player.switch_move_left(False)
+        elif event.key == self.settings.key_bindings["move_right"]:
+            self.player.switch_move_right(False)
+
+    def player_mouse_controller(self, event):
+        """respond to mouse input"""
+        mouse_button = pygame.mouse.get_pressed(3)
+
+        if mouse_button[0]:
+            self.player.create_fireball(
+                event.pos, self.game_ui.active_weapon_bar.element_type
+            )
+            self.player.can_fire = False
+            pygame.time.set_timer(
+                self.player_fire_cooldown, self.player.cooldown_time, True
+            )
+            self.pfc_capture = pygame.time.get_ticks()
+
+    def player_collide_hit(self, angle: float = 200.0):
+        """
+        If the player collides with something that hurts it
+        """
+        # TODO: Need player sound
+        self.player.damaged(angle)
+        self.game_ui.update(self.player.health_points)
+        if self.player.dying:
+            pygame.time.set_timer(self.player_dead, 2000, True)
+            self.pd_capture = pygame.time.get_ticks()
+
     def game_over(self):
         """When the player loses"""
-        super().game_over()
+        ScreenBase.change_screen = True
+        ScreenBase.current_screen_key = "game_over"
+        pygame.mouse.set_cursor(pygame.cursors.arrow)
         self.__disable_timers()
 
     def pause_events(self):
         self.__capture_timers()
         self.__disable_timers()
-        super().pause_events()
+        pygame.mouse.set_cursor(pygame.cursors.arrow)
+        self.game_paused = True
 
     def unpause(self):
         """
         Start game timers with the captured time
         """
-        super().unpause()
+        pygame.mouse.set_cursor(pygame.cursors.broken_x)
         if self.pfc_timeleft >= 1:
             pygame.time.set_timer(self.player_fire_cooldown, self.pfc_timeleft, True)
         if self.pd_timeleft >= 1:
@@ -409,38 +463,17 @@ class TestLevel(LevelBase):
             False,
             False,
         )
-        self.game_stats.game_active = True
-        self.game_stats.game_paused = False
+        self.game_paused = False
 
-    def check_level_events(self, event):
-        if event.type == pygame.KEYDOWN:
-            self.check_keydown_events(event)
-
-        elif event.type == pygame.KEYUP:
-            self.check_keyup_events(event)
-
-        elif (
-            event.type == pygame.MOUSEBUTTONDOWN
-            and self.player.can_fire
-            and not (self.player.hit or self.player.dying)
-        ):
-            self.player_mouse_controller(event)
-
-        elif event.type == pygame.MOUSEBUTTONUP and not self.player.dying:
-            self.player.reset_animation()
-
-        else:
-            self.check_user_events(event)
-
-    def check_user_events(self, event):
+    def __check_user_events(self, event):
         """Custom events"""
         if event.type == self.start_turret_attack and self.turret.is_alive:
-            #self.turret.firing = True
-            #self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
-            #pygame.time.set_timer(
+            # self.turret.firing = True
+            # self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
+            # pygame.time.set_timer(
             #    self.start_turret_attack, self.turret.firing_speed, True
-            #)
-            #self.sta_capture = pygame.time.get_ticks()
+            # )
+            # self.sta_capture = pygame.time.get_ticks()
             pass
 
         if event.type == self.player_fire_cooldown:
@@ -452,7 +485,7 @@ class TestLevel(LevelBase):
         if event.type == self.player_dead:
             self.game_over()
 
-    def check_keydown_events(self, event):
+    def __check_keydown_events(self, event):
         """check for and respond to player keydown input"""
         if not self.player.dying:
             if event.key == pygame.K_ESCAPE:
@@ -461,10 +494,33 @@ class TestLevel(LevelBase):
                 # Player movement
                 self.player_keydown_controller(event)
 
-    def check_keyup_events(self, event):
+    def __check_keyup_events(self, event):
         """Check for and respond to player keyup events"""
         if not self.player.dying:
             self.player_keyup_controller(event)
+
+    def check_events(self, event):
+        if self.game_paused:
+            self.pause_menu.check_events(event)
+        else:
+            if event.type == pygame.KEYDOWN:
+                self.__check_keydown_events(event)
+
+            elif event.type == pygame.KEYUP:
+                self.__check_keyup_events(event)
+
+            elif (
+                event.type == pygame.MOUSEBUTTONDOWN
+                and self.player.can_fire
+                and not (self.player.hit or self.player.dying)
+            ):
+                self.player_mouse_controller(event)
+
+            elif event.type == pygame.MOUSEBUTTONUP and not self.player.dying:
+                self.player.reset_animation()
+
+            else:
+                self.__check_user_events(event)
 
     def update(self):
         """
@@ -472,14 +528,13 @@ class TestLevel(LevelBase):
         """
         self.__blit_environment()
         self.__blit_ui()
-        if self.game_stats.game_paused:
+        if self.game_paused:
             self.pause_menu.update()
-            self.blit(
-                self.pause_menu,
+            self.image.blit(
+                self.pause_menu.image,
                 self.pause_menu.rect,
             )
         else:
-            self.check_levelbase_events(self.check_level_events)
             self.__update_environment()
             self.__update_sprites()
             self.game_ui.update(self.player.health_points)

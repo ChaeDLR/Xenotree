@@ -1,5 +1,5 @@
 from pygame import Surface, Rect, font, RLEACCEL
-from .screen_colors import ScreenColors
+from ..screen_colors import ScreenColors
 
 
 class Button(Surface):
@@ -11,8 +11,8 @@ class Button(Surface):
         font_size: int = 40,
         name: str = None,
     ):
-        """ initialize button settings """
-        super(Button, self).__init__(size)
+        """initialize button settings"""
+        super().__init__(size)
         self.width, self.height = size
         self.surface = surface
         self.text = button_text
@@ -21,8 +21,8 @@ class Button(Surface):
         self.text_color = ScreenColors.text_color()
         self.name = name
         # coords to set button to middle of screen
-        self.button_mid_pos_x = (surface.width / 2) - (self.width / 2)
-        self.button_mid_pos_y = (surface.height / 3) * 2
+        self.button_mid_pos_x = (surface.get_width() / 2) - (self.width / 2)
+        self.button_mid_pos_y = (surface.get_height() / 3) * 2
 
         self.resize((self.width, self.height))
         self.set_text(button_text, font_size)
@@ -38,7 +38,7 @@ class Button(Surface):
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
 
     def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
-        """ check for button collision """
+        """check for button collision"""
         if self.rect.collidepoint(mouse_pos):
             if mouse_up:
                 self.reset_alpha()
@@ -52,7 +52,7 @@ class Button(Surface):
         self.fill(self.button_color)
 
     def set_position(self, x_pos=None, y_pos=None):
-        """ Set the position of the button """
+        """Set the position of the button"""
         if x_pos:
             self.rect.x = x_pos
         if y_pos:
@@ -63,20 +63,20 @@ class Button(Surface):
     def clear_text(self):
         self.msg_image.fill(self.button_color)
 
-    def set_text(self, txt: str, fontsize: int =None):
+    def set_text(self, txt: str, fontsize: int = None):
         self.text = txt
         if fontsize:
             self.font_size = fontsize
             self.text_font = font.SysFont(None, self.font_size, bold=True)
-        self.msg_image = self.text_font.render(self.text, True, self.text_color, self.button_color)
+        self.msg_image = self.text_font.render(self.text, True, self.text_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
-    
+
     def restore_text(self):
         """
         Display stored text value to the button surface
         """
-        self.msg_image = self.text_font.render(self.text, True, self.text_color, self.button_color)
+        self.msg_image = self.text_font.render(self.text, True, self.text_color)
 
     def blitme(self):
         self.surface.blit(self, self.rect)

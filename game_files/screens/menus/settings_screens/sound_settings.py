@@ -1,26 +1,20 @@
 import os
-
+from typing import Callable
 from pygame import Surface, image, transform, font
-from ..menu_base import MenuBase
+from pygame.constants import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+from game_files import ScreenBase
 from ..button import Button
 
 
-class SoundSettings(MenuBase):
+class SoundSettings(ScreenBase):
     def __init__(
         self,
-        w_h: tuple,
-        stats: object,
-        settings: object,
-        game_sound: object,
-        back: any,
-        screen,
+        back: Callable,
+        screen: Surface,
     ):
-        super().__init__(w_h, stats, settings)
-
+        super().__init__()
         self.main_screen = screen
 
-        self.settings = settings
-        self.game_sound = game_sound
         # function to return to main settings screen
         self.back_func = back
 
@@ -104,7 +98,7 @@ class SoundSettings(MenuBase):
         self.music_minus_image_rect = self.music_minus_image.get_rect()
 
     def __set_image_position(self):
-        """ Set +/- image positions """
+        """Set +/- image positions"""
         self.music_plus_image_rect.y = (self.screen_rows * 2.5) + 16
         self.music_minus_image_rect.y = (self.screen_rows * 2.5) + 32
 
@@ -185,58 +179,62 @@ class SoundSettings(MenuBase):
                 self.music_minus_filled_image, self.music_minus_image_rect
             )
 
-    def check_button_down(self, mouse_pos):
+    def __check_button_down(self, mouse_pos):
         """
         Respond to mouse down events
         """
         self.back_button.check_button(mouse_pos)
         self.save_button.check_button(mouse_pos)
 
-    def check_button_up(self, mouse_pos):
+    def __check_button_up(self, mouse_pos):
         """
         Respond to mouse up events
         """
         # If the music plus rect is pressed
         if self.music_plus_image_rect.collidepoint(mouse_pos):
             self.music_plus_pressed = True
-            self.game_sound.increase_music_volume()
+            self.sound.increase_music_volume()
             self.update_music_volume_string()
         # If the music minus rect is pressed
         elif self.music_minus_image_rect.collidepoint(mouse_pos):
             self.music_minus_pressed = True
-            self.game_sound.decrease_music_volume()
+            self.sound.decrease_music_volume()
             self.update_music_volume_string()
         # If effects plus rect
         elif self.effects_plus_image_rect.collidepoint(mouse_pos):
             self.effects_plus_pressed = True
-            self.game_sound.increase_effects_volume()
+            self.sound.increase_effects_volume()
             self.update_effects_volume_string()
         # If effects minus rect
         elif self.effects_minus_image_rect.collidepoint(mouse_pos):
             self.effects_minus_pressed = True
-            self.game_sound.decrease_effects_volume()
+            self.sound.decrease_effects_volume()
             self.update_effects_volume_string()
         # If back button is pressed go to the main menu
         elif self.back_button.check_button(mouse_pos, True):
             self.back_func()
         # If save button is pressed call save_volumes() to save the volume settings
         elif self.save_button.check_button(mouse_pos, True):
-            self.game_sound.save_volumes()
+            self.sound.save_volumes()
         else:
             for button in self.buttons:
                 button.reset_alpha()
 
+    def check_events(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            self.__check_button_down(event.pos)
+        elif event.type == MOUSEBUTTONUP:
+            self.__check_button_up(event.pos)
+
     def update_music_volume_string(self):
-        music_volume_string = f"Music volume: {str(self.game_sound.music_volume)[2:]}"
+        music_volume_string = f"Music volume: {str(self.sound.music_volume)[2:]}"
         music_font = font.SysFont(None, 38)
         self.music_volume_image = music_font.render(
             music_volume_string, True, self.text_color, self.background_color
         )
 
     def update_effects_volume_string(self):
-        effects_volume_string = (
-            f"Effects volume: {str(self.game_sound.effects_volume)[2:]}"
-        )
+        effects_volume_string = f"Effects volume: {str(self.sound.effects_volume)[2:]}"
         effects_font = font.SysFont(None, 38)
         self.effects_volume_image = effects_font.render(
             effects_volume_string, True, self.text_color, self.background_color

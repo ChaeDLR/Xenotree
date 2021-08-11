@@ -4,15 +4,14 @@ import json
 
 
 class Settings:
-    """ organize our game settings """
+    """organize our game settings"""
 
     settings_path = f"{os.getcwd()}/Settings_data"
+    screen_width: int = 800
+    screen_height: int = 600
 
     def __init__(self):
-        """ initialize our game settings """
-        self.screen_width = 800
-        self.screen_height = 600
-
+        """initialize our game settings"""
         self.screen_mid_x = self.screen_width / 2
         self.screen_mid_y = self.screen_height / 2
 
@@ -65,9 +64,3 @@ class Settings:
         with open(f"{self.settings_path}/{file}", "w") as data_file:
             json.dump(settings_data, data_file, indent=4)
         data_file.close()
-
-    def set_resolution(self, x_y: tuple):
-        """ change screen dimensions """
-
-        self.screen_width = x_y[0]
-        self.screen_height = x_y[1]

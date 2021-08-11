@@ -1,14 +1,14 @@
-from pygame import font, key, RLEACCEL
-from ..menu_base import MenuBase
+from typing import Callable
+from pygame import Surface, font, key, RLEACCEL, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP
+from game_files import ScreenBase
 from ..button import Button
 
 
-class KeybindSettings(MenuBase):
-    def __init__(self, w_h: tuple, stats: object, settings: object, back: any, screen):
-        super().__init__(w_h, stats, settings)
+class KeybindSettings(ScreenBase):
+    def __init__(self, back: Callable, screen: Surface):
+        super().__init__()
 
         self.main_screen = screen
-        self.settings = settings
         self.back_func = back
 
         # track the display of the key unavailable message
@@ -36,7 +36,9 @@ class KeybindSettings(MenuBase):
 
         # image that tells user that the key they selected is unavailable
         self.key_unavailable_img, self.key_unavailable_rect = self.create_text(
-            (self.rect.centerx, self.rect.height - 160), "Key is unavailable", textsize=40
+            (self.rect.centerx, self.rect.height - 160),
+            "Key is unavailable",
+            textsize=40,
         )
 
     def __load_buttons(self):
@@ -50,7 +52,7 @@ class KeybindSettings(MenuBase):
         return [self.back_button, self.reset_button]
 
     def __load_keybind_labels_buttons(self):
-        """ Labels displaying the different keybindings available to change """
+        """Labels displaying the different keybindings available to change"""
         options_strings = [
             "Move left - ",
             "Move right - ",
@@ -116,7 +118,7 @@ class KeybindSettings(MenuBase):
         self.keybind_alpha += 1 * self.alpha_switch
         self.set_keybind_img.set_alpha(self.keybind_alpha * self.alpha_switch, RLEACCEL)
 
-    def check_button_up(self, mouse_pos):
+    def __check_button_up(self, mouse_pos):
         if self.back_button.check_button(mouse_pos, True):
             self.settings.save_setting(self.settings.key_bindings, "keybinds.json")
             self.back_func()
@@ -138,14 +140,39 @@ class KeybindSettings(MenuBase):
                 self.keybind_alpha = 200
                 self.set_keybind_img.set_alpha(self.keybind_alpha, RLEACCEL)
 
-    def check_button_down(self, mouse_pos):
+    def __check_button_down(self, mouse_pos):
         self.back_button.check_button(mouse_pos)
         self.reset_button.check_button(mouse_pos)
 
         for kb_button in self.keybind_button_dict.values():
             kb_button.check_button(mouse_pos)
 
-    def update(self, keydown_event):
+    def check_events(self, event):
+        if self.listening and event.type == KEYDOWN:
+            pressed_key = event.key
+            if not pressed_key in self.settings.key_bindings.values():
+                self.keybind_button_dict[self.listening_keybind_button.name].set_text(
+                    key.name(pressed_key), 20
+                )
+                self.listening_keybind_button.reset_alpha()
+                # set keybind
+                self.settings.key_bindings[
+                    self.listening_keybind_button.name
+                ] = pressed_key
+
+            else:
+                self.keybind_button_dict[
+                    self.listening_keybind_button.name
+                ].restore_text()
+                self.key_unavailable = True
+                self.keybind_alpha = 255
+            self.listening = False
+        elif event.type == MOUSEBUTTONDOWN:
+            self.__check_button_down(event.pos)
+        elif event.type == MOUSEBUTTONUP:
+            self.__check_button_up(event.pos)
+
+    def update(self):
         """
         Draw and update
         """
@@ -159,23 +186,7 @@ class KeybindSettings(MenuBase):
         for button in self.keybind_button_dict:
             self.keybind_button_dict[button].blitme()
 
-        if self.listening and keydown_event:
-            pressed_key = keydown_event.key
-            if not pressed_key in self.settings.key_bindings.values():
-                self.keybind_button_dict[self.listening_keybind_button.name].set_text(
-                    key.name(pressed_key), 20
-                )
-                self.listening_keybind_button.reset_alpha()
-                # set keybind
-                self.settings.key_bindings[self.listening_keybind_button.name] = pressed_key
-
-            else:
-                self.keybind_button_dict[self.listening_keybind_button.name].restore_text()
-                self.key_unavailable = True
-                self.keybind_alpha = 255
-            self.listening = False
-
-        elif self.listening:
+        if self.listening:
             self.main_screen.blit(self.set_keybind_img, self.set_keybind_rect)
             self.__animate_set_keybind_text()
 

@@ -1,12 +1,12 @@
 import pygame
 
 from pygame.sprite import Sprite
-from ..utils.game_math import GameMath
+from game_files import GameMath
 from .fireball import Fireball
 
 
 class Player(Sprite):
-    """ player sprite class """
+    """player sprite class"""
 
     def __init__(self, assets: dict, bound: int):
         super().__init__()
@@ -81,7 +81,7 @@ class Player(Sprite):
         self.is_alive = True
 
     def __create_animation_variables(self) -> None:
-        """ These are the animation variables needed to animate the player smoothly """
+        """These are the animation variables needed to animate the player smoothly"""
         self.animation_index = 0
         self.animation_index_limit = 0
         self.animation_counter = 0
@@ -221,14 +221,14 @@ class Player(Sprite):
                 self.falling = True
 
     def reset_player(self):
-        """ reset player position """
+        """reset player position"""
         # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
         self.y = float(self.rect.y)
         self.x = float(self.rect.x)
 
     def check_position(self):
-        """ check that the player position is in bounds """
+        """check that the player position is in bounds"""
         if self.rect.top < 31:
             return True
         else:
