@@ -1,6 +1,7 @@
 import pygame
 import os
-from .utils.spritesheet import SpriteSheet
+
+from pygame import transform
 
 
 class AssetManager:
@@ -56,30 +57,40 @@ class AssetManager:
 
     projectile_assets: dict = None
 
-    @classmethod
-    def __get_image(
-        self,
-        path: str,
-        resize: tuple = None,
-        colorKey: tuple = (0, 0, 0),
-        colorkey_at: tuple = None,
-    ) -> pygame.Surface:
-        """
-        Return an image and a rect from a given path
-        resize: tuple -> (width, height)
-        colorkey: tuple -> (0, 0, 0)
-        colokey_at: tuple -> (x, y)
-        """
-        image = pygame.image.load(path).convert()
-        if resize:
-            image = pygame.transform.scale(image, resize)
-
-        if colorkey_at:
-            img_colorkey = image.get_at(colorkey_at)
-        else:
-            img_colorkey = colorKey
-        image.set_colorkey(img_colorkey, pygame.RLEACCEL)
+    def __get_image_at(
+        rectangle: tuple,
+        filepath: str,
+        colorkey: tuple = None,
+        scale: tuple = None,
+    ):
+        """Load specific image from a specific rectangle"""
+        # Loads image from x, y, x+offset, y+offset
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(pygame.image.load(filepath), (0, 0), rect)
+        if colorkey:
+            if colorkey == -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        if scale:
+            return transform.scale(image, scale)
         return image
+
+    @classmethod
+    def __get_images_at(
+        cls,
+        rects,
+        filepath,
+        colorkey=None,
+        scale=None,
+    ) -> list:
+        """Load a whole numch of images from a single file and return them as a list"""
+        if not scale:
+            return [cls.__get_image_at(rect, filepath, colorkey) for rect in rects]
+        return [
+            transform.scale(cls.__get_image_at(rect, filepath, colorkey), scale)
+            for rect in rects
+        ]
 
     @classmethod
     def get_background_assets(cls, w_h: tuple) -> dict:
@@ -99,17 +110,22 @@ class AssetManager:
         bg_layer_size = int(w_h[0] * 1.2), int(w_h[1] * 1.2)
         bg_layers: dict = {}
         for i in range(1, 4):
-            bg_layers[i] = cls.__get_image(
-                os.path.join(background_image_path, f"{i}.png"),
-                resize=bg_layer_size,
+            bg_layers[i] = transform.scale(
+                pygame.image.load(
+                    os.path.join(background_image_path, f"{i}.png")
+                ).convert(),
+                bg_layer_size,
             )
+
         # foreground layers
         fg_layer_size = int(w_h[0]), int(w_h[1] * 0.5)
         fg_layers: dict = {}
         for i in range(5, 6):
-            fg_layers[i - 3] = cls.__get_image(
-                os.path.join(background_image_path, f"{i}.png"),
-                resize=fg_layer_size,
+            fg_layers[i - 3] = transform.scale(
+                pygame.image.load(
+                    os.path.join(background_image_path, f"{i}.png")
+                ).convert(),
+                fg_layer_size,
             )
 
         cls.background_assets = {
@@ -131,9 +147,9 @@ class AssetManager:
 
         tiles: dict = {}
         for i in range(1, 61):
-            tiles[f"tile-{i}"] = cls.__get_image(
+            tiles[f"tile-{i}"] = pygame.image.load(
                 os.path.join(platform_image_path, f"Tile_{i}.png")
-            )
+            ).convert()
 
         cls.platform_assets = {"platform_images": {**tiles}}
         return cls.platform_assets
@@ -145,12 +161,14 @@ class AssetManager:
         """
         if cls.env_assets:
             return cls.env_assets
-        wave_image = cls.__get_image(
+        wave_image = pygame.image.load(
             os.path.join(
                 cls.current_path, "screens/levels/environment/env_assets/water.png"
-            ),
-            colorkey_at=(0, 0),
-        )  # default size (128, 128)
+            )
+        ).convert()  # default size (128, 128)
+
+        wave_image.set_colorkey(wave_image.get_at((0, 0)))
+
         cls.env_assets = {"wave_image": wave_image}
         return cls.env_assets
 
@@ -179,35 +197,70 @@ class AssetManager:
         if cls.fireball_assets:
             return cls.fireball_assets
         # load fireballs
-        fireballs_path = os.path.join(
+        path: str = os.path.join(
             cls.current_path,
             "screens/levels/sprites/sprite_assets/player_assets/fireballs.png",
         )
+        fb_size: tuple = (16, 13)
 
-        ss_tool = SpriteSheet(fireballs_path)
-
-        purp_fb_idle_imgs = ss_tool.images_at(
-            cls.fireball_coords["idle_purp"], cls.p_colorkey
+        purp_fb_idle_imgs = cls.__get_images_at(
+            cls.fireball_coords["idle_purp"], path, cls.p_colorkey, fb_size
         )
 
-        blue_fb_idle_imgs = ss_tool.images_at(
-            cls.fireball_coords["idle_blue"], cls.p_colorkey
+        blue_fb_idle_imgs = cls.__get_images_at(
+            cls.fireball_coords["idle_blue"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=fb_size,
         )
 
-        red_fb_idle_imgs = ss_tool.images_at(
-            cls.fireball_coords["idle_red"], cls.p_colorkey
+        red_fb_idle_imgs = cls.__get_images_at(
+            cls.fireball_coords["idle_red"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=fb_size,
         )
 
-        purp_fb_fire_imgs = ss_tool.images_at(
-            cls.fireball_coords["fire_purp"], cls.p_colorkey
+        purp_fb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_purp"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=fb_size,
         )
 
-        blue_fb_fire_imgs = ss_tool.images_at(
-            cls.fireball_coords["fire_blue"], cls.p_colorkey
+        blue_fb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_blue"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=fb_size,
         )
 
-        red_fb_fire_imgs = ss_tool.images_at(
-            cls.fireball_coords["fire_red"], cls.p_colorkey
+        red_fb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_red"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=fb_size,
+        )
+
+        # special attack fireballs
+        super_fb_size = (24, 20)
+        red_sfb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_red"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=super_fb_size,
+        )
+        blue_sfb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_blue"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=super_fb_size,
+        )
+        purp_sfb_fire_imgs = cls.__get_images_at(
+            cls.fireball_coords["fire_purp"],
+            path,
+            colorkey=cls.p_colorkey,
+            scale=super_fb_size,
         )
 
         fireball_imgs_dict: dict = {
@@ -219,11 +272,10 @@ class AssetManager:
             "red_fb_fire_imgs": red_fb_fire_imgs,
         }
 
-        # scale up the fireball images
-        for key in fireball_imgs_dict:
-            fireball_imgs_dict[key] = [
-                pygame.transform.scale(x, (16, 13)) for x in fireball_imgs_dict[key]
-            ]
+        # Add the super fireballs after the rescaling
+        fireball_imgs_dict["red_sfb_fire_imgs"] = red_sfb_fire_imgs
+        fireball_imgs_dict["blue_sfb_fire_imgs"] = blue_sfb_fire_imgs
+        fireball_imgs_dict["purple_sfb_fire_imgs"] = purp_sfb_fire_imgs
 
         cls.fireball_assets = fireball_imgs_dict
         return cls.fireball_assets
@@ -233,17 +285,16 @@ class AssetManager:
         """Load player images and masks from assets folder"""
         if cls.player_assets:
             return cls.player_assets
-        player_ss_path = os.path.join(
+        path = os.path.join(
             cls.current_path,
             "screens/levels/sprites/sprite_assets/player_assets/MageSpriteSheet.png",
         )
-        ss_tool = SpriteSheet(player_ss_path)
 
         def get_animations(coords_list: list, key: str) -> dict:
             right_images = []
             for coord in coords_list:
-                image = ss_tool.image_at(coord, cls.p_colorkey)
-                image = pygame.transform.scale(
+                image = cls.__get_image_at(coord, path, cls.p_colorkey)
+                image = transform.scale(
                     image, (int(image.get_width() * 1.8), int(image.get_height() * 1.8))
                 )
                 mask = pygame.mask.from_surface(image)
@@ -254,7 +305,7 @@ class AssetManager:
             for i in range(0, len(right_images)):
                 left_images.append(
                     (
-                        pygame.transform.flip(temp_image_masks[i][0], True, False),
+                        transform.flip(temp_image_masks[i][0], True, False),
                         pygame.mask.from_surface(temp_image_masks[i][0]),
                     )
                 )

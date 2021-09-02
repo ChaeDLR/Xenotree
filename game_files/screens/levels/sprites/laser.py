@@ -1,24 +1,16 @@
 from .projectile_base import Projectile
-from pygame import mask
+
 
 class Laser(Projectile):
-    def __init__(self, image):
+    def __init__(self, image, start: tuple, directions: tuple, angle: float):
         """
-        Get the laser img asset
-        Set image and rect
+        Lazer projectile sprite
         """
-        super().__init__()
-        self.base_image = image
-        self.image = self.base_image
+        self.image = image
         self.rect = self.image.get_rect()
-        self.angle_fired: float = 0.0
-
-    def rotate_image(self, angle: float):
-        """
-        override parents rotate image so we can add the change in mask
-        """
-        super().rotate_image(angle)
-        self.mask = mask.from_surface(self.image)
+        self.angle_fired: float = angle
+        self.rotate_image(angle)
+        super().__init__(start, directions, firingspeed=20)
 
     def reflect_laser(self):
         pass

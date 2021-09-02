@@ -31,12 +31,12 @@ class TestLevel(ScreenBase):
         )
         self.game_paused: bool = False
 
-        self.__set_timers()
+        # self.__set_timers()
 
     def __set_timers(self):
         """Set levels timers"""
         # To activate turret
-        # pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
+        pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
         self.sta_capture = pygame.time.get_ticks()
 
     def __disable_timers(self):
@@ -44,7 +44,8 @@ class TestLevel(ScreenBase):
         disable the levels custom timers
         """
         pygame.time.set_timer(self.start_turret_attack, 0)
-        pygame.time.set_timer(self.player_fire_cooldown, 0)
+        pygame.time.set_timer(self.player_basic_cooldown, 0)
+        pygame.time.set_timer(self.player_special_cooldown, 0)
         pygame.time.set_timer(self.player_dead, 0)
 
     def __capture_timers(self):
@@ -54,10 +55,19 @@ class TestLevel(ScreenBase):
         """
         current_time = pygame.time.get_ticks()
 
-        if not self.player.can_fire:
-            self.pfc_timeleft = 1000 - (current_time - self.pfc_capture)
-            if self.pfc_timeleft <= 0:
-                self.pfc_timeleft = 1
+        if not self.player.can_basic:
+            self.pbc_timeleft = self.player.basic_cooldown - (
+                current_time - self.pbc_capture
+            )
+            if self.pbc_timeleft <= 0:
+                self.pbc_timeleft = 1
+
+        if not self.player.can_special:
+            self.psc_timeleft = self.player.special_cooldown - (
+                current_time - self.psc_capture
+            )
+            if self.psc_timeleft <= 0:
+                self.psc_timeleft = 1
 
         if self.player.dying:
             self.pd_timeleft = 2000 - (current_time - self.pd_capture)
@@ -132,18 +142,21 @@ class TestLevel(ScreenBase):
         """
         self.player_hit = pygame.USEREVENT + 5
         self.player_dead = pygame.USEREVENT + 6
-        self.player_fire_cooldown = pygame.USEREVENT + 7
+        self.player_basic_cooldown = pygame.USEREVENT + 7
+        self.player_special_cooldown = pygame.USEREVENT + 8
         self.start_turret_attack = pygame.USEREVENT + 9
         self.spawn_turret = pygame.USEREVENT + 10
 
         self.pd_capture: int = 0
-        self.pfc_capture: int = 0
+        self.pbc_capture: int = 0
+        self.psc_capture: int = 0
         self.sta_capture: int = 0
         self.di_capture: int = 0
 
         self.sta_timeleft: int = 0
         self.di_timeleft: int = 0
-        self.pfc_timeleft: int = 0
+        self.pbc_timeleft: int = 0
+        self.psc_timeleft: int = 0
         self.pd_timeleft: int = 0
 
     def __check_platforms(self, platform_group):
@@ -293,8 +306,6 @@ class TestLevel(ScreenBase):
         """
         Call update on all of the levels sprites
         """
-        self.player.fireballs.update()
-        self.turret.lasers.update()
         if not self.player.dead:
             self.player.update()
         if self.turret.is_alive:
@@ -341,10 +352,10 @@ class TestLevel(ScreenBase):
         """
         blit user interface
         """
-        for img, rect in self.game_ui.get_ui_components():
+        for img, rect in self.game_ui.components:
             self.image.blit(img, rect)
 
-    def __update_environment(self):
+    def __update_scrolling_elements(self):
         """Update level's env and scroll"""
         scroll_x, scroll_y = 0.0, 0.0
         if not self.player.dying:
@@ -379,8 +390,11 @@ class TestLevel(ScreenBase):
             self.player.y += player_scroll_values[1]
             self.player.rect.y = int(self.player.y)
         scroll_y += player_scroll_values[1]
+
         self.platforms.update(scroll_x, scroll_y)
         self.environment.scroll(scroll_x, scroll_y)
+        self.player.fireballs.update(scroll_x, scroll_y)
+        self.turret.lasers.update(scroll_x, scroll_y)
 
     def player_keydown_controller(self, event):
         """Take event to control the player"""
@@ -411,16 +425,24 @@ class TestLevel(ScreenBase):
     def player_mouse_controller(self, event):
         """respond to mouse input"""
         mouse_button = pygame.mouse.get_pressed(3)
-
-        if mouse_button[0]:
+        if mouse_button[0] and self.player.can_basic:
+            self.player.can_basic = False
             self.player.create_fireball(
                 event.pos, self.game_ui.active_weapon_bar.element_type
             )
-            self.player.can_fire = False
             pygame.time.set_timer(
-                self.player_fire_cooldown, self.player.cooldown_time, True
+                self.player_basic_cooldown, self.player.basic_cooldown, True
             )
-            self.pfc_capture = pygame.time.get_ticks()
+            self.pbc_capture = pygame.time.get_ticks()
+        elif mouse_button[2] and self.player.can_special:
+            self.player.can_special = False
+            self.player.create_fireball(
+                event.pos, self.game_ui.active_weapon_bar.element_type, True
+            )
+            pygame.time.set_timer(
+                self.player_special_cooldown, self.player.special_cooldown, True
+            )
+            self.psc_capture = pygame.time.get_ticks()
 
     def player_collide_hit(self, angle: float = 200.0):
         """
@@ -428,7 +450,6 @@ class TestLevel(ScreenBase):
         """
         # TODO: Need player sound
         self.player.damaged(angle)
-        self.game_ui.update(self.player.health_points)
         if self.player.dying:
             pygame.time.set_timer(self.player_dead, 2000, True)
             self.pd_capture = pygame.time.get_ticks()
@@ -451,8 +472,10 @@ class TestLevel(ScreenBase):
         Start game timers with the captured time
         """
         pygame.mouse.set_cursor(pygame.cursors.broken_x)
-        if self.pfc_timeleft >= 1:
-            pygame.time.set_timer(self.player_fire_cooldown, self.pfc_timeleft, True)
+        if self.pbc_timeleft >= 1:
+            pygame.time.set_timer(self.player_basic_cooldown, self.pbc_timeleft, True)
+        if self.psc_timeleft >= 1:
+            pygame.time.set_timer(self.player_special_cooldown, self.psc_timeleft, True)
         if self.pd_timeleft >= 1:
             pygame.time.set_timer(self.player_dead, self.pd_timeleft, True)
         if self.sta_timeleft >= 1:
@@ -467,21 +490,21 @@ class TestLevel(ScreenBase):
 
     def __check_user_events(self, event):
         """Custom events"""
+        # laser switch
         if event.type == self.start_turret_attack and self.turret.is_alive:
-            # self.turret.firing = True
-            # self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
-            # pygame.time.set_timer(
-            #    self.start_turret_attack, self.turret.firing_speed, True
-            # )
-            # self.sta_capture = pygame.time.get_ticks()
-            pass
+            self.turret.firing = True
+            self.turret.create_laser((self.player.rect.centerx, self.player.rect.top))
+            pygame.time.set_timer(
+                self.start_turret_attack, self.turret.firing_speed, True
+            )
+            self.sta_capture = pygame.time.get_ticks()
 
-        if event.type == self.player_fire_cooldown:
-            self.player.can_fire = True
-
+        if event.type == self.player_basic_cooldown:
+            self.player.can_basic = True
+        if event.type == self.player_special_cooldown:
+            self.player.can_special = True
         if event.type == self.spawn_turret:
             self.__load_turret()
-
         if event.type == self.player_dead:
             self.game_over()
 
@@ -509,10 +532,8 @@ class TestLevel(ScreenBase):
             elif event.type == pygame.KEYUP:
                 self.__check_keyup_events(event)
 
-            elif (
-                event.type == pygame.MOUSEBUTTONDOWN
-                and self.player.can_fire
-                and not (self.player.hit or self.player.dying)
+            elif event.type == pygame.MOUSEBUTTONDOWN and not (
+                self.player.hit or self.player.dying
             ):
                 self.player_mouse_controller(event)
 
@@ -535,7 +556,11 @@ class TestLevel(ScreenBase):
                 self.pause_menu.rect,
             )
         else:
-            self.__update_environment()
+            self.game_ui.update(
+                self.player.health_points,
+                (pygame.time.get_ticks() - self.psc_capture)
+                / (self.player.special_cooldown / 100),
+            )
+            self.__update_scrolling_elements()
             self.__update_sprites()
-            self.game_ui.update(self.player.health_points)
             self.__check_collisions()

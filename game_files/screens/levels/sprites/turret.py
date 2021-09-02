@@ -36,15 +36,9 @@ class Turret(Sprite):
         target: tuple -> (x, y)
         """
         directions = GameMath.get_directions((self.rect.x, self.rect.y), target)
-
-        laser = Laser(self.laser_image)
-        laser.set_start(self.rect.center, directions)
-
         angle = GameMath.get_angle_to((self.rect.x, self.rect.y), target)
 
-        laser.rotate_image(angle)
-        laser.update_rect()
-        laser.angle_fired = angle
+        laser = Laser(self.laser_image, self.rect.center, directions, angle)
         self.lasers.add(laser)
 
     def set_position(self, x_y: tuple):

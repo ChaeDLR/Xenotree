@@ -40,7 +40,8 @@ class Player(Sprite):
         self.dashing_speed: float = 13.5
 
         # int passed to the pygame timer used to reset attack available flag
-        self.cooldown_time: int = 500
+        self.basic_cooldown: int = 500
+        self.special_cooldown: int = 750
         self.health_points: int = 100
 
         self.y: float = float(self.rect.y)
@@ -54,6 +55,7 @@ class Player(Sprite):
         Load the players shield sprite and fireball group
         """
         self.fireballs = pygame.sprite.Group()
+        self.special_fireballs = pygame.sprite.Group()
 
     def __player_bools(self) -> None:
         """
@@ -76,7 +78,8 @@ class Player(Sprite):
         # dead will end the game
         self.dead = False
         # track player cooldowns
-        self.can_fire = True
+        self.can_basic = True
+        self.can_special = True
         # check that the play still has health points
         self.is_alive = True
 
@@ -184,16 +187,15 @@ class Player(Sprite):
                 self.rect.y = y
         self.x, self.y = self.rect.x, self.rect.y
 
-    def create_fireball(self, mouse_pos, type: str):
+    def create_fireball(self, mouse_pos, element_type: str, special: bool = False):
         """
         get a fireball
         """
-        self.fireball_type = type
         fireball_start_pos: list = [
             self.rect.center[0],
             self.rect.center[1] + 5,
         ]
-        # set the x-axis offset of the fireball spawn position based on which way the player is facing
+
         if self.facing_left:
             fireball_start_pos[0] -= 10
         elif self.facing_right:
@@ -201,13 +203,22 @@ class Player(Sprite):
 
         directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
 
-        fireball = Fireball(self.images, type)
-        fireball.set_start(fireball_start_pos, directions)
+        if special:
+            key = f"{element_type}_sfb_fire_imgs"
+        else:
+            key = f"{element_type}_fb_fire_imgs"
 
-        angle = GameMath.get_angle_to(fireball_start_pos, mouse_pos)
-        fireball.rotate_image(angle)
-        fireball.update_rect()
+        fireball = Fireball(
+            self.images[key],
+            element_type,
+            GameMath.get_angle_to(fireball_start_pos, mouse_pos),
+            fireball_start_pos,
+            directions,
+            special,
+        )
+
         self.fireballs.add(fireball)
+        self.can_fire = False
 
     def stop_movement(self, left: bool, right: bool) -> None:
         """
