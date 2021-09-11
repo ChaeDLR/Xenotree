@@ -344,7 +344,11 @@ class TestLevel(ScreenBase):
             self.image.blits(layerGroup.images)
         self.__blit__sprites()
         for platform in self.platforms:
-            self.image.blit(platform.image, platform.rect)
+            if (
+                self.width > platform.rect.x > -platform.rect.width
+                and -platform.rect.height < platform.rect.y < self.height
+            ):
+                self.image.blit(platform.image, platform.rect)
         for layerGroup in self.environment.fg_layers:
             self.image.blits(layerGroup.images)
 
