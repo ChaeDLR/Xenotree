@@ -1,16 +1,19 @@
 import os
+import pygame
+
 from typing import Callable
-from pygame import Surface, image, transform, font
 from pygame.constants import MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from game_files import ScreenBase
+
 from ..button import Button
+from ....asset_manager import AssetManager
 
 
 class SoundSettings(ScreenBase):
     def __init__(
         self,
         back: Callable,
-        screen: Surface,
+        screen: pygame.Surface,
     ):
         super().__init__()
         self.main_screen = screen
@@ -23,6 +26,22 @@ class SoundSettings(ScreenBase):
 
         self.sound_menu_img, self.sound_menu_img_rect = self.create_text(
             (self.rect.centerx, 60), "SOUND"
+        )
+
+        inc_images: list = AssetManager.cut_image(
+            os.path.join(os.getcwd(), "../images/inc_icons.png"),
+            (2, 2),
+            (24, 24),
+            (30, 25, 10, 10),
+        )
+
+        # scale all of the images
+        inc_images = list(
+            map(
+                pygame.transform.scale,
+                [si.image for si in inc_images],
+                [(24, 24) for _ in range(len(inc_images))],
+            )
         )
 
         self.__load_images()
@@ -43,25 +62,29 @@ class SoundSettings(ScreenBase):
         """Grab +/- images from their folders and load them as images
         that will change the effects volume when pressed
         """
-        self.effects_plus_image = image.load(
+        self.effects_plus_image = pygame.image.load(
             os.path.join(path, "../menu_assets/plus.png")
         )
-        self.effects_plus_filled_image = image.load(
+        self.effects_plus_filled_image = pygame.image.load(
             os.path.join(path, "../menu_assets/plus_filled.png")
         )
-        self.effects_minus_image = image.load(
+        self.effects_minus_image = pygame.image.load(
             os.path.join(path, "../menu_assets/minus.png")
         )
-        self.effects_minus_filled_image = image.load(
+        self.effects_minus_filled_image = pygame.image.load(
             os.path.join(path, "../menu_assets/minus_filled.png")
         )
 
-        self.effects_plus_image = transform.scale(self.effects_plus_image, (16, 16))
-        self.effects_plus_filled_image = transform.scale(
+        self.effects_plus_image = pygame.transform.scale(
+            self.effects_plus_image, (16, 16)
+        )
+        self.effects_plus_filled_image = pygame.transform.scale(
             self.effects_plus_filled_image, (16, 16)
         )
-        self.effects_minus_image = transform.scale(self.effects_minus_image, (16, 16))
-        self.effects_minus_filled_image = transform.scale(
+        self.effects_minus_image = pygame.transform.scale(
+            self.effects_minus_image, (16, 16)
+        )
+        self.effects_minus_filled_image = pygame.transform.scale(
             self.effects_minus_filled_image, (16, 16)
         )
 
@@ -72,25 +95,27 @@ class SoundSettings(ScreenBase):
         """Grab +/- images from their folders and load them as images
         that will change the music volume when pressed
         """
-        self.music_plus_image = image.load(
+        self.music_plus_image = pygame.image.load(
             os.path.join(path, "../menu_assets/plus.png")
         )
-        self.music_plus_filled_image = image.load(
+        self.music_plus_filled_image = pygame.image.load(
             os.path.join(path, "../menu_assets/plus_filled.png")
         )
-        self.music_minus_image = image.load(
+        self.music_minus_image = pygame.image.load(
             os.path.join(path, "../menu_assets/minus.png")
         )
-        self.music_minus_filled_image = image.load(
+        self.music_minus_filled_image = pygame.image.load(
             os.path.join(path, "../menu_assets/minus_filled.png")
         )
 
-        self.music_plus_image = transform.scale(self.music_plus_image, (16, 16))
-        self.music_plus_filled_image = transform.scale(
+        self.music_plus_image = pygame.transform.scale(self.music_plus_image, (16, 16))
+        self.music_plus_filled_image = pygame.transform.scale(
             self.music_plus_filled_image, (16, 16)
         )
-        self.music_minus_image = transform.scale(self.music_minus_image, (16, 16))
-        self.music_minus_filled_image = transform.scale(
+        self.music_minus_image = pygame.transform.scale(
+            self.music_minus_image, (16, 16)
+        )
+        self.music_minus_filled_image = pygame.transform.scale(
             self.music_minus_filled_image, (16, 16)
         )
 
@@ -228,14 +253,14 @@ class SoundSettings(ScreenBase):
 
     def update_music_volume_string(self):
         music_volume_string = f"Music volume: {str(self.sound.music_volume)[2:]}"
-        music_font = font.SysFont(None, 38)
+        music_font = pygame.font.SysFont(None, 38)
         self.music_volume_image = music_font.render(
             music_volume_string, True, self.text_color, self.background_color
         )
 
     def update_effects_volume_string(self):
         effects_volume_string = f"Effects volume: {str(self.sound.effects_volume)[2:]}"
-        effects_font = font.SysFont(None, 38)
+        effects_font = pygame.font.SysFont(None, 38)
         self.effects_volume_image = effects_font.render(
             effects_volume_string, True, self.text_color, self.background_color
         )

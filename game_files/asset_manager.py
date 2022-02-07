@@ -1,8 +1,6 @@
 import pygame
 import os
 
-from pygame import transform
-
 
 class AssetManager:
     """
@@ -73,7 +71,7 @@ class AssetManager:
                 colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         if scale:
-            return transform.scale(image, scale)
+            return pygame.transform.scale(image, scale)
         return image
 
     @classmethod
@@ -88,7 +86,7 @@ class AssetManager:
         if not scale:
             return [cls.__get_image_at(rect, filepath, colorkey) for rect in rects]
         return [
-            transform.scale(cls.__get_image_at(rect, filepath, colorkey), scale)
+            pygame.transform.scale(cls.__get_image_at(rect, filepath, colorkey), scale)
             for rect in rects
         ]
 
@@ -110,7 +108,7 @@ class AssetManager:
         bg_layer_size = int(w_h[0] * 1.2), int(w_h[1] * 1.2)
         bg_layers: dict = {}
         for i in range(1, 4):
-            bg_layers[i] = transform.scale(
+            bg_layers[i] = pygame.transform.scale(
                 pygame.image.load(
                     os.path.join(background_image_path, f"{i}.png")
                 ).convert(),
@@ -121,7 +119,7 @@ class AssetManager:
         fg_layer_size = int(w_h[0]), int(w_h[1] * 0.5)
         fg_layers: dict = {}
         for i in range(5, 6):
-            fg_layers[i - 3] = transform.scale(
+            fg_layers[i - 3] = pygame.transform.scale(
                 pygame.image.load(
                     os.path.join(background_image_path, f"{i}.png")
                 ).convert(),
@@ -294,7 +292,7 @@ class AssetManager:
             right_images = []
             for coord in coords_list:
                 image = cls.__get_image_at(coord, path, cls.p_colorkey)
-                image = transform.scale(
+                image = pygame.transform.scale(
                     image, (int(image.get_width() * 1.8), int(image.get_height() * 1.8))
                 )
                 mask = pygame.mask.from_surface(image)
@@ -305,7 +303,7 @@ class AssetManager:
             for i in range(0, len(right_images)):
                 left_images.append(
                     (
-                        transform.flip(temp_image_masks[i][0], True, False),
+                        pygame.transform.flip(temp_image_masks[i][0], True, False),
                         pygame.mask.from_surface(temp_image_masks[i][0]),
                     )
                 )
@@ -354,3 +352,35 @@ class AssetManager:
         enemy_projectiles = cls.get_enemy_projectile_assets()
         cls.projectile_assets = {**fireballs, **enemy_projectiles}
         return cls.projectile_assets
+
+    @classmethod
+    def cut_image(
+        cls,
+        path: str,
+        grid: tuple[int, int],
+        scale: tuple[int, int],
+        margins: tuple = (0, 0, 0, 0),
+    ) -> list[pygame.Surface]:
+        """
+        cut the image by the given dimensions
+        grid: tuple[col, rows]
+        margins: tuple[top, bottom, left, right]
+        """
+        image: pygame.Surface = pygame.image.load(path).convert_alpha()
+        rect: pygame.Rect = image.get_rect()
+        img_width: int = int((rect.width - (margins[2] + margins[3])) / grid[0])
+        img_height: int = int((rect.height - (margins[0] + margins[1])) / grid[1])
+
+        cut_buttons = []
+        for column in [int(img_width * i) + margins[3] for i in range(grid[0])]:
+            for row in [int(img_height * i) + margins[0] for i in range(grid[1])]:
+
+                new_button: pygame.Surface = pygame.Surface((img_width, img_height))
+                new_button.blit(
+                    image, (0, 0), area=[column, row, img_width, img_height]
+                )
+                new_button = pygame.transform.scale(new_button, scale)
+                new_button.set_colorkey(new_button.get_at((0, 0)))
+
+                cut_buttons.append(new_button)
+        return cut_buttons
