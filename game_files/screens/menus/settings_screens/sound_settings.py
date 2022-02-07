@@ -6,7 +6,6 @@ from pygame.constants import MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from game_files import ScreenBase
 
 from ..button import Button
-from ....asset_manager import AssetManager
 
 
 class SoundSettings(ScreenBase):
@@ -28,22 +27,6 @@ class SoundSettings(ScreenBase):
             (self.rect.centerx, 60), "SOUND"
         )
 
-        inc_images: list = AssetManager.cut_image(
-            os.path.join(os.getcwd(), "../images/inc_icons.png"),
-            (2, 2),
-            (24, 24),
-            (30, 25, 10, 10),
-        )
-
-        # scale all of the images
-        inc_images = list(
-            map(
-                pygame.transform.scale,
-                [si.image for si in inc_images],
-                [(24, 24) for _ in range(len(inc_images))],
-            )
-        )
-
         self.__load_images()
         self.__load_options_text()
         self.buttons: list = self.__load_buttons()
@@ -63,16 +46,16 @@ class SoundSettings(ScreenBase):
         that will change the effects volume when pressed
         """
         self.effects_plus_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/plus.png")
+            os.path.join(path, "../images/plus.png")
         )
         self.effects_plus_filled_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/plus_filled.png")
+            os.path.join(path, "../images/plus_filled.png")
         )
         self.effects_minus_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/minus.png")
+            os.path.join(path, "../images/minus.png")
         )
         self.effects_minus_filled_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/minus_filled.png")
+            os.path.join(path, "../images/minus_filled.png")
         )
 
         self.effects_plus_image = pygame.transform.scale(
@@ -96,16 +79,16 @@ class SoundSettings(ScreenBase):
         that will change the music volume when pressed
         """
         self.music_plus_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/plus.png")
+            os.path.join(path, "../images/plus.png")
         )
         self.music_plus_filled_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/plus_filled.png")
+            os.path.join(path, "../images/plus_filled.png")
         )
         self.music_minus_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/minus.png")
+            os.path.join(path, "../images/minus.png")
         )
         self.music_minus_filled_image = pygame.image.load(
-            os.path.join(path, "../menu_assets/minus_filled.png")
+            os.path.join(path, "../images/minus_filled.png")
         )
 
         self.music_plus_image = pygame.transform.scale(self.music_plus_image, (16, 16))

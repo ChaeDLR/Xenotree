@@ -2,7 +2,7 @@ from pygame import Surface, Rect, font, RLEACCEL
 from ..screen_colors import ScreenColors
 
 
-class Button(Surface):
+class Button:
     def __init__(
         self,
         surface: object,
@@ -10,16 +10,17 @@ class Button(Surface):
         size: tuple = (150, 50),
         font_size: int = 40,
         name: str = None,
+        image: Surface = None,
     ):
         """initialize button settings"""
-        super().__init__(size)
+        self.image = image if image else Surface(size).convert_alpha()
         self.width, self.height = size
         self.surface = surface
         self.text = button_text
         self.font_size = font_size
         self.button_color = ScreenColors.button_color()
         self.text_color = ScreenColors.text_color()
-        self.name = name
+        self.name = name if name else button_text
         # coords to set button to middle of screen
         self.button_mid_pos_x = (surface.get_width() / 2) - (self.width / 2)
         self.button_mid_pos_y = (surface.get_height() / 3) * 2
@@ -27,14 +28,11 @@ class Button(Surface):
         self.resize((self.width, self.height))
         self.set_text(button_text, font_size)
 
-        self.fill(self.button_color)
-
     def resize(self, w_h: tuple):
         """
         Resize the buttone given the width, height tuple
         """
         self.rect = Rect(0, 0, w_h[0], w_h[1])
-        self.fill(self.button_color)
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
 
     def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
@@ -43,13 +41,12 @@ class Button(Surface):
             if mouse_up:
                 self.reset_alpha()
                 return True
-            self.set_alpha(25, RLEACCEL)
+            self.image.set_alpha(25, RLEACCEL)
             self.msg_image.set_alpha(25, RLEACCEL)
 
     def reset_alpha(self):
-        self.set_alpha(255, RLEACCEL)
+        self.image.set_alpha(255, RLEACCEL)
         self.msg_image.set_alpha(255, RLEACCEL)
-        self.fill(self.button_color)
 
     def set_position(self, x_pos=None, y_pos=None):
         """Set the position of the button"""
@@ -79,5 +76,5 @@ class Button(Surface):
         self.msg_image = self.text_font.render(self.text, True, self.text_color)
 
     def blitme(self):
-        self.surface.blit(self, self.rect)
+        self.surface.blit(self.image, self.rect)
         self.surface.blit(self.msg_image, self.msg_image_rect)

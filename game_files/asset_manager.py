@@ -366,7 +366,11 @@ class AssetManager:
         grid: tuple[col, rows]
         margins: tuple[top, bottom, left, right]
         """
-        image: pygame.Surface = pygame.image.load(path).convert_alpha()
+        try:
+            image: pygame.Surface = pygame.image.load(path).convert_alpha()
+        except (FileNotFoundError, TypeError):
+            print(f"Path: {path}")
+            raise
         rect: pygame.Rect = image.get_rect()
         img_width: int = int((rect.width - (margins[2] + margins[3])) / grid[0])
         img_height: int = int((rect.height - (margins[0] + margins[1])) / grid[1])
