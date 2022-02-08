@@ -40,7 +40,7 @@ class GameSound:
         )
 
     def _load_sound_assets(self):
-        """ Load sound from assets folder """
+        """Load sound from assets folder"""
         path = os.path.dirname(__file__)
         self.player_movement_sound = pygame.mixer.Sound(
             os.path.join(path, "assets/player_movement_sound.wav")

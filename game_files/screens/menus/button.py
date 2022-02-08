@@ -82,9 +82,7 @@ class Button(pygame.Surface):
 
 
 class ImageButton:
-    def __init__(self, image: pygame.Surface, size: tuple = None, **kwargs) -> None:
-        if size:
-            image = pygame.transform.scale(image, size)
+    def __init__(self, image: pygame.Surface, **kwargs) -> None:
         self.image, self.rect = AssetManager.baptize_image(image)
         self.mask = pygame.mask.from_surface(self.image)
 

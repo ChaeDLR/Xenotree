@@ -3,8 +3,6 @@ import os
 
 from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP, mouse, cursors
 from game_files import ScreenBase
-from .button import ImageButton
-from ...asset_manager import AssetManager
 
 
 class MainMenu(ScreenBase):
@@ -19,18 +17,7 @@ class MainMenu(ScreenBase):
             (self.rect.centerx, 60), "XENOTREE"
         )
 
-        AssetManager.get_button_assets()
-
-        button_row = self.height / 6
-        self.buttons: list = [
-            ImageButton(button_imgs[i], size=(200, 125), name=name)
-            for i, name in enumerate(["play", "settings", "quit"])
-        ]
-        for i in range(len(self.buttons)):
-            self.buttons[i].set_position(
-                x_pos=(self.rect.centerx - (self.buttons[i].rect.width / 2)),
-                y_pos=button_row * (i + 2),
-            )
+        self.buttons = self.create_buttons(["play", "settings", "quit"])
 
     def __start_game(self):
         ScreenBase.change_screen = True

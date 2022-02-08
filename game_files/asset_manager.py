@@ -114,7 +114,16 @@ class AssetManager:
 
         # play=0, settings=1, quit=2, sound=3
         # keybindings=4, back=5, save=6, reset=7
-        names = ["play", "settings", "quit", "sound", "keybindings", "back", "reset"]
+        names = [
+            "play",
+            "settings",
+            "quit",
+            "sound",
+            "keybindings",
+            "back",
+            "save",
+            "reset",
+        ]
         buttons = {
             names[i]: img[0]
             for i, img in enumerate(
@@ -128,6 +137,7 @@ class AssetManager:
                 )
             )
         }
+        return buttons
 
     @classmethod
     def get_background_assets(cls, w_h: tuple) -> dict:

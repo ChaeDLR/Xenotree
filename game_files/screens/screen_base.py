@@ -3,6 +3,7 @@ from pygame import font, Surface
 from game_files import Settings
 from game_files import GameSound
 from game_files import ScreenColors
+from .menus.button import ImageButton
 from ..asset_manager import AssetManager
 
 
@@ -32,6 +33,18 @@ class ScreenBase:
             self.rect.size
         )
         self.env_assets: dict = AssetManager.get_env_assets()
+
+    def create_buttons(self, names: list[str]) -> list:
+        # sound=3, keybindings=4, back=5
+        button_imgs = AssetManager().get_button_assets()
+        button_row = self.height / 6
+        buttons: list = [ImageButton(button_imgs[name], name=name) for name in names]
+        for i in range(len(buttons)):
+            buttons[i].set_position(
+                x_pos=(self.rect.centerx - (buttons[i].rect.width / 2)),
+                y_pos=button_row * (i + 2),
+            )
+        return buttons
 
     def create_text(
         self,

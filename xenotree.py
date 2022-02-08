@@ -16,7 +16,7 @@ class Xenotree:
         pygame.init()
         self.window = pygame.display.set_mode(
             (Settings.screen_width, Settings.screen_height),
-            flags=pygame.DOUBLEBUF,
+            flags=pygame.DOUBLEBUF | pygame.SCALED,
         )
         self.window.fill(ScreenColors.bg_color())
         pygame.display.set_caption("Xenotree")

@@ -2,6 +2,7 @@ class ScreenColors:
     """
     This class holds the color scheme for the game menu
     """
+
     __dark_blue = (26, 26, 38, 255)
     __dark_brown = (72, 65, 46, 255)
     __med_grey = (191, 180, 159, 255)
