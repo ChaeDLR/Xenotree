@@ -1,8 +1,10 @@
-from pygame import Surface, Rect, font, RLEACCEL
+import pygame
+
 from ..screen_colors import ScreenColors
+from ...asset_manager import AssetManager
 
 
-class Button:
+class Button(pygame.Surface):
     def __init__(
         self,
         surface: object,
@@ -10,10 +12,9 @@ class Button:
         size: tuple = (150, 50),
         font_size: int = 40,
         name: str = None,
-        image: Surface = None,
     ):
         """initialize button settings"""
-        self.image = image if image else Surface(size).convert_alpha()
+        super().__init__(size)
         self.width, self.height = size
         self.surface = surface
         self.text = button_text
@@ -27,12 +28,13 @@ class Button:
 
         self.resize((self.width, self.height))
         self.set_text(button_text, font_size)
+        self.fill(self.button_color)
 
     def resize(self, w_h: tuple):
         """
         Resize the buttone given the width, height tuple
         """
-        self.rect = Rect(0, 0, w_h[0], w_h[1])
+        self.rect = pygame.Rect(0, 0, w_h[0], w_h[1])
         self.rect.x, self.rect.y = self.button_mid_pos_x, self.button_mid_pos_y
 
     def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
@@ -41,12 +43,12 @@ class Button:
             if mouse_up:
                 self.reset_alpha()
                 return True
-            self.image.set_alpha(25, RLEACCEL)
-            self.msg_image.set_alpha(25, RLEACCEL)
+            self.set_alpha(25)
+            self.msg_image.set_alpha(25)
 
     def reset_alpha(self):
-        self.image.set_alpha(255, RLEACCEL)
-        self.msg_image.set_alpha(255, RLEACCEL)
+        self.set_alpha(255)
+        self.msg_image.set_alpha(255)
 
     def set_position(self, x_pos=None, y_pos=None):
         """Set the position of the button"""
@@ -54,7 +56,6 @@ class Button:
             self.rect.x = x_pos
         if y_pos:
             self.rect.y = y_pos
-
         self.msg_image_rect.center = self.rect.center
 
     def clear_text(self):
@@ -64,7 +65,7 @@ class Button:
         self.text = txt
         if fontsize:
             self.font_size = fontsize
-            self.text_font = font.SysFont(None, self.font_size, bold=True)
+            self.text_font = pygame.font.SysFont(None, self.font_size, bold=True)
         self.msg_image = self.text_font.render(self.text, True, self.text_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
@@ -76,5 +77,19 @@ class Button:
         self.msg_image = self.text_font.render(self.text, True, self.text_color)
 
     def blitme(self):
-        self.surface.blit(self.image, self.rect)
+        self.surface.blit(self, self.rect)
         self.surface.blit(self.msg_image, self.msg_image_rect)
+
+
+class ImageButton:
+    def __init__(self, image: pygame.Surface) -> None:
+        self.image, self.rect = AssetManager.baptize_image(image)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def set_position(self, pos: tuple[int, int]) -> None:
+        self.rect.topleft = pos
+
+    def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
+        """check for button collision"""
+        # TODO: write mouse detection
+        return False

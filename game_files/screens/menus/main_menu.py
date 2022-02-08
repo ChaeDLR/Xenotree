@@ -3,7 +3,7 @@ import os
 
 from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP, mouse, cursors
 from game_files import ScreenBase
-from .button import Button
+from .button import ImageButton
 from ...asset_manager import AssetManager
 
 
@@ -28,7 +28,9 @@ class MainMenu(ScreenBase):
 
         button_row = self.height / 6
         self.buttons: list = [
-            Button(self.image, "", size=(200, 125), image=button_imgs[i], name=name)
+            ImageButton(
+                self.image, "", size=(200, 125), image=button_imgs[i], name=name
+            )
             for i, name in enumerate(["play", "settings", "quit"])
         ]
         for i in range(len(self.buttons)):

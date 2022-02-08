@@ -91,6 +91,20 @@ class AssetManager:
         ]
 
     @classmethod
+    def baptize_image(cls, image: pygame.Surface) -> tuple:
+        img = image
+        mask: pygame.mask.Mask = pygame.mask.from_surface(img)
+        rect: pygame.Rect = mask.get_bounding_rects()[0]
+
+        image = pygame.Surface(
+            rect.size,
+            flags=pygame.BLEND_ALPHA_SDL2,
+        )
+        image.blit(img, (0, 0), area=rect)
+        image.set_colorkey(image.get_at((0, 0)))
+        return (image, rect)
+
+    @classmethod
     def get_background_assets(cls, w_h: tuple) -> dict:
         """
         Load all background images
@@ -376,7 +390,7 @@ class AssetManager:
         img_height: int = int((rect.height - (margins[0] + margins[1])) / grid[1])
 
         cut_buttons = []
-        for column in [int(img_width * i) + margins[3] for i in range(grid[0])]:
+        for column in [int(img_width * i) + margins[2] for i in range(grid[0])]:
             for row in [int(img_height * i) + margins[0] for i in range(grid[1])]:
 
                 new_button: pygame.Surface = pygame.Surface((img_width, img_height))
