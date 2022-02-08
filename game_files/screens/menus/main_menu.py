@@ -28,13 +28,14 @@ class MainMenu(ScreenBase):
 
         button_row = self.height / 6
         self.buttons: list = [
-            ImageButton(
-                self.image, "", size=(200, 125), image=button_imgs[i], name=name
-            )
+            ImageButton(button_imgs[i], size=(200, 125), name=name)
             for i, name in enumerate(["play", "settings", "quit"])
         ]
         for i in range(len(self.buttons)):
-            self.buttons[i].set_position(y_pos=button_row * (i + 2))
+            self.buttons[i].set_position(
+                x_pos=(self.rect.centerx - (self.buttons[i].rect.width / 2)),
+                y_pos=button_row * (i + 2),
+            )
 
     def __start_game(self):
         ScreenBase.change_screen = True
@@ -56,13 +57,10 @@ class MainMenu(ScreenBase):
             if button.check_button(mouse_pos, True):
                 if button.name == "play":
                     self.__start_game()
-                    print("EXE play")
                 elif button.name == "settings":
-                    print("EXE settings")
                     ScreenBase.change_screen = True
                     ScreenBase.current_screen_key = "settings_menu"
                 elif button.name == "quit":
-                    print("EXE quit")
                     sys.exit()
             else:
                 for button in self.buttons:
@@ -77,5 +75,4 @@ class MainMenu(ScreenBase):
     def update(self):
         self.image.fill(self.background_color, self.rect)
         self.image.blit(self.main_menu_img, self.main_menu_img_rect)
-        for button in self.buttons:
-            button.blitme()
+        self.image.blits([(button.image, button.rect) for button in self.buttons])

@@ -82,14 +82,32 @@ class Button(pygame.Surface):
 
 
 class ImageButton:
-    def __init__(self, image: pygame.Surface) -> None:
+    def __init__(self, image: pygame.Surface, size: tuple = None, **kwargs) -> None:
+        if size:
+            image = pygame.transform.scale(image, size)
         self.image, self.rect = AssetManager.baptize_image(image)
         self.mask = pygame.mask.from_surface(self.image)
 
-    def set_position(self, pos: tuple[int, int]) -> None:
-        self.rect.topleft = pos
+        for key in kwargs:
+            try:
+                self.__setattr__(key, kwargs[key])
+            except ValueError:
+                print(f"Failed to set attr {key}: {kwargs[key]}")
+
+    def set_position(self, x_pos=None, y_pos=None):
+        """Set the position of the button"""
+        if x_pos:
+            self.rect.x = x_pos
+        if y_pos:
+            self.rect.y = y_pos
+
+    def reset_alpha(self) -> None:
+        self.image.set_alpha(255)
 
     def check_button(self, mouse_pos, mouse_up: bool = False) -> bool:
         """check for button collision"""
-        # TODO: write mouse detection
-        return False
+        if self.rect.collidepoint(mouse_pos):
+            if mouse_up:
+                self.reset_alpha()
+                return True
+            self.image.set_alpha(25)
