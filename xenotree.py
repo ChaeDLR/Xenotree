@@ -1,6 +1,7 @@
 # Chae DeLaRosa
 import pygame
 import sys
+
 from game_files import Settings, ScreenColors
 from game_files import ScreenBase
 from game_files import MainMenu, SettingsMenu, GameOver
@@ -15,7 +16,7 @@ class Xenotree:
         pygame.init()
         self.window = pygame.display.set_mode(
             (Settings.screen_width, Settings.screen_height),
-            flags=pygame.DOUBLEBUF,
+            flags=pygame.DOUBLEBUF | pygame.SCALED,
         )
         self.window.fill(ScreenColors.bg_color())
         pygame.display.set_caption("Xenotree")

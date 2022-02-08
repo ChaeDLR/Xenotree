@@ -1,6 +1,6 @@
 from pygame.constants import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+
 from game_files import ScreenBase
-from .button import Button
 from .settings_screens.sound_settings import SoundSettings
 from .settings_screens.keybindings_settings import KeybindSettings
 
@@ -25,57 +25,31 @@ class SettingsMenu(ScreenBase):
         self.settings_menu_img, self.settings_menu_img_rect = self.create_text(
             (self.rect.centerx, 60), "SETTINGS"
         )
-
-        self.buttons: list = self.__load_buttons()
-
-    def __load_buttons(self):
-        """
-        Create buttons that will take the user to the selected settings screen
-        """
-        self.sound_button = Button(self.image, "Sound")
-        self.sound_button.set_position(
-            self.rect.centerx - (self.sound_button.width / 2),
-            self.settings_menu_img_rect.y + 100,
-        )
-
-        self.keybindings_button = Button(self.image, "Key bindings", font_size=29)
-        self.keybindings_button.resize(
-            (self.keybindings_button.width, self.keybindings_button.height)
-        )
-        self.keybindings_button.set_position(
-            self.rect.centerx - (self.keybindings_button.width / 2),
-            self.sound_button.rect.y + 100,
-        )
-
-        self.back_button = Button(self.image, "Back")
-        self.back_button.set_position(
-            self.rect.centerx - (self.back_button.width / 2),
-            self.keybindings_button.rect.y + 100,
-        )
-        return [self.sound_button, self.keybindings_button, self.back_button]
+        self.buttons: list = self.create_buttons(["sound", "keybindings", "back"])
 
     def __check_button_down(self, mouse_pos):
         """
         Respond to mouse down events
         """
-        self.sound_button.check_button(mouse_pos)
-        self.keybindings_button.check_button(mouse_pos)
-        self.back_button.check_button(mouse_pos)
+        for button in self.buttons:
+            button.check_button(mouse_pos)
 
     def __check_button_up(self, mouse_pos):
         """
         respond to mouse up events
         """
-        if self.sound_button.check_button(mouse_pos, True):
-            self.active_settings_screen = "sound"
-        elif self.keybindings_button.check_button(mouse_pos, True):
-            self.active_settings_screen = "key_bindings"
-        elif self.back_button.check_button(mouse_pos, True):
-            ScreenBase.change_screen = True
-            ScreenBase.current_screen_key = "main_menu"
-        else:
-            for button in self.buttons:
-                button.reset_alpha()
+        for button in self.buttons:
+            if button.check_button(mouse_pos, True):
+                    if button.name == "sound":
+                        self.active_settings_screen = "sound"
+                    elif button.name == "keybindings":
+                        self.active_settings_screen = "key_bindings"
+                    elif button.name == "back":
+                        ScreenBase.change_screen = True
+                        ScreenBase.current_screen_key = "main_menu"
+            else:
+                for button in self.buttons:
+                    button.reset_alpha()
 
     def set_main_screen(self):
         """
@@ -97,9 +71,7 @@ class SettingsMenu(ScreenBase):
         self.image.fill(self.background_color, self.rect)
         if self.active_settings_screen == "settings":
             self.image.blit(self.settings_menu_img, self.settings_menu_img_rect)
-            self.sound_button.blitme()
-            self.keybindings_button.blitme()
-            self.back_button.blitme()
+            self.image.blits([(button.image, button.rect) for button in self.buttons])
 
         elif self.active_settings_screen == "sound":
             self.sound_screen.update()
