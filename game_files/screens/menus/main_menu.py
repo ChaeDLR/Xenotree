@@ -19,12 +19,7 @@ class MainMenu(ScreenBase):
             (self.rect.centerx, 60), "XENOTREE"
         )
 
-        path = os.path.join(os.getcwd(), "game_files/screens/menus/images/buttons.png")
-
-        # play=0, settings=1, quit=2
-        button_imgs = AssetManager.cut_image(
-            path, (2, 4), (200, 125), (10, 20, 10, 10)
-        )[:3]
+        AssetManager.get_button_assets()
 
         button_row = self.height / 6
         self.buttons: list = [

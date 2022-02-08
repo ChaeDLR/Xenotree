@@ -55,6 +55,8 @@ class AssetManager:
 
     projectile_assets: dict = None
 
+    button_assets: dict = None
+
     def __get_image_at(
         rectangle: tuple,
         filepath: str,
@@ -103,6 +105,29 @@ class AssetManager:
         image.blit(img, (0, 0), area=rect)
         image.set_colorkey(image.get_at((0, 0)))
         return (image, rect)
+
+    @classmethod
+    def get_button_assets(cls) -> dict:
+        if cls.button_assets:
+            return cls.button_assets
+        path = os.path.join(os.getcwd(), "game_files/screens/menus/images/buttons.png")
+
+        # play=0, settings=1, quit=2, sound=3
+        # keybindings=4, back=5, save=6, reset=7
+        names = ["play", "settings", "quit", "sound", "keybindings", "back", "reset"]
+        buttons = {
+            names[i]: img[0]
+            for i, img in enumerate(
+                list(
+                    map(
+                        cls.baptize_image,
+                        AssetManager.cut_image(
+                            path, (2, 4), (200, 125), (10, 20, 10, 10)
+                        ),
+                    )
+                )
+            )
+        }
 
     @classmethod
     def get_background_assets(cls, w_h: tuple) -> dict:
