@@ -40,13 +40,13 @@ class SettingsMenu(ScreenBase):
         """
         for button in self.buttons:
             if button.check_button(mouse_pos, True):
-                    if button.name == "sound":
-                        self.active_settings_screen = "sound"
-                    elif button.name == "keybindings":
-                        self.active_settings_screen = "key_bindings"
-                    elif button.name == "back":
-                        ScreenBase.change_screen = True
-                        ScreenBase.current_screen_key = "main_menu"
+                if button.name == "sound":
+                    self.active_settings_screen = "sound"
+                elif button.name == "keybindings":
+                    self.active_settings_screen = "key_bindings"
+                elif button.name == "back":
+                    ScreenBase.change_screen = True
+                    ScreenBase.current_screen_key = "main_menu"
             else:
                 for button in self.buttons:
                     button.reset_alpha()

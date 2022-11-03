@@ -1,7 +1,7 @@
 import pygame
 
 from pygame.sprite import Sprite
-from game_files import GameMath
+from game_files import math
 from .fireball import Fireball
 
 
@@ -201,7 +201,7 @@ class Player(Sprite):
         elif self.facing_right:
             fireball_start_pos[0] += 10
 
-        directions = GameMath.get_directions(fireball_start_pos, mouse_pos)
+        directions = math.get_directions(fireball_start_pos, mouse_pos)
 
         if special:
             key = f"{element_type}_sfb_fire_imgs"
@@ -211,7 +211,7 @@ class Player(Sprite):
         fireball = Fireball(
             self.images[key],
             element_type,
-            GameMath.get_angle_to(fireball_start_pos, mouse_pos),
+            math.get_angle_to(fireball_start_pos, mouse_pos),
             fireball_start_pos,
             directions,
             special,

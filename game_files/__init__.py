@@ -1,4 +1,4 @@
-from .utils.game_math import GameMath
+from .utils import math
 from .screens.screen_colors import ScreenColors
 from .settings import Settings
 from .game_sound import GameSound

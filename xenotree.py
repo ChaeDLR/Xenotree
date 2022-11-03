@@ -2,10 +2,7 @@
 import pygame
 import sys
 
-from game_files import Settings, ScreenColors
-from game_files import ScreenBase
-from game_files import MainMenu, SettingsMenu, GameOver
-from game_files import TestLevel
+from game_files import *
 
 
 class Xenotree:

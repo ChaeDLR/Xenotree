@@ -270,8 +270,9 @@ class TestLevel(ScreenBase):
             for collide_items in collide_dict.items():
                 coll_fb = collide_items[1][0]
                 coll_platform = collide_items[0]
-            if coll_fb.type == "blue":
-                coll_platform.freeze()
+            if coll_fb.type == "purple":
+                # TODO: write Platform.freeze() method
+                # coll_Platform.freeze()
                 self.platforms.remove(coll_platform)
                 self.frozen_platforms.add(coll_platform)
                 if coll_platform.connected_right:

@@ -1,7 +1,7 @@
 import pygame
 import os
 from pygame.sprite import Sprite, Group
-from game_files import GameMath
+from game_files import math
 from .laser import Laser
 
 
@@ -35,8 +35,8 @@ class Turret(Sprite):
         + angle + directions
         target: tuple -> (x, y)
         """
-        directions = GameMath.get_directions((self.rect.x, self.rect.y), target)
-        angle = GameMath.get_angle_to((self.rect.x, self.rect.y), target)
+        directions = math.get_directions((self.rect.x, self.rect.y), target)
+        angle = math.get_angle_to((self.rect.x, self.rect.y), target)
 
         laser = Laser(self.laser_image, self.rect.center, directions, angle)
         self.lasers.add(laser)
