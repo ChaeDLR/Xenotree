@@ -14,6 +14,7 @@ class TestLevel(ScreenBase):
     def __init__(self):
         super().__init__()
         pygame.event.set_blocked(pygame.MOUSEMOTION)
+        pygame.mixer.music.stop()
 
         self.turret_assets["laser_img"] = self.projectile_assets["laser_img"]
         self.game_ui = GameUi(self.projectile_assets)

@@ -1,6 +1,6 @@
 # Pygame 2D platformer project
 
-![](xenotree_demo.gif)
+![](assets/xenotree_demo.gif)
 
 ### Default keybinds
 | Action | Key |

@@ -7,6 +7,8 @@ from .settings import Settings
 
 
 class GameSound:
+    """manages sound settings"""
+
     def __init__(self):
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
@@ -39,17 +41,6 @@ class GameSound:
             "volume.json",
         )
 
-    def _load_sound_assets(self):
-        """Load sound from assets folder"""
-        path = os.path.dirname(__file__)
-        self.player_movement_sound = pygame.mixer.Sound(
-            os.path.join(path, "assets/player_movement_sound.wav")
-        )
-        self.player_impact_sound = pygame.mixer.Sound(
-            os.path.join(path, "assets/player_impact.wav")
-        )
-        pygame.mixer.music.load(os.path.join(path, "assets/background_music.mp3"))
-
     def set_effects_volume(self, effects_volume: float):
         """
         effects_volume: (0.0 - 1.0)
@@ -64,6 +55,7 @@ class GameSound:
         """
         self.music_volume = music_volume
         pygame.mixer.music.set_volume(music_volume)
+        # pygame.mixer.music.stop()
 
     def increase_effects_volume(self):
         if self.effects_volume < 0.5:

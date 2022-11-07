@@ -1,7 +1,7 @@
 import sys
-import os
 
-from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP, mouse, cursors
+from os import getcwd, path
+from pygame import MOUSEBUTTONDOWN, MOUSEBUTTONUP, mouse, cursors, mixer
 from game_files import ScreenBase
 
 
@@ -18,6 +18,10 @@ class MainMenu(ScreenBase):
         )
 
         self.buttons = self.create_buttons(["play", "settings", "quit"])
+
+        if not mixer.music.get_busy():
+            mixer.music.load(filename=path.join(getcwd(), "assets/greentop.wav"))
+            mixer.music.play(loops=-1)
 
     def __start_game(self):
         ScreenBase.change_screen = True

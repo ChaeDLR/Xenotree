@@ -9,12 +9,14 @@ def get_directions(start: tuple, stop: tuple) -> tuple:
     radians = math.atan2(stop[1] - start[1], stop[0] - start[0])
     return (math.cos(radians), math.sin(radians))
 
+
 def get_distance(start: tuple, stop: tuple) -> int:
     """
     Returns the distance between two points
     """
     dist = math.hypot(stop[0] - start[0], stop[1] - start[1])
     return int(dist)
+
 
 def get_angle_to(start: tuple, stop: tuple):
     """

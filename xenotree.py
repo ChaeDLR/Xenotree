@@ -15,6 +15,7 @@ class Xenotree:
             (Settings.screen_width, Settings.screen_height),
             flags=pygame.DOUBLEBUF | pygame.SCALED,
         )
+
         self.window.fill(ScreenColors.bg_color())
         pygame.display.set_caption("Xenotree")
         self.clock = pygame.time.Clock()
