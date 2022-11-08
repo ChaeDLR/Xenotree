@@ -11,7 +11,11 @@ class Player(Sprite):
     def __init__(self, assets: dict, bound: int):
         super().__init__()
 
-        self.__create_animation_variables()
+        # the animation variables
+        self.animation_index = 0
+        self.animation_index_limit = 0
+        self.animation_counter = 0
+
         self.images = assets
         self.image, self.mask = self.images["idle_right"][1]
         self.__load_sprites()
@@ -82,12 +86,6 @@ class Player(Sprite):
         self.can_special = True
         # check that the play still has health points
         self.is_alive = True
-
-    def __create_animation_variables(self) -> None:
-        """These are the animation variables needed to animate the player smoothly"""
-        self.animation_index = 0
-        self.animation_index_limit = 0
-        self.animation_counter = 0
 
     def __move_left(self):
         """

@@ -23,11 +23,6 @@ class MainMenu(ScreenBase):
             mixer.music.load(filename=path.join(getcwd(), "assets/greentop.wav"))
             mixer.music.play(loops=-1)
 
-    def __start_game(self):
-        ScreenBase.change_screen = True
-        ScreenBase.current_screen_key = "test_level"
-        mouse.set_cursor(cursors.broken_x)
-
     def check_button_down(self, mouse_pos):
         """
         Respond to button clicks mouse down events
@@ -42,7 +37,9 @@ class MainMenu(ScreenBase):
         for button in self.buttons:
             if button.check_button(mouse_pos, True):
                 if button.name == "play":
-                    self.__start_game()
+                    ScreenBase.change_screen = True
+                    ScreenBase.current_screen_key = "test_level"
+                    mouse.set_cursor(cursors.broken_x)
                 elif button.name == "settings":
                     ScreenBase.change_screen = True
                     ScreenBase.current_screen_key = "settings_menu"
