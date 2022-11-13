@@ -8,6 +8,16 @@ from .fireball import Fireball
 class Player(Sprite):
     """player sprite class"""
 
+    movement_speed: float = 5.5
+    jumping_velocity: float = -7.5
+    falling_velocity: float = 1.0
+    falling_speed_limit: float = 12.0
+    dashing_speed: float = 13.5
+
+    basic_cooldown: int = 500  # passed to the timer to reset attack available flag
+    special_cooldown: int = 750
+    health_points: int = 100
+
     def __init__(self, assets: dict, bound: int):
         super().__init__()
 
@@ -37,22 +47,8 @@ class Player(Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.movement_speed: float = 5.5
-        self.jumping_velocity: float = -7.5
-        self.falling_velocity: float = 1.0
-        self.falling_speed_limit: float = 12.0
-        self.dashing_speed: float = 13.5
-
-        # int passed to the pygame timer used to reset attack available flag
-        self.basic_cooldown: int = 500
-        self.special_cooldown: int = 750
-        self.health_points: int = 100
-
         self.y: float = float(self.rect.y)
         self.x: float = float(self.rect.x)
-
-        # TESTING SWITCH
-        self.testing = False
 
     def __load_sprites(self):
         """
@@ -131,8 +127,7 @@ class Player(Sprite):
         """
         self.falling = False
         self.grounded = False
-        # self.rect.y += self.jumping_velocity
-        self.jumping_velocity += 0.5
+        self.jumping_velocity += 0.35
         if self.jumping_velocity >= 0:
             self.jumping = False
             self.falling = True
@@ -150,12 +145,6 @@ class Player(Sprite):
         Staggered movement
         """
         self.stagger_counter += 1
-        # if int(self.hit_angle) in range(90, 270):
-        #    self.x -= 3.0
-        # elif int(self.hit_angle) in range(270, 360) or range(0, 90):
-        #    self.x += 3.0
-        # self.y -= 1.5
-        # self.rect.x, self.rect.y = self.x, self.y
         if self.stagger_counter >= 8:
             self.hit = False
             self.falling = True
@@ -231,7 +220,6 @@ class Player(Sprite):
 
     def reset_player(self):
         """reset player position"""
-        # set player initial position
         self.rect.midbottom = self.screen_rect.midbottom
         self.y = float(self.rect.y)
         self.x = float(self.rect.x)
@@ -321,10 +309,6 @@ class Player(Sprite):
             elif not (self.hit or self.dead):
                 if self.dashing:
                     self.__dash()
-                elif self.moving_right:
-                    pass  # self.__move_right()
-                elif self.moving_left:
-                    pass  # self.__move_left()
                 if self.jumping:
                     self.__jump()
         if self.falling:
@@ -334,11 +318,7 @@ class Player(Sprite):
         """
         Update the player animation frame
         """
-        if self.testing:
-            # place any images i want to test here and switch bool to True
-            pass
-
-        elif self.facing_right:
+        if self.facing_right:
             if self.dying:
                 key = "death_right"
             elif self.hit:

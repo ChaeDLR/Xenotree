@@ -13,7 +13,7 @@ class GameSound:
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         self.music_volume, self.effects_volume = 0.1, 0.3
-        
+
         # Try to load existing volume data
         try:
             volume_data = Settings.load_setting("volume.json")
