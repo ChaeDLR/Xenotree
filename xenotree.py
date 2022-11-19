@@ -16,7 +16,7 @@ class Xenotree:
             flags=pygame.DOUBLEBUF | pygame.SCALED,
         )
 
-        self.window.fill(ScreenColors.bg_color())
+        self.window.fill(colors.BLACK)
         pygame.display.set_caption("Xenotree")
         self.clock = pygame.time.Clock()
 
@@ -29,25 +29,23 @@ class Xenotree:
 
         self.active_screen = MainMenu()
 
-    def __check_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            else:
-                self.active_screen.check_events(event)
-
-    def __get_active_screen(self):
-        """Reassign the active screen"""
-        return self.screens[self.active_screen.current_screen_key]()
-
     def run_game(self):
         """main loop"""
         while True:
             self.clock.tick(60)
+
             if ScreenBase.change_screen:
-                self.active_screen = self.__get_active_screen()
+                self.active_screen = self.screens[
+                    self.active_screen.current_screen_key
+                ]()
                 ScreenBase.change_screen = False
-            self.__check_events()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                else:
+                    self.active_screen.check_events(event)
+
             self.active_screen.update()
             self.window.blit(self.active_screen.image, self.active_screen.rect)
 

@@ -1,6 +1,6 @@
 import pygame
 
-from ..screen_colors import ScreenColors
+from ...screens import colors
 from ...asset_manager import AssetManager
 
 
@@ -19,8 +19,8 @@ class Button(pygame.Surface):
         self.surface = surface
         self.text = button_text
         self.font_size = font_size
-        self.button_color = ScreenColors.button_color()
-        self.text_color = ScreenColors.text_color()
+        self.button_color = colors.BLUE
+        self.text_color = colors.GREY
         self.name = name if name else button_text
         # coords to set button to middle of screen
         self.button_mid_pos_x = (surface.get_width() / 2) - (self.width / 2)

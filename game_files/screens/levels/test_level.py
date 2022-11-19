@@ -454,7 +454,6 @@ class TestLevel(ScreenBase):
         """
         If the player collides with something that hurts it
         """
-        # TODO: Need player sound
         self.player.damaged(angle)
         if self.player.dying:
             pygame.time.set_timer(self.player_dead, 2000, True)

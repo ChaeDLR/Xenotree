@@ -2,7 +2,7 @@ from pygame import font, Surface
 
 from game_files import Settings
 from game_files import GameSound
-from game_files import ScreenColors
+from game_files import colors
 from .menus.button import ImageButton
 from ..asset_manager import AssetManager
 
@@ -23,8 +23,8 @@ class ScreenBase:
         self.screen_columns = self.rect.width / 6
         self.screen_rows = self.rect.height / 6
 
-        self.background_color: tuple = ScreenColors.bg_color()
-        self.text_color: tuple = ScreenColors.text_color()
+        self.background_color: tuple = colors.BLACK
+        self.text_color: tuple = colors.GREY
 
         self.projectile_assets: dict = AssetManager.get_projectile_assets()
         self.turret_assets: dict = AssetManager.get_turret_assets()

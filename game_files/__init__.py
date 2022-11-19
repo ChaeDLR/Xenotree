@@ -1,5 +1,5 @@
 from .utils import math
-from .screens.screen_colors import ScreenColors
+from .screens import colors
 from .settings import Settings
 from .game_sound import GameSound
 
