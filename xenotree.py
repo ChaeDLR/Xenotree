@@ -17,7 +17,8 @@ class Xenotree:
         )
 
         self.window.fill(colors.BLACK)
-        pygame.display.set_caption("Xenotree")
+        logo = b"\xf0\x9f\x90\x8d".decode("utf-8")
+        pygame.display.set_caption(f"{logo} Xenotree {logo}")
         self.clock = pygame.time.Clock()
 
         self.screens: dict = {
