@@ -1,5 +1,5 @@
 import pygame
-import os
+
 from pygame.sprite import Sprite, Group
 from game_files import math
 from .laser import Laser
@@ -45,33 +45,6 @@ class Turret(Sprite):
         """Set the turret position"""
         self.rect.x, self.rect.y = x_y[0], x_y[1]
 
-    # TODO: Get the turrets to take and image from asset manager and spawn lasers
-    # from within this class
-    def __load_assets(self) -> list:
-        """
-        Load the turret images
-        Return list of the images
-        """
-        current_path = os.path.dirname(__file__)
-        turret_imgs_path = os.path.join(current_path, "sprite_assets/turret")
-        images_list: list = os.listdir(turret_imgs_path)
-        # Sort the images by the number value in the file name string
-        images_list.sort(key=lambda img_string: img_string[7])
-
-        loaded_images: list = []
-        for img in images_list:
-            img_path = os.path.join(turret_imgs_path, img)
-            loaded_images.append(pygame.image.load(img_path).convert())
-
-        return loaded_images
-
-    def __reset_animation(self):
-        """
-        Reset animation vars
-        """
-        self.animation_counter = 0
-        self.animation_index = 0
-
     def __attack_animation(self):
         """
         Start the attack animation
@@ -85,7 +58,8 @@ class Turret(Sprite):
 
         if self.animation_index == 5:
             # Reset animation variables
-            self.__reset_animation()
+            self.animation_counter = 0
+            self.animation_index = 0
             self.firing = False
 
     def update(self):

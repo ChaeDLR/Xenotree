@@ -23,7 +23,6 @@ class TestLevel(ScreenBase):
             {**self.player_assets, **self.projectile_assets}, self.width
         )
         self.__load_env()
-        self.__load_turret()
         self.__load_custom_events()
 
         # has check events in update
@@ -32,11 +31,19 @@ class TestLevel(ScreenBase):
         )
         self.game_paused: bool = False
 
+        self.enemies = pygame.sprite.Group()
+
+        # TODO: either put in sprite group or re-pos and switch is_alive
+        self.turret = Turret(self.turret_assets)
+        self.turret.rect.x, self.turret.rect.y = (
+            self.width - self.turret.rect.width,
+            0,
+        )
+        self.enemies.add(self.turret)
         # self.__set_timers()
 
     def __set_timers(self):
         """Set levels timers"""
-        # To activate turret
         pygame.time.set_timer(self.start_turret_attack, self.turret.firing_speed, True)
         self.sta_capture = pygame.time.get_ticks()
 
@@ -86,41 +93,6 @@ class TestLevel(ScreenBase):
         if self.di_timeleft < -1:
             self.di_timeleft = 1
 
-    def __load_turret(self):
-        """
-        Load turret and set its position
-        """
-        # TODO: either put in sprite group or re-pos and switch is_alive
-        self.turret = Turret(self.turret_assets)
-        self.turret.rect.x, self.turret.rect.y = (
-            self.width - self.turret.rect.width,
-            0,
-        )
-
-    def __load_platforms(self):
-        """
-        Load base platforms for testing
-        """
-        # (5, 25) -> width=800
-        x: int = 800 + 100
-        y: int = self.height - 100
-        for i in range(2, 5):
-            platform_block: list = Platforms.tile_block(((2 + i), 25), (x, y))
-            x += 800 + (i * 110)
-            y -= 50
-            self.platforms.add(platform_block)
-
-    def __load_floor(self):
-        """
-        Load base floor
-        """
-        floor_tiles: list = Platforms.tile_block((2, 25), (0, self.height - 100))
-        self.player.set_position(
-            (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
-        )
-        self.player.on_ground(floor_tiles[3])
-        self.platforms.add(floor_tiles)
-
     def __load_env(self):
         """
         Load initial environment
@@ -134,8 +106,24 @@ class TestLevel(ScreenBase):
         )
         self.platforms = pygame.sprite.Group()
         self.frozen_platforms = pygame.sprite.Group()
-        self.__load_floor()
-        self.__load_platforms()
+
+        # load floor
+        floor_tiles: list = Platforms.tile_block((2, 25), (0, self.height - 100))
+        self.player.set_position(
+            (floor_tiles[3].rect.midtop[0], floor_tiles[3].rect.midtop[1])
+        )
+        self.player.on_ground(floor_tiles[3])
+        self.platforms.add(floor_tiles)
+
+        # load_platforms
+        # (5, 25) -> width=800
+        x: int = 800 + 100
+        y: int = self.height - 100
+        for i in range(2, 5):
+            platform_block: list = Platforms.tile_block(((2 + i), 25), (x, y))
+            x += 800 + (i * 110)
+            y -= 50
+            self.platforms.add(platform_block)
 
     def __load_custom_events(self):
         """

@@ -28,39 +28,11 @@ class Player(Sprite):
 
         self.images = assets
         self.image, self.mask = self.images["idle_right"][1]
-        self.__load_sprites()
 
-        # create players bool values
-        self.__player_bools()
-
-        # animation trackers
-        self.falling_index: int = 0
-        self.death_frame: int = 1
-        self.animation_index_limit: int = 3
-
-        self.screen_bound: int = bound
-        self.hit_angle: int = 0
-
-        # counters
-        self.jump_counter = 0
-        self.dash_counter = 0
-
-        self.rect = self.image.get_rect()
-
-        self.y: float = float(self.rect.y)
-        self.x: float = float(self.rect.x)
-
-    def __load_sprites(self):
-        """
-        Load the players shield sprite and fireball group
-        """
         self.fireballs = pygame.sprite.Group()
         self.special_fireballs = pygame.sprite.Group()
 
-    def __player_bools(self) -> None:
-        """
-        bool values the player needs
-        """
+        #region bool flags
         # movement flags
         self.moving = False  # used in animation code
         self.jumping = False
@@ -82,6 +54,24 @@ class Player(Sprite):
         self.can_special = True
         # check that the play still has health points
         self.is_alive = True
+        #endregion
+
+        # animation trackers
+        self.falling_index: int = 0
+        self.death_frame: int = 1
+        self.animation_index_limit: int = 3
+
+        self.screen_bound: int = bound
+        self.hit_angle: int = 0
+
+        # counters
+        self.jump_counter = 0
+        self.dash_counter = 0
+
+        self.rect = self.image.get_rect()
+
+        self.y: float = float(self.rect.y)
+        self.x: float = float(self.rect.x)
 
     def __move_left(self):
         """
